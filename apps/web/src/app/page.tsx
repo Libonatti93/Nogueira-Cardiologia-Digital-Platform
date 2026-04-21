@@ -2,17 +2,19 @@ import Image from 'next/image';
 
 const authorityPillars = [
   {
-    title: 'Autoridade clínica',
-    description: 'Condução médica com rigor técnico, decisões individualizadas e comunicação clara em cada consulta.',
-  },
-  {
-    title: 'Tecnologia em cardiologia',
+    title: 'Autoridade médica com responsabilidade clínica',
     description:
-      'Estrutura orientada por recursos diagnósticos modernos para apoiar decisões seguras e acompanhamento preciso.',
+      'Condução cardiológica com decisões individualizadas, comunicação objetiva e foco contínuo em segurança assistencial.',
   },
   {
-    title: 'Cuidado humanizado',
-    description: 'Jornada assistencial acolhedora, com atenção aos detalhes e foco na confiança de longo prazo.',
+    title: 'Tecnologia aplicada à jornada do paciente',
+    description:
+      'Experiência digital estruturada para cadastro, login, agendamento online e acompanhamento da evolução clínica.',
+  },
+  {
+    title: 'Confiança institucional e cuidado premium',
+    description:
+      'Atendimento acolhedor, ambiente organizado e compromisso com uma jornada de saúde clara, segura e de longo prazo.',
   },
 ];
 
@@ -29,6 +31,20 @@ const doctors = [
   },
 ];
 
+const patientPortalHighlights = [
+  'Criar cadastro e manter dados de acesso seguros.',
+  'Fazer login para visualizar disponibilidade médica.',
+  'Agendar consulta online dentro da própria plataforma.',
+  'Acompanhar consultas e evolução da jornada digital.',
+];
+
+const medicalAreaHighlights = [
+  'Login administrativo para médicos e equipe autorizada.',
+  'Painel interno para visão da agenda clínica.',
+  'Gestão de atendimentos e organização assistencial.',
+  'Estrutura preparada para dashboard clínica futura.',
+];
+
 const whatsappLink = 'https://wa.me/5517997440223';
 
 export default function Home() {
@@ -37,23 +53,17 @@ export default function Home() {
       <header className="sticky top-0 z-30 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:px-8">
           <a href="#inicio" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-[#14508B]/15 bg-white p-1.5">
-              <Image
-                src="/brand/nogueira-cardiologia-logo.svg"
-                alt="Logo Nogueira Cardiologia"
-                width={96}
-                height={96}
-                className="h-full w-full object-contain"
-                priority
-              />
-            </div>
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#14508B]">Nogueira Cardiologia</p>
-              <p className="text-xs text-slate-500">Clínica de referência em cardiologia</p>
-            </div>
+            <Image
+              src="/brand/nogueira-cardiologia-logo.svg"
+              alt="Logo oficial Nogueira Cardiologia"
+              width={320}
+              height={84}
+              className="h-10 w-auto object-contain sm:h-12"
+              priority
+            />
           </a>
 
-          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-700 lg:flex">
+          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-700 lg:flex">
             <a href="#inicio" className="transition-colors hover:text-[#14508B]">
               Início
             </a>
@@ -63,8 +73,11 @@ export default function Home() {
             <a href="#corpo-clinico" className="transition-colors hover:text-[#14508B]">
               Corpo clínico
             </a>
-            <a href="#clinica" className="transition-colors hover:text-[#14508B]">
-              Clínica
+            <a href="#portal-paciente" className="transition-colors hover:text-[#14508B]">
+              Portal do paciente
+            </a>
+            <a href="#area-medica" className="transition-colors hover:text-[#14508B]">
+              Área médica
             </a>
             <a href="#contato" className="transition-colors hover:text-[#14508B]">
               Contato
@@ -72,12 +85,10 @@ export default function Home() {
           </nav>
 
           <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noreferrer"
+            href="#portal-paciente"
             className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#11457B]"
           >
-            Agende sua consulta
+            Entrar no portal do paciente
           </a>
         </div>
       </header>
@@ -85,58 +96,54 @@ export default function Home() {
       <main>
         <section
           id="inicio"
-          className="mx-auto grid w-full max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8 lg:py-24"
+          className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8 lg:py-24"
         >
           <div>
             <span className="inline-flex rounded-full border border-[#14508B]/15 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#14508B]">
-              Cardiologia com excelência e confiança
+              Cardiologia de referência com jornada digital
             </span>
             <h1 className="mt-6 text-4xl font-semibold leading-tight text-[#103E6A] md:text-5xl lg:text-6xl">
-              Cuidado cardiovascular premium com autoridade médica e atendimento humanizado.
+              Agendamento cardiológico pelo portal, com segurança, tecnologia e confiança institucional.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
-              Na Nogueira Cardiologia, você encontra estrutura moderna, abordagem ética e acompanhamento clínico
-              próximo para cuidar da sua saúde com segurança e clareza.
+              A Nogueira Cardiologia oferece uma experiência digital completa: o paciente cria sua conta, faz login,
+              consulta a agenda disponível e realiza o agendamento online dentro da plataforma.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
+                href="#portal-paciente"
                 className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#11457B]"
               >
-                Agende sua consulta
+                Acessar agendamento
               </a>
               <a
-                href="#contato"
+                href="#portal-paciente"
                 className="inline-flex items-center justify-center rounded-full border border-[#14508B]/20 bg-white px-7 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:border-[#14508B]/40"
               >
-                Ver informações de contato
+                Criar minha conta
               </a>
             </div>
           </div>
 
           <aside className="overflow-hidden rounded-3xl border border-[#14508B]/10 bg-white shadow-[0_20px_60px_-30px_rgba(20,80,139,0.35)]">
             <div className="border-b border-[#14508B]/10 bg-gradient-to-r from-[#103E6A] via-[#14508B] to-[#15A7DD] p-6 text-white">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/90">Identidade institucional</p>
-              <div className="mt-5 flex min-h-[120px] items-center justify-center rounded-2xl bg-white px-6 py-4 shadow-inner">
-                <Image
-                  src="/brand/nogueira-cardiologia-logo.svg"
-                  alt="Nogueira Cardiologia"
-                  width={420}
-                  height={140}
-                  className="h-20 w-full object-contain"
-                />
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/90">Acesso digital estruturado</p>
+              <div className="mt-5 rounded-2xl bg-white/10 p-4">
+                <p className="text-sm text-white/95">
+                  O agendamento principal acontece no portal: cadastro, autenticação e seleção de horários com visão da
+                  disponibilidade médica.
+                </p>
               </div>
             </div>
             <div className="p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#14508B]">Agendamento rápido</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#14508B]">Fluxo do paciente na plataforma</p>
               <div className="mt-5 space-y-3">
                 {[
-                  'Atendimento em cardiologia com foco em segurança clínica.',
-                  'Contato direto para agendamento por telefone ou WhatsApp.',
-                  'Equipe preparada para orientar o próximo passo da sua consulta.',
+                  '1. Criar conta no portal do paciente.',
+                  '2. Fazer login com acesso seguro.',
+                  '3. Visualizar agenda e escolher o melhor horário.',
+                  '4. Confirmar consulta e acompanhar sua jornada digital.',
                 ].map((item) => (
                   <div key={item} className="rounded-2xl bg-[#F5F8FC] p-4 text-sm text-slate-600">
                     {item}
@@ -149,10 +156,10 @@ export default function Home() {
 
         <section id="autoridade" className="bg-white py-16">
           <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
-            <h2 className="text-3xl font-semibold text-[#103E6A] md:text-4xl">Autoridade médica e confiança institucional</h2>
+            <h2 className="text-3xl font-semibold text-[#103E6A] md:text-4xl">Autoridade médica, tecnologia e confiança</h2>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">
-              Estruturamos a clínica para unir excelência assistencial, segurança diagnóstica e experiência premium em
-              todos os pontos de contato com o paciente.
+              Estruturamos a clínica para unir excelência assistencial, cuidado humanizado e experiência digital em cada
+              etapa da jornada do paciente.
             </p>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {authorityPillars.map((item) => (
@@ -165,7 +172,53 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="corpo-clinico" className="py-16">
+        <section id="portal-paciente" className="py-16">
+          <div className="mx-auto grid w-full max-w-7xl gap-6 px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
+            <article className="rounded-3xl border border-[#14508B]/12 bg-white p-8 shadow-[0_20px_50px_-35px_rgba(20,80,139,0.5)]">
+              <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#14508B]">Portal do paciente</p>
+              <h2 className="mt-3 text-3xl font-semibold text-[#103E6A]">Jornada digital para cadastro, login e agendamento</h2>
+              <div className="mt-6 space-y-3">
+                {patientPortalHighlights.map((item) => (
+                  <div key={item} className="rounded-2xl bg-[#F7FAFE] p-4 text-sm leading-relaxed text-slate-600">
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <a
+                  href="#inicio"
+                  className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#11457B]"
+                >
+                  Entrar no portal do paciente
+                </a>
+                <a
+                  href="#contato"
+                  className="inline-flex items-center justify-center rounded-full border border-[#14508B]/20 bg-white px-6 py-2.5 text-sm font-semibold text-[#14508B] transition-colors hover:border-[#14508B]/45"
+                >
+                  Conhecer a clínica
+                </a>
+              </div>
+            </article>
+
+            <article id="area-medica" className="rounded-3xl bg-gradient-to-br from-[#103E6A] via-[#14508B] to-[#15A7DD] p-8 text-white">
+              <p className="text-sm font-semibold uppercase tracking-[0.15em] text-white/85">Área médica / administrativa</p>
+              <h2 className="mt-3 text-3xl font-semibold">Acesso interno para operação clínica e gestão futura</h2>
+              <p className="mt-4 text-sm leading-relaxed text-white/90">
+                Esta seção apresenta a evolução da plataforma para médicos e equipe autorizada. O objetivo é organizar
+                fluxos internos com segurança, visão de agenda e suporte à gestão assistencial.
+              </p>
+              <div className="mt-6 space-y-3">
+                {medicalAreaHighlights.map((item) => (
+                  <div key={item} className="rounded-2xl bg-white/10 p-4 text-sm leading-relaxed text-white/90">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="corpo-clinico" className="bg-white py-16">
           <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
@@ -202,49 +255,29 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="clinica" className="bg-white py-16">
-          <div className="mx-auto grid w-full max-w-7xl gap-8 px-6 lg:grid-cols-2 lg:gap-12 lg:px-8">
-            <div className="rounded-3xl bg-gradient-to-br from-[#103E6A] via-[#14508B] to-[#15A7DD] p-8 text-white">
-              <p className="text-sm font-semibold uppercase tracking-[0.15em] text-white/85">Estrutura clínica</p>
-              <h2 className="mt-3 text-3xl font-semibold">Ambiente preparado para cuidado cardiovascular completo</h2>
-              <p className="mt-4 text-sm leading-relaxed text-white/90">
-                Consultas com organização assistencial, comunicação objetiva e foco em uma experiência segura para o
-                paciente e sua família.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-[#14508B]/12 bg-[#F7FAFE] p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#14508B]">Facilidade para agendar</p>
-              <div className="mt-5 space-y-4">
-                {[
-                  'Agende sua consulta por WhatsApp em poucos passos.',
-                  'Também atendemos por telefone para orientação de horário.',
-                  'Localização de fácil acesso em São José do Rio Preto.',
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl bg-white p-4 text-sm text-slate-600 ring-1 ring-[#14508B]/10">
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="agendamento" className="bg-[#14508B] py-16">
+        <section className="bg-[#14508B] py-16">
           <div className="mx-auto w-full max-w-4xl px-6 text-center lg:px-8">
-            <h2 className="text-3xl font-semibold text-white md:text-4xl">Agendar sua consulta é simples e rápido</h2>
+            <h2 className="text-3xl font-semibold text-white md:text-4xl">Seu agendamento acontece no portal digital da clínica</h2>
             <p className="mt-4 text-sm leading-relaxed text-white/90 md:text-base">
-              Fale com a equipe da Nogueira Cardiologia e solicite seu horário com praticidade para iniciar seu
-              acompanhamento cardiovascular.
+              Crie sua conta, faça login e selecione o melhor horário disponível para sua consulta cardiológica com
+              praticidade e segurança.
             </p>
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-white px-7 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:bg-[#F8F8F9]"
-            >
-              Agendar pelo WhatsApp
-            </a>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a
+                href="#portal-paciente"
+                className="inline-flex items-center justify-center rounded-full bg-white px-7 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:bg-[#F8F8F9]"
+              >
+                Entrar no portal do paciente
+              </a>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-white/35 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Suporte via WhatsApp
+              </a>
+            </div>
           </div>
         </section>
       </main>
@@ -253,7 +286,9 @@ export default function Home() {
         <div className="mx-auto grid w-full max-w-7xl gap-6 px-6 text-sm lg:grid-cols-3 lg:px-8">
           <div>
             <p className="text-base font-semibold">Nogueira Cardiologia</p>
-            <p className="mt-2 text-white/80">Cuidado cardiológico com foco em ética, segurança clínica e excelência médica.</p>
+            <p className="mt-2 text-white/80">
+              Cuidado cardiológico com foco em ética, segurança clínica e excelência médica.
+            </p>
           </div>
           <div>
             <p className="font-semibold">Contato</p>
@@ -273,8 +308,8 @@ export default function Home() {
         href={whatsappLink}
         target="_blank"
         rel="noreferrer"
-        aria-label="Fale conosco no WhatsApp"
-        title="Fale conosco no WhatsApp"
+        aria-label="Falar com a clínica no WhatsApp"
+        title="Suporte via WhatsApp"
         className="fixed bottom-5 right-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_24px_-8px_rgba(0,0,0,0.45)] transition-transform hover:scale-[1.03]"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" className="h-7 w-7 fill-current">
