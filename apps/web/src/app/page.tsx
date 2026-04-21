@@ -54,7 +54,7 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:px-8">
           <a href="#inicio" className="flex items-center gap-3">
             <Image
-              src="/brand/nogueira-cardiologia-logo.svg"
+              src="/brand/LOGO ATUAL.png"
               alt="Logo oficial Nogueira Cardiologia"
               width={320}
               height={84}
