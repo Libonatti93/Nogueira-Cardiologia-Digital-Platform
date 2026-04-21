@@ -1,0 +1,10 @@
+<svg width="420" height="140" viewBox="0 0 420 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="420" height="140" rx="24" fill="white"/>
+  <g transform="translate(24,22)">
+    <rect x="0" y="0" width="96" height="96" rx="20" fill="#14508B"/>
+    <path d="M26 68V28h10.2l20.2 24.7V28H67v40H56.8L35.7 42.3V68H26Z" fill="white"/>
+    <path d="M72.2 48.3c0-8 6.2-13.7 14.7-13.7 8.4 0 14.6 5.7 14.6 13.7S95.3 62 86.9 62c-8.5 0-14.7-5.7-14.7-13.7Zm20 0c0-3.4-2.1-5.7-5.3-5.7s-5.4 2.3-5.4 5.7 2.1 5.8 5.4 5.8 5.3-2.3 5.3-5.8Z" fill="#6CC6E7"/>
+  </g>
+  <text x="140" y="62" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="1.2">NOGUEIRA</text>
+  <text x="140" y="95" fill="#15A7DD" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="600" letter-spacing="3.2">CARDIOLOGIA</text>
+</svg>
