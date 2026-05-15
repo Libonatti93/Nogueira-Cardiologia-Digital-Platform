@@ -55,11 +55,13 @@ const doctors = [
     name: 'Dr. Paulo Roberto Nogueira',
     crm: 'CRM 53.790/SP',
     bio: 'Médico cardiologista com trajetória acadêmica, assistencial e institucional de referência em São José do Rio Preto, unindo precisão clínica, ciência e cuidado cardiovascular contínuo.',
+    image: '/brand/dr-paulo-roberto-nogueira.jpeg',
   },
   {
     name: 'Dra. Cristiani Monteiro de Oliveira Nogueira',
     crm: 'CRM 77.127/SP',
     bio: 'Atuação institucional com postura ética, atendimento humanizado e foco em condução clínica responsável em cardiologia.',
+    image: '/brand/dra-cristiani-monteiro-de-oliveira-nogueira.jpeg',
   },
 ];
 
@@ -233,9 +235,15 @@ export default function Home() {
                   key={doctor.name}
                   className="overflow-hidden rounded-3xl border border-[#14508B]/15 bg-white shadow-[0_22px_48px_-34px_rgba(20,80,139,0.52)]"
                 >
-                  <div className="grid gap-0 sm:grid-cols-[170px_1fr]">
-                    <div className="flex min-h-[170px] items-center justify-center border-b border-dashed border-[#14508B]/20 bg-gradient-to-b from-[#EAF3FC] to-[#F7FBFF] px-4 sm:min-h-full sm:border-b-0 sm:border-r">
-                      <span className="text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-[#14508B]/85 sm:text-xs">Foto institucional</span>
+                  <div className="grid gap-0 sm:grid-cols-[200px_1fr]">
+                    <div className="relative aspect-[4/5] overflow-hidden border-b border-[#14508B]/10 sm:aspect-auto sm:min-h-full sm:border-b-0 sm:border-r">
+                      <Image
+                        src={doctor.image}
+                        alt={`Foto de ${doctor.name}`}
+                        fill
+                        sizes="(max-width: 639px) 100vw, 200px"
+                        className="object-cover"
+                      />
                     </div>
                     <div className="p-6">
                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15A7DD]">Cardiologia</p>
