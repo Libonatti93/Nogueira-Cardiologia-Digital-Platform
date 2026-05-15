@@ -2,9 +2,9 @@ import Image from 'next/image';
 
 const navigationItems = [
   ['Início', '#inicio'],
-  ['Sobre a Nogueira Cardiologia', '#sobre-nogueira-cardiologia'],
+  ['Conheça a Nogueira Cardiologia', '#sobre-nogueira-cardiologia'],
   ['Corpo clínico', '#corpo-clinico'],
-  ['Blog', '#blog'],
+  ['Blog', '/blog'],
   ['Contato', '#contato'],
 ] as const;
 
@@ -89,7 +89,7 @@ const whatsappLink = 'https://wa.me/5517997440223';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#F8F8F9] text-slate-900">
+    <div className="min-h-screen scroll-smooth bg-[#F8F8F9] text-slate-900">
       <header className="sticky top-0 z-40 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <a href="#inicio" className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export default function Home() {
             href="#contato"
             className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-4 py-2 text-[11px] font-bold tracking-[0.04em] text-white shadow-[0_14px_30px_-18px_rgba(20,80,139,0.85)] transition-all hover:bg-[#11457B] sm:px-6 sm:py-3 sm:text-sm"
           >
-            MARQUE SUA CONSULTA AGORA!
+            Agende sua consulta AGORA!
           </a>
         </div>
       </header>
@@ -128,11 +128,11 @@ export default function Home() {
                 Referência em cardiologia em São José do Rio Preto
               </span>
               <h1 className="mt-5 text-3xl font-semibold leading-tight text-[#103E6A] sm:text-4xl lg:text-5xl xl:text-6xl">
-                Tradição, precisão e confiança para cuidar do seu coração com a excelência da Nogueira Cardiologia.
+                Referência em cardiologia em São José do Rio Preto desde 1998, com excelência médica para cuidar do seu coração em cada fase da vida.
               </h1>
               <p className="mt-5 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base lg:text-lg">
-                Desde 1998, a Nogueira Cardiologia une experiência médica, tecnologia e cuidado humano para oferecer avaliação cardiovascular
-                criteriosa, prevenção qualificada e acompanhamento especializado em cada etapa da sua saúde.
+                Na Nogueira Cardiologia, tradição, precisão diagnóstica e acompanhamento especializado caminham com escuta humana e estrutura moderna.
+                Aqui, cada consulta é conduzida com seriedade, confiança e foco real na sua segurança cardiovascular.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -140,13 +140,13 @@ export default function Home() {
                   href="#contato"
                   className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_-18px_rgba(20,80,139,0.8)] transition-colors hover:bg-[#11457B]"
                 >
-                  Marque sua consulta
+                  Agende sua consulta
                 </a>
                 <a
                   href="#sobre-nogueira-cardiologia"
                   className="inline-flex items-center justify-center rounded-full border border-[#14508B]/30 bg-white px-6 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:border-[#14508B]/60"
                 >
-                  Conheça a clínica
+                  Conheça a Nogueira Cardiologia
                 </a>
               </div>
             </div>
@@ -154,9 +154,9 @@ export default function Home() {
             <aside className="overflow-hidden rounded-3xl border border-[#14508B]/15 bg-white shadow-[0_28px_65px_-35px_rgba(17,69,123,0.55)]">
               <div className="bg-gradient-to-br from-[#11457B] via-[#14508B] to-[#15A7DD] p-6 text-white sm:p-8">
                 <p className="text-xs font-semibold uppercase tracking-[0.17em] text-white/90 sm:text-sm">Nogueira Cardiologia • Desde 1998</p>
-                <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">28 anos de presença local com cardiologia de referência</h2>
+                <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">Desde 1998, tradição local com cardiologia de alta credibilidade</h2>
                 <p className="mt-4 text-sm leading-relaxed text-white/90 sm:text-base">
-                  Uma clínica construída sobre credibilidade médica, estrutura moderna e compromisso contínuo com segurança cardiovascular.
+                  Uma clínica construída sobre credibilidade médica, experiência clínica e compromisso contínuo com prevenção, diagnóstico e seguimento cardiovascular.
                 </p>
               </div>
               <div className="grid gap-3 p-5 sm:p-6">
@@ -176,12 +176,12 @@ export default function Home() {
             <div className="rounded-3xl border border-[#14508B]/12 bg-[#F8FBFF] p-6 sm:p-8 lg:p-10">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#15A7DD] sm:text-sm">Sobre a Nogueira Cardiologia</p>
               <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl lg:text-4xl">
-                Clínica de cardiologia com tradição em São José do Rio Preto e visão moderna de cuidado cardiovascular
+                Conheça a Nogueira Cardiologia: tradição médica, confiança e visão moderna de cuidado cardiovascular
               </h2>
               <p className="mt-4 max-w-4xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                A Nogueira Cardiologia atua desde 1998 com um propósito claro: oferecer atendimento cardiológico de alto padrão, baseado em
-                experiência médica, investigação clínica cuidadosa e acompanhamento sério de longo prazo. Nossa estrutura integra tecnologia,
-                organização assistencial e uma relação próxima com cada paciente, fortalecendo confiança e segurança nas decisões sobre saúde do coração.
+                Atuamos em São José do Rio Preto desde 1998, oferecendo cardiologia com alto padrão técnico e relação próxima com cada paciente.
+                Nossa equipe reúne experiência, tecnologia e responsabilidade clínica para orientar prevenção, investigar com precisão e acompanhar
+                cada caso com consistência e atenção ao longo do tempo.
               </p>
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function Home() {
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-3xl border border-[#14508B]/12 bg-white p-6 shadow-[0_26px_60px_-40px_rgba(20,80,139,0.55)] sm:p-8 lg:p-10">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#15A7DD] sm:text-sm">Blog Nogueira Cardiologia</p>
-              <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">Conteúdo médico para orientar, prevenir e fortalecer sua confiança</h2>
+              <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">Conteúdo médico para orientar decisões e proteger sua saúde cardiovascular</h2>
               <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
                 Acompanhe orientações do nosso corpo clínico sobre prevenção cardiovascular, sinais de alerta e cuidados contínuos para manter a saúde do coração em dia.
               </p>
@@ -264,10 +264,10 @@ export default function Home() {
                 ))}
               </div>
               <a
-                href="#contato"
+                href="/blog"
                 className="mt-7 inline-flex items-center justify-center rounded-full border border-[#14508B]/30 bg-white px-6 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:border-[#14508B]/60"
               >
-                Ver conteúdos e tirar dúvidas com a clínica
+                Acessar o Blog da Nogueira Cardiologia
               </a>
             </div>
           </div>
@@ -276,12 +276,10 @@ export default function Home() {
         <section className="pb-14 sm:pb-16">
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
             <article className="rounded-3xl bg-gradient-to-br from-[#103E6A] via-[#14508B] to-[#15A7DD] p-7 text-white sm:p-9 lg:p-10">
-              <h2 className="text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">
-                Cuidado cardiovascular com confiança, seriedade médica e acompanhamento especializado
-              </h2>
+              <h2 className="text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">Seu coração merece acompanhamento especializado com confiança e excelência clínica</h2>
               <p className="mt-4 max-w-3xl text-sm leading-relaxed text-white/90 sm:text-base">
-                Conte com a Nogueira Cardiologia para uma avaliação cardiológica precisa, orientação preventiva e seguimento clínico responsável.
-                Agende sua consulta e tenha ao seu lado uma equipe experiente, humana e comprometida com sua segurança.
+                Agende sua consulta na Nogueira Cardiologia e tenha ao seu lado um corpo clínico experiente, estrutura moderna e cuidado humano para
+                prevenção, diagnóstico e seguimento cardiovascular com segurança.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a
@@ -307,27 +305,66 @@ export default function Home() {
       <footer id="contato" className="bg-[#0F3760] pb-10 pt-12 text-white">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl border border-white/15 bg-white/5 p-6 sm:p-8 lg:p-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/85 sm:text-sm">Newsletter Nogueira Cardiologia</p>
-            <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">Receba orientações e novidades sobre saúde cardiovascular</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/85 sm:text-sm">Newsletter Nogueira Cardiologia + NogIA</p>
+            <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">Receba orientações semanais para cuidar melhor do seu coração</h2>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/85 sm:text-base">
-              Cadastre seu e-mail para receber conteúdos educativos, atualizações da clínica e orientações úteis para cuidar do coração com mais informação e segurança.
+              Cadastre-se para receber conteúdos úteis sobre coração, sono, alimentação, hidratação, rotina, prevenção cardiovascular e hábitos saudáveis.
+              A NogIA, assistente da Nogueira Cardiologia, ajuda você com lembretes e dicas semanais com linguagem clara e foco no seu bem-estar.
             </p>
-            <form className="mt-6 flex flex-col gap-3 sm:flex-row" action="#" method="post">
-              <label htmlFor="newsletter-email" className="sr-only">
-                Seu melhor e-mail
+            <form className="mt-6 grid gap-3 sm:grid-cols-2" action="#" method="post">
+              <label htmlFor="newsletter-name" className="sr-only">
+                Nome completo
               </label>
               <input
-                id="newsletter-email"
-                type="email"
-                placeholder="Seu melhor e-mail"
+                id="newsletter-name"
+                name="name"
+                type="text"
+                placeholder="Nome completo"
                 className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
                 required
               />
+              <label htmlFor="newsletter-cpf" className="sr-only">
+                CPF
+              </label>
+              <input
+                id="newsletter-cpf"
+                name="cpf"
+                type="text"
+                placeholder="CPF"
+                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
+                required
+              />
+              <label htmlFor="newsletter-email" className="sr-only">
+                E-mail
+              </label>
+              <input
+                id="newsletter-email"
+                name="email"
+                type="email"
+                placeholder="E-mail"
+                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
+                required
+              />
+              <label htmlFor="newsletter-phone" className="sr-only">
+                Telefone
+              </label>
+              <input
+                id="newsletter-phone"
+                name="phone"
+                type="tel"
+                placeholder="Telefone"
+                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
+                required
+              />
+              <label className="sm:col-span-2 mt-1 inline-flex items-start gap-2 text-xs text-white/85 sm:text-sm">
+                <input type="checkbox" name="consent" required className="mt-0.5 h-4 w-4 rounded border-white/40 text-[#14508B] accent-[#14508B]" />
+                <span>Autorizo o uso dos meus dados para receber orientações semanais da Nogueira Cardiologia, conforme a política de privacidade.</span>
+              </label>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#11457B]"
+                className="sm:col-span-2 inline-flex items-center justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#11457B]"
               >
-                Quero receber conteúdos
+                Quero receber dicas semanais
               </button>
             </form>
           </div>
@@ -336,8 +373,29 @@ export default function Home() {
             <div>
               <p className="text-base font-semibold">Nogueira Cardiologia</p>
               <p className="mt-2 text-white/80">
-                Referência em cardiologia em São José do Rio Preto, com tradição desde 1998, estrutura moderna e cuidado médico humanizado.
+                Referência em cardiologia em São José do Rio Preto desde 1998, unindo tradição médica, precisão diagnóstica e cuidado humano.
               </p>
+              <div className="mt-4 flex items-center gap-2.5">
+                {[
+                  { label: 'LinkedIn', href: '#', hover: 'hover:text-[#0A66C2]' },
+                  { label: 'Facebook', href: '#', hover: 'hover:text-[#1877F2]' },
+                  { label: 'Instagram', href: '#', hover: 'hover:text-[#E4405F]' },
+                  { label: 'YouTube', href: '#', hover: 'hover:text-[#FF0000]' },
+                  { label: 'WhatsApp', href: whatsappLink, hover: 'hover:text-[#25D366]' },
+                ].map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target={social.label === 'WhatsApp' ? '_blank' : undefined}
+                    rel={social.label === 'WhatsApp' ? 'noreferrer' : undefined}
+                    aria-label={`${social.label} da Nogueira Cardiologia`}
+                    title={social.label}
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/5 text-white/85 transition-colors ${social.hover}`}
+                  >
+                    <span className="text-[11px] font-semibold">{social.label.slice(0, 2)}</span>
+                  </a>
+                ))}
+              </div>
             </div>
             <div>
               <p className="font-semibold">Contato</p>
