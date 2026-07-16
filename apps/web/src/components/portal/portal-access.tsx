@@ -52,8 +52,9 @@ export function PortalAccess() {
     setPatientLogin({ status: 'submitting', message: 'Entrando no portal...' });
 
     try {
-      await submitJson('/api/auth/login', event.currentTarget, { portal: 'patient' });
-      setPatientLogin({ status: 'success', message: 'Acesso liberado. Em breve esta tela exibirá agenda e conteúdos exclusivos do paciente.' });
+      const body = await submitJson('/api/auth/login', event.currentTarget, { portal: 'patient' });
+      setPatientLogin({ status: 'success', message: 'Acesso liberado. Abrindo o portal do paciente...' });
+      window.location.href = body?.redirectTo ?? '/portal/paciente';
     } catch (error) {
       setPatientLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível entrar.' });
     }
@@ -64,8 +65,9 @@ export function PortalAccess() {
     setAdminLogin({ status: 'submitting', message: 'Validando acesso médico/admin...' });
 
     try {
-      await submitJson('/api/auth/login', event.currentTarget, { portal: 'admin' });
-      setAdminLogin({ status: 'success', message: 'Acesso médico validado. O próximo passo é conectar o editor diário de conteúdos educativos.' });
+      const body = await submitJson('/api/auth/login', event.currentTarget, { portal: 'admin' });
+      setAdminLogin({ status: 'success', message: 'Acesso médico validado. Abrindo dashboard...' });
+      window.location.href = body?.redirectTo ?? '/portal/medico';
     } catch (error) {
       setAdminLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível entrar.' });
     }
@@ -129,7 +131,7 @@ export function PortalAccess() {
         <div className="mt-8 rounded-2xl border border-white/14 bg-white/8 p-5">
           <h3 className="font-semibold">Próxima etapa do painel</h3>
           <p className="mt-2 text-sm leading-7 text-white/78">
-            Depois das variáveis do Supabase configuradas, o painel poderá receber o editor de conteúdos com upload de imagem, rascunho, publicação e histórico.
+            O painel médico já está conectado ao login local da VPS. A próxima etapa é liberar editor de conteúdos, upload de imagem, rascunho, publicação e histórico.
           </p>
         </div>
       </section>

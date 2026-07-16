@@ -1,25 +1,13 @@
 import { NextResponse } from 'next/server';
-import { cleanString, emailRegex, getSupabaseConfig } from '@/lib/supabase-rest';
+import { query } from '@/lib/db';
+import { cleanString, emailRegex } from '@/lib/supabase-rest';
+
+export const runtime = 'nodejs';
 
 type LoginPayload = {
   email?: unknown;
   password?: unknown;
   portal?: unknown;
-};
-
-type SupabaseUser = {
-  email?: string;
-  user_metadata?: {
-    role?: string;
-    full_name?: string;
-  };
-};
-
-type SupabaseLoginResponse = {
-  access_token?: string;
-  user?: SupabaseUser;
-  msg?: string;
-  message?: string;
 };
 
 export async function POST(request: Request) {
@@ -43,31 +31,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Informe sua senha.' }, { status: 400 });
   }
 
-  let supabaseUrl: string;
-  let anonKey: string;
+  const result = await query<{
+    id: string;
+    email: string;
+    full_name: string;
+    role: string;
+  }>(
+    `
+      update app_users
+      set last_login_at = now()
+      where email = $1
+        and is_active = true
+        and password_hash = crypt($2, password_hash)
+      returning id, email, full_name, role
+    `,
+    [email, password],
+  );
 
-  try {
-    ({ supabaseUrl, anonKey } = getSupabaseConfig());
-  } catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : 'Supabase não configurado.' }, { status: 503 });
+  const user = result.rows[0];
+
+  if (!user) {
+    return NextResponse.json({ message: 'E-mail ou senha inválidos.' }, { status: 401 });
   }
 
-  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: {
-      apikey: anonKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-  });
-
-  const body = (await response.json().catch(() => null)) as SupabaseLoginResponse | null;
-
-  if (!response.ok || !body?.access_token) {
-    return NextResponse.json({ message: body?.msg ?? body?.message ?? 'E-mail ou senha inválidos.' }, { status: response.status || 401 });
-  }
-
-  const role = body.user?.user_metadata?.role ?? 'patient';
+  const role = user.role;
   const isAdminPortal = portal === 'admin';
   const canAccessAdmin = ['admin', 'doctor', 'medico', 'médico'].includes(role);
 
@@ -78,11 +65,12 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     portal: isAdminPortal ? 'admin' : 'patient',
+    redirectTo: isAdminPortal ? '/portal/medico' : '/portal/paciente',
     user: {
-      email: body.user?.email,
-      fullName: body.user?.user_metadata?.full_name,
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name,
       role,
     },
-    accessToken: body.access_token,
   });
 }

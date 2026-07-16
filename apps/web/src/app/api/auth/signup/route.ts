@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cleanString, emailRegex, getSupabaseConfig } from '@/lib/supabase-rest';
+import { query } from '@/lib/db';
+import { cleanString, emailRegex } from '@/lib/supabase-rest';
+
+export const runtime = 'nodejs';
 
 type SignupPayload = {
   fullName?: unknown;
@@ -38,42 +41,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'A senha precisa ter pelo menos 8 caracteres.' }, { status: 400 });
   }
 
-  let supabaseUrl: string;
-  let anonKey: string;
+  const existing = await query('select id from app_users where email = $1 limit 1', [email]);
 
-  try {
-    ({ supabaseUrl, anonKey } = getSupabaseConfig());
-  } catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : 'Supabase não configurado.' }, { status: 503 });
+  if (existing.rowCount) {
+    return NextResponse.json({ message: 'Este e-mail já possui cadastro. Use a área de login.' }, { status: 409 });
   }
 
-  const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
-    method: 'POST',
-    headers: {
-      apikey: anonKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email,
-      password,
-      data: {
-        full_name: fullName,
-        phone_whatsapp: phoneWhatsapp,
-        role: 'patient',
-      },
-    }),
-  });
-
-  const body = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    return NextResponse.json({ message: body?.msg ?? body?.message ?? 'Não foi possível criar seu acesso.' }, { status: response.status });
-  }
+  await query(
+    `
+      insert into app_users (email, password_hash, role, full_name, phone_whatsapp)
+      values ($1, crypt($2, gen_salt('bf')), 'patient', $3, $4)
+    `,
+    [email, password, fullName, phoneWhatsapp],
+  );
 
   return NextResponse.json({
     ok: true,
-    message: body?.session
-      ? 'Cadastro criado. Você já pode solicitar sua consulta.'
-      : 'Cadastro criado. Confirme seu e-mail para liberar o acesso.',
+    message: 'Cadastro criado. Você já pode entrar no portal do paciente e solicitar sua consulta.',
   });
 }
