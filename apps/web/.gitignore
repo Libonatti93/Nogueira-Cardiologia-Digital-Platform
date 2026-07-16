@@ -32,6 +32,17 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# local machine artifacts accidentally uploaded with assets
+:USERPROFILE*
+desktop.ini
+public/uploads-imagens-nogueira/AppData/
+public/uploads-imagens-nogueira/3D Objects/
+
+# local VPS inventory reports
+vps-pacotes-instalados.txt
+vps-pastas-maxdepth2.txt
 
 # vercel
 .vercel

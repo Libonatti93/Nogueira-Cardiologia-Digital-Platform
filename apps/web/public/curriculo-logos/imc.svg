@@ -1,0 +1,9 @@
+<svg width="320" height="120" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="120" rx="18" fill="white"/>
+  <circle cx="62" cy="60" r="34" fill="#EAF6FF"/>
+  <path d="M45 62c6-18 18-22 26-4 5 12 13 12 20 0" stroke="#14508B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M42 62h16l5-11 11 25 7-14h20" stroke="#15A7DD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="120" y="59" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="800">IMC</text>
+  <text x="122" y="84" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">Instituto de Molestias</text>
+  <text x="122" y="100" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">Cardiovasculares</text>
+</svg>

@@ -1,109 +1,247 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import { getRecentPosts } from '@/data/blog-posts';
 
 const navigationItems = [
-  ['Início', '#inicio'],
-  ['Conheça a Nogueira Cardiologia', '#sobre-nogueira-cardiologia'],
+  ['Clínica', '#clinica'],
+  ['Paciente', '#portal-paciente'],
   ['Corpo clínico', '#corpo-clinico'],
-  ['Blog', '/blog'],
+  ['Especialidades', '#especialidades'],
+  ['Educativo', '#blog'],
   ['Contato', '#contato'],
 ] as const;
 
-const heroSlides = [
+const curriculumHighlights = [
   {
-    title: 'Nogueira Cardiologia em São José do Rio Preto desde 1998',
-    description:
-      'Há 28 anos, cuidando da saúde cardiovascular com tradição médica, credibilidade e compromisso com cada paciente.',
+    title: 'Formação acadêmica',
+    description: 'Faculdade de Ciências Médicas da Santa Casa de São Paulo.',
+    logo: '/curriculo-logos/santa-casa-sp-transparent.png',
+    logoAlt: 'Logo da Faculdade de Ciências Médicas da Santa Casa de São Paulo',
   },
   {
-    title: 'Estrutura moderna e tecnologia para cardiologia',
-    description:
-      'Ambiente clínico organizado, recursos diagnósticos e processos assistenciais que apoiam condutas com precisão e segurança.',
+    title: 'Professor e palestrante',
+    description: 'SOCESP - Sociedade de Cardiologia do Estado de São Paulo.',
+    logo: '/curriculo-logos/socesp-transparent.png',
+    logoAlt: 'Logo da SOCESP',
   },
   {
-    title: 'Corpo clínico com Dr. Paulo Nogueira e Dra. Cristiani Nogueira',
-    description:
-      'Equipe experiente, atuação ética e acompanhamento próximo para decisões cardiológicas bem fundamentadas.',
+    title: 'Residência Médica',
+    description: 'Instituto de Moléstias Cardiovasculares - IMC (1988-1990).',
+    logo: '/curriculo-logos/imc-transparent.png',
+    logoAlt: 'Selo do Instituto de Moléstias Cardiovasculares',
   },
   {
-    title: 'Especialidades e seguimento cardiovascular contínuo',
-    description:
-      'Prevenção, diagnóstico e acompanhamento para diferentes perfis de risco, com cuidado individualizado em todas as fases.',
+    title: 'Doutorado em Cardiologia',
+    description: 'Faculdade de Medicina da Universidade de São Paulo - FMUSP (2000-2002).',
+    logo: '/curriculo-logos/fmusp-transparent.png',
+    logoAlt: 'Logo da Faculdade de Medicina da Universidade de São Paulo',
   },
-];
+  {
+    title: 'Professor Adjunto Doutor',
+    description: 'Departamento de Cardiologia e Cirurgia Cardiovascular da FAMERP.',
+    logo: '/curriculo-logos/famerp-transparent.png',
+    logoAlt: 'Logo da FAMERP',
+  },
+  {
+    title: 'Médico Cardiologista',
+    description: 'INCOR - Instituto do Coração Rio Preto, Instituto do Cor, Brasil.',
+    logo: '/curriculo-logos/incor-rio-preto-transparent.png',
+    logoAlt: 'Logo do INCOR Rio Preto',
+  },
+] as const;
+
+const patientSteps = [
+  'Clique em Marcar Consulta',
+  'Faça seu cadastro gratuito',
+  'Acesse a agenda e os conteúdos da clínica',
+] as const;
+
+const portalBenefits = [
+  'Dicas diárias e semanais dos Drs. Paulo e Cristiani para prevenção e rotina cardiovascular.',
+  'Contato direto com a agenda do Dr. Paulo e da Dra. Cris para solicitar sua consulta com mais praticidade.',
+  'Acesso ao conteúdo do Prof. Dr. Paulo Roberto Nogueira, com materiais didáticos e orientações em linguagem clara.',
+  'Portal gratuito para acompanhar novidades, receber conteúdos educativos e manter o cuidado do coração mais próximo.',
+] as const;
+
+const academicHighlights = [
+  'Cardiologista e intensivista com forte atuação em São José do Rio Preto.',
+  'Professor Adjunto e Chefe do Departamento de Cardiologia e Cirurgia Cardiovascular da FAMERP.',
+  'Coordenador da unidade coronária no Hospital Beneficência Portuguesa.',
+] as const;
+
+const socespHighlights = [
+  {
+    image: '/uploads-imagens-nogueira/paulo-socesp4.jpeg',
+    title: 'Aula no Congresso SOCESP 2026',
+    description: 'Dr. Paulo Nogueira apresentando conteúdo científico em cardiologia.',
+  },
+  {
+    image: '/uploads-imagens-nogueira/paulo-socesp27.jpeg',
+    title: 'Discussão científica com dados clínicos',
+    description: 'Aula com apresentação de evidências e condução de raciocínio cardiovascular.',
+  },
+  {
+    image: '/uploads-imagens-nogueira/paulo-socesp13.jpeg',
+    title: 'Banca e mesa de discussão',
+    description: 'Participação em painel com especialistas da cardiologia.',
+  },
+  {
+    image: '/uploads-imagens-nogueira/paulo-socesp21.jpeg',
+    title: 'Banca científica coordenada',
+    description: 'Registro da composição da banca médica em sessão da SOCESP.',
+  },
+  {
+    image: '/uploads-imagens-nogueira/paulo-socesp33.jpeg',
+    title: 'Debate entre especialistas',
+    description: 'Troca técnica em mesa redonda sobre temas de cardiologia.',
+  },
+  {
+    image: '/uploads-imagens-nogueira/paulo-socesp36.jpeg',
+    title: 'Presença na sociedade médica',
+    description: 'Registro institucional com colegas cardiologistas no congresso.',
+  },
+] as const;
 
 const specialties = [
   {
-    title: 'Cardiologia clínica',
-    description:
-      'Consulta cardiológica completa para avaliação de sintomas, histórico, fatores de risco e plano terapêutico personalizado.',
+    title: 'Consulta com cardiologista em São José do Rio Preto',
+    description: 'Avaliação clínica para dor no peito, falta de ar, palpitações, cansaço, histórico familiar e fatores de risco cardiovascular.',
+    icon: 'stethoscope',
   },
   {
-    title: 'Prevenção cardiovascular',
-    description:
-      'Estratégias para reduzir risco de infarto, AVC e progressão de doenças cardiovasculares com orientação médica contínua.',
+    title: 'Check-up cardiológico preventivo',
+    description: 'Rotina de prevenção para quem tem hipertensão, colesterol alto, diabetes, tabagismo ou deseja iniciar atividade física com segurança.',
+    icon: 'clipboard',
   },
   {
-    title: 'Estratificação de risco',
-    description:
-      'Avaliação criteriosa do risco cardiovascular para apoiar decisões preventivas e intervenções mais assertivas.',
+    title: 'Prevenção de infarto e AVC',
+    description: 'Estratégias médicas para reduzir risco cardiovascular, acompanhar exames e orientar hábitos que protegem o coração.',
+    icon: 'shieldHeart',
   },
   {
-    title: 'Investigação diagnóstica',
-    description:
-      'Condução clínica para diagnóstico de coronariopatias, insuficiência cardíaca e outras condições com rigor técnico.',
+    title: 'Acompanhamento de hipertensão arterial',
+    description: 'Seguimento contínuo para controle da pressão alta, ajuste de tratamento e prevenção de complicações cardiovasculares.',
+    icon: 'activity',
   },
   {
-    title: 'Acompanhamento cardiológico',
-    description:
-      'Seguimento longitudinal de pacientes com metas claras de controle, segurança e qualidade de vida.',
+    title: 'Investigação de sintomas cardíacos',
+    description: 'Condução clínica para entender palpitações, tontura, dor torácica e falta de ar, indicando exames quando necessário.',
+    icon: 'searchPulse',
   },
   {
-    title: 'Cuidado em condições complexas',
-    description:
-      'Assistência a pacientes com doença coronariana, insuficiência cardíaca e cenários de maior demanda clínica.',
+    title: 'Cardiologia humanizada e acompanhamento contínuo',
+    description: 'Atendimento com escuta, clareza e plano individualizado para pacientes que buscam segurança no cuidado do coração.',
+    icon: 'handsHeart',
   },
-];
+] as const;
 
 const doctors = [
   {
     name: 'Dr. Paulo Roberto Nogueira',
     crm: 'CRM 53.790/SP',
-    bio: 'Cardiologista com sólida atuação assistencial, acadêmica e institucional, referência em conduta clínica precisa e acompanhamento cardiovascular responsável.',
-    image: '/brand/dr-paulo-roberto-nogueira.jpeg',
+    image: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
+    bio: 'Cardiologista intensivista, referência em cardiologia clínica, com foco de atuação em coronariopatias e cardiomiopatias.',
   },
   {
     name: 'Dra. Cristiani Monteiro de Oliveira Nogueira',
     crm: 'CRM 77.127/SP',
-    bio: 'Médica cardiologista com enfoque humanizado, escuta qualificada e atenção ao cuidado contínuo, integrando excelência técnica à prática clínica diária.',
-    image: '/brand/dra-cristiani-monteiro-de-oliveira-nogueira.jpeg',
+    image: '/uploads-imagens-nogueira/nogueira-cardiologia-cris1.png',
+    bio: 'Médica cardiologista clínica, com atendimento humanizado de alto padrão voltado para o cuidado da saúde global.',
   },
-];
-
-const blogHighlights = [
-  'Como prevenir eventos cardiovasculares com acompanhamento especializado.',
-  'Sinais de alerta cardíaco e quando buscar avaliação com cardiologista.',
-  'Hábitos de vida e controle de fatores de risco para um coração mais saudável.',
-];
+] as const;
 
 const whatsappLink = 'https://wa.me/5517997440223';
+const portalLink = '/portal';
+const assetPath = '/uploads-imagens-nogueira';
+
+type SpecialtyIconName = (typeof specialties)[number]['icon'];
+
+function SpecialtyIcon({ name }: { name: SpecialtyIconName }) {
+  const iconProps = {
+    className: 'h-6 w-6',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.9,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  };
+
+  switch (name) {
+    case 'stethoscope':
+      return (
+        <svg {...iconProps}>
+          <path d="M6 4v5a4 4 0 0 0 8 0V4" />
+          <path d="M4 4h4" />
+          <path d="M12 4h4" />
+          <path d="M10 13v2.5A4.5 4.5 0 0 0 14.5 20h1A4.5 4.5 0 0 0 20 15.5V14" />
+          <circle cx="20" cy="12" r="2" />
+        </svg>
+      );
+    case 'clipboard':
+      return (
+        <svg {...iconProps}>
+          <path d="M9 4h6l1 2h2v14H6V6h2l1-2Z" />
+          <path d="M9 10h6" />
+          <path d="M9 14h3" />
+          <path d="m14 15 1.4 1.4L19 12.8" />
+        </svg>
+      );
+    case 'shieldHeart':
+      return (
+        <svg {...iconProps}>
+          <path d="M12 3 19 6v5.2c0 4.2-2.7 7.8-7 9.8-4.3-2-7-5.6-7-9.8V6l7-3Z" />
+          <path d="M12 15s-3.5-2-3.5-4.2A2 2 0 0 1 12 9.5a2 2 0 0 1 3.5 1.3C15.5 13 12 15 12 15Z" />
+        </svg>
+      );
+    case 'activity':
+      return (
+        <svg {...iconProps}>
+          <path d="M3 12h4l2-6 4 12 2-6h6" />
+          <path d="M7 19a9 9 0 1 1 10 0" />
+        </svg>
+      );
+    case 'searchPulse':
+      return (
+        <svg {...iconProps}>
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 4 4" />
+          <path d="M6.5 11h2l1-2.5 2 5 1-2.5h2" />
+        </svg>
+      );
+    case 'handsHeart':
+      return (
+        <svg {...iconProps}>
+          <path d="M7 12.5 4.5 15a2 2 0 0 0 0 2.8L8 21h4.5l3-3" />
+          <path d="m17 12.5 2.5 2.5a2 2 0 0 1 0 2.8L16 21" />
+          <path d="M12 13s-3.2-1.9-3.2-4A2 2 0 0 1 12 7.4 2 2 0 0 1 15.2 9c0 2.1-3.2 4-3.2 4Z" />
+          <path d="M5 14V9" />
+          <path d="M19 14V9" />
+        </svg>
+      );
+  }
+}
 
 export default function Home() {
+  const educationalPosts = getRecentPosts().slice(0, 6);
+
   return (
-    <div className="min-h-screen scroll-smooth bg-[#F8F8F9] text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
+    <div className="min-h-screen bg-white text-slate-950">
+      <header className="sticky top-0 z-50 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <a href="#inicio" className="flex items-center gap-3">
+          <a href="#inicio" className="flex min-w-0 items-center gap-3" aria-label="Ir para o início">
             <Image
-              src="/brand/nogueira-cardiologia-logo.svg"
-              alt="Logo oficial Nogueira Cardiologia"
-              width={320}
-              height={84}
-              className="h-10 w-auto object-contain sm:h-12"
+              src={`${assetPath}/nogueira-cardio4-transparent.png`}
+              alt="Nogueira Cardiologia"
+              width={360}
+              height={90}
+              className="h-9 w-auto object-contain sm:h-11"
               priority
             />
           </a>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-700 xl:flex">
+          <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 xl:flex">
             {navigationItems.map(([label, href]) => (
               <a key={label} href={href} className="transition-colors hover:text-[#14508B]">
                 {label}
@@ -111,135 +249,349 @@ export default function Home() {
             ))}
           </nav>
 
-          <a
-            href="#contato"
-            className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-4 py-2 text-[11px] font-bold tracking-[0.04em] text-white shadow-[0_14px_30px_-18px_rgba(20,80,139,0.85)] transition-all hover:bg-[#11457B] sm:px-6 sm:py-3 sm:text-sm"
+          <Link
+            href={portalLink}
+            className="inline-flex rounded-full bg-[#14508B] px-5 py-2.5 text-xs font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-all hover:-translate-y-0.5 hover:bg-[#0F3760] sm:px-6 sm:text-sm"
           >
-            Agende sua consulta AGORA!
-          </a>
+            Marcar Consulta
+          </Link>
         </div>
       </header>
 
       <main>
-        <section id="inicio" className="mx-auto w-full max-w-7xl px-4 pb-14 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:px-8 lg:pb-20 lg:pt-16">
-          <div className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-center xl:gap-12">
-            <div>
-              <span className="inline-flex rounded-full border border-[#14508B]/20 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#14508B] sm:text-xs">
-                Referência em cardiologia em São José do Rio Preto
-              </span>
-              <h1 className="mt-5 text-3xl font-semibold leading-tight text-[#103E6A] sm:text-4xl lg:text-5xl xl:text-6xl">
-                Referência em cardiologia em São José do Rio Preto desde 1998, com excelência médica para cuidar do seu coração em cada fase da vida.
+        <section id="inicio" className="relative min-h-[760px] overflow-hidden bg-[#0A2C4D]">
+          <Image
+            src={`${assetPath}/nogueira-cardiologia-pauloecris3.png`}
+            alt="Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira na Nogueira Cardiologia"
+            fill
+            sizes="100vw"
+            className="object-cover object-[64%_center]"
+            priority
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,44,77,0.98)_0%,rgba(10,44,77,0.88)_34%,rgba(20,80,139,0.32)_68%,rgba(10,44,77,0.06)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(180deg,rgba(10,44,77,0)_0%,rgba(10,44,77,0.86)_100%)]" />
+
+          <div className="relative mx-auto flex min-h-[760px] w-full max-w-7xl flex-col justify-center px-4 pb-12 pt-12 sm:px-6 lg:px-8">
+            <div className="max-w-3xl">
+              <p className="w-fit rounded-full border border-white/25 bg-white/12 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
+                Experiência em cardiologia desde 1998
+              </p>
+              <h1 className="mt-5 text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
+                Nogueira Cardiologia: tradição médica, estrutura moderna e acesso digital ao cuidado do coração.
               </h1>
-              <p className="mt-5 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base lg:text-lg">
-                Na Nogueira Cardiologia, tradição, precisão diagnóstica e acompanhamento especializado caminham com escuta humana e estrutura moderna.
-                Aqui, cada consulta é conduzida com seriedade, confiança e foco real na sua segurança cardiovascular.
+              <p className="mt-5 max-w-2xl text-base leading-8 text-white/85 sm:text-lg">
+                Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira unem experiência clínica, escuta próxima e uma jornada digital preparada para agendamento e acompanhamento humanizado.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href="#contato"
-                  className="inline-flex items-center justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_-18px_rgba(20,80,139,0.8)] transition-colors hover:bg-[#11457B]"
+                <Link
+                  href={portalLink}
+                  className="inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] shadow-[0_18px_36px_-20px_rgba(255,255,255,0.65)] transition-colors hover:bg-[#EAF6FF]"
                 >
-                  Agende sua consulta
-                </a>
+                  Marcar Consulta
+                </Link>
                 <a
-                  href="#sobre-nogueira-cardiologia"
-                  className="inline-flex items-center justify-center rounded-full border border-[#14508B]/30 bg-white px-6 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:border-[#14508B]/60"
+                  href="#blog"
+                  className="inline-flex justify-center rounded-full border border-white/35 bg-white/8 px-6 py-3 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/14"
                 >
-                  Conheça a Nogueira Cardiologia
+                  Acessar Conteúdo Educativo
                 </a>
               </div>
+
             </div>
 
-            <aside className="overflow-hidden rounded-3xl border border-[#14508B]/15 bg-white shadow-[0_28px_65px_-35px_rgba(17,69,123,0.55)]">
-              <div className="bg-gradient-to-br from-[#11457B] via-[#14508B] to-[#15A7DD] p-6 text-white sm:p-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.17em] text-white/90 sm:text-sm">Nogueira Cardiologia • Desde 1998</p>
-                <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">Desde 1998, tradição local com cardiologia de alta credibilidade</h2>
-                <p className="mt-4 text-sm leading-relaxed text-white/90 sm:text-base">
-                  Uma clínica construída sobre credibilidade médica, experiência clínica e compromisso contínuo com prevenção, diagnóstico e seguimento cardiovascular.
-                </p>
-              </div>
-              <div className="grid gap-3 p-5 sm:p-6">
-                {heroSlides.map((slide) => (
-                  <article key={slide.title} className="rounded-2xl border border-[#14508B]/10 bg-[#F4F8FD] p-4">
-                    <h3 className="text-sm font-semibold text-[#11457B] sm:text-base">{slide.title}</h3>
-                    <p className="mt-1.5 text-xs leading-relaxed text-slate-600 sm:text-sm">{slide.description}</p>
-                  </article>
-                ))}
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section id="sobre-nogueira-cardiologia" className="bg-white py-14 sm:py-16">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl border border-[#14508B]/12 bg-[#F8FBFF] p-6 sm:p-8 lg:p-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#15A7DD] sm:text-sm">Sobre a Nogueira Cardiologia</p>
-              <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl lg:text-4xl">
-                Conheça a Nogueira Cardiologia: tradição médica, confiança e visão moderna de cuidado cardiovascular
-              </h2>
-              <p className="mt-4 max-w-4xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                Atuamos em São José do Rio Preto desde 1998, oferecendo cardiologia com alto padrão técnico e relação próxima com cada paciente.
-                Nossa equipe reúne experiência, tecnologia e responsabilidade clínica para orientar prevenção, investigar com precisão e acompanhar
-                cada caso com consistência e atenção ao longo do tempo.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section id="especialidades" className="py-14 sm:py-16">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#14508B] sm:text-sm">Especialidades</p>
-                <h2 className="mt-2 text-2xl font-semibold text-[#103E6A] sm:text-3xl lg:text-4xl">Cuidado cardiovascular completo e especializado</h2>
-              </div>
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-600 md:text-right sm:text-base">
-                Atuação clínica orientada por prevenção, precisão diagnóstica e seguimento contínuo para diferentes necessidades cardiovasculares.
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3 sm:gap-5">
-              {specialties.map((item) => (
-                <article key={item.title} className="rounded-2xl border border-[#14508B]/10 bg-white p-5 shadow-[0_20px_45px_-36px_rgba(20,80,139,0.62)] sm:p-6">
-                  <h3 className="text-lg font-semibold text-[#14508B]">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+            <div className="mt-12 grid max-w-6xl gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+              {curriculumHighlights.map((item) => (
+                <article key={item.title} className="min-h-[172px] border-l-2 border-[#9FE6FF] bg-white/14 p-4 text-center text-white shadow-[0_18px_45px_-34px_rgba(0,0,0,0.55)] backdrop-blur">
+                  <div className="flex h-12 w-full items-center justify-center">
+                    <span className="inline-flex h-12 w-28 items-center justify-center">
+                      <Image
+                        src={item.logo}
+                        alt={item.logoAlt}
+                        width={128}
+                        height={64}
+                        className="max-h-10 w-auto object-contain"
+                      />
+                    </span>
+                  </div>
+                  <h2 className="mt-4 text-sm font-bold text-white">{item.title}</h2>
+                  <p className="mt-2 text-xs leading-5 text-white/80">{item.description}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
+        <section id="portal-paciente" className="bg-white py-14 sm:py-16">
+          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.88fr_1.12fr] lg:px-8">
+            <div>
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#14508B]/10 bg-[#F4F9FF] p-3">
+                <Image
+                  src={`${assetPath}/nogueira-cardio2-transparent.png`}
+                  alt="Símbolo da Nogueira Cardiologia"
+                  width={96}
+                  height={96}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Portal gratuito do paciente</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
+                Marcar sua consulta é simples: clique, cadastre-se gratuitamente e acesse a Nogueira por dentro.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                O cadastro gratuito libera uma experiência mais próxima da clínica, com acesso à agenda dos médicos, dicas de cuidado cardiovascular e conteúdos educativos preparados para pacientes.
+              </p>
+              <div className="mt-7 grid gap-3">
+                {patientSteps.map((step, index) => (
+                  <div key={step} className="flex items-center gap-4 border-l-2 border-[#14508B] bg-[#F4F9FF] px-4 py-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#14508B] text-sm font-bold text-white">
+                      {index + 1}
+                    </span>
+                    <span className="text-sm font-semibold text-[#0F3760]">{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href={portalLink}
+                  className="inline-flex justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_36px_-20px_rgba(20,80,139,0.85)] transition-colors hover:bg-[#0F3760]"
+                >
+                  Marcar Consulta
+                </Link>
+                <a
+                  href="#blog"
+                  className="inline-flex justify-center rounded-full border border-[#14508B]/25 bg-white px-6 py-3 text-sm font-bold text-[#14508B] transition-colors hover:border-[#14508B]/55"
+                >
+                  Ver dicas gratuitas
+                </a>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <article className="rounded-2xl border border-[#14508B]/12 bg-[#F8FBFF] p-5 shadow-[0_22px_56px_-42px_rgba(20,80,139,0.7)]">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Aplicativo Nogueira</p>
+                    <h3 className="mt-2 text-2xl font-semibold text-[#0F3760]">Leve o portal no celular</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">Baixe a versão mobile pela Apple Store ou Google Play e mantenha sua rotina de cuidado sempre por perto.</p>
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-2 sm:w-44">
+                    <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#0F172A] px-4 py-3 text-left text-white transition-colors hover:bg-[#0F3760]">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-7 w-7 shrink-0 fill-current">
+                        <path d="M17.2 12.5c0-2.2 1.8-3.2 1.9-3.3-1-1.5-2.6-1.7-3.2-1.8-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.8-.4 6.9 1.1 9.1.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.2-2.5 1.3-2.6 0 0-2.5-.9-2.5-3.6ZM15 6c.6-.8 1.1-1.9.9-3-.9 0-2 .6-2.6 1.3-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.6-1.2Z" />
+                      </svg>
+                      <span className="grid text-[11px] leading-tight">
+                        <span>Baixar na</span>
+                        <strong className="text-sm">Apple Store</strong>
+                      </span>
+                    </a>
+                    <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#0F172A] px-4 py-3 text-left text-white transition-colors hover:bg-[#0F3760]">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-7 w-7 shrink-0">
+                        <path fill="#19C37D" d="M4.5 3.2c-.3.3-.5.8-.5 1.4v14.8c0 .6.2 1.1.5 1.4l8.4-8.8-8.4-8.8Z" />
+                        <path fill="#FFCC33" d="m13.8 11.1 2.7-2.8L6.4 2.6c-.4-.2-.8-.1-1.2.1l8.6 8.4Z" />
+                        <path fill="#FF5A5F" d="m13.8 12.9-8.6 8.4c.4.2.8.3 1.2.1l10.1-5.7-2.7-2.8Z" />
+                        <path fill="#31A8FF" d="m20.1 10.6-3.6-2.1-2.9 3.5 2.9 3.5 3.6-2.1c1.2-.7 1.2-2.1 0-2.8Z" />
+                      </svg>
+                      <span className="grid text-[11px] leading-tight">
+                        <span>Disponível no</span>
+                        <strong className="text-sm">Google Play</strong>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </article>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {portalBenefits.map((benefit) => (
+                  <article key={benefit} className="rounded-2xl border border-[#14508B]/10 bg-white p-5 shadow-[0_22px_50px_-44px_rgba(20,80,139,0.72)]">
+                    <div className="mb-4 h-1.5 w-12 rounded-full bg-[#15A7DD]" />
+                    <p className="text-sm leading-6 text-slate-700">{benefit}</p>
+                  </article>
+                ))}
+              </div>
+
+              <article className="rounded-2xl bg-[#0F3760] p-5 text-white">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Conteúdo do Prof. Dr. Paulo</p>
+                <h3 className="mt-2 text-2xl font-semibold">Professor e educador também dentro do portal</h3>
+                <div className="mt-4 grid gap-3">
+                  {academicHighlights.map((item) => (
+                    <p key={item} className="border-l-2 border-[#9FE6FF] pl-3 text-sm leading-6 text-white/85">{item}</p>
+                  ))}
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="presenca-socesp" className="overflow-hidden bg-[#0F3760] py-14 text-white sm:py-16">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">SOCESP 2026 • São Paulo</p>
+                <h2 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">
+                  Presença ativa do Dr. Paulo Nogueira na sociedade médica de cardiologia.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-white/80">
+                  Além da prática clínica, o Prof. Dr. Paulo participa de aulas, bancas e discussões científicas em congressos de cardiologia, mantendo atualização contínua e contribuindo para a formação e o debate entre médicos cardiologistas.
+                </p>
+                <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                  {[
+                    ['Aula científica', 'Apresentação de conteúdo técnico para cardiologistas.'],
+                    ['Banca médica', 'Condução e discussão de casos com especialistas.'],
+                    ['Atualização contínua', 'Presença em ambiente de evidência e educação médica.'],
+                  ].map(([title, description]) => (
+                    <article key={title} className="border-l-2 border-[#9FE6FF] bg-white/8 p-4">
+                      <h3 className="text-sm font-bold">{title}</h3>
+                      <p className="mt-2 text-xs leading-5 text-white/75">{description}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/14 bg-white/8 p-4 shadow-[0_30px_70px_-46px_rgba(0,0,0,0.65)]">
+                <div className="aspect-video overflow-hidden rounded-xl bg-black">
+                  <video
+                    className="h-full w-full object-cover"
+                    controls
+                    preload="metadata"
+                    poster="/uploads-imagens-nogueira/paulo-socesp27.jpeg"
+                  >
+                    <source src="/uploads-imagens-nogueira/paulo-socesp42.mp4" type="video/mp4" />
+                  </video>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/80">
+                  Registro em vídeo da participação do Dr. Paulo em ambiente científico, reforçando sua atuação como médico, professor e educador em cardiologia.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10">
+              <div className="socesp-carousel overflow-hidden">
+                <div className="socesp-carousel-track flex gap-4">
+                  {[...socespHighlights, ...socespHighlights].map((item, index) => (
+                    <article key={`${item.image}-${index}`} className="relative h-[430px] w-[300px] shrink-0 overflow-hidden rounded-2xl bg-[#08243F] shadow-[0_24px_54px_-40px_rgba(0,0,0,0.82)] sm:w-[340px]">
+                      <Image
+                        src={item.image}
+                        alt={`${item.title} - ${item.description}`}
+                        fill
+                        sizes="(max-width: 640px) 300px, 340px"
+                        className="object-cover object-center"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(8,36,63,0)_0%,rgba(8,36,63,0.92)_100%)] p-5">
+                        <h3 className="text-lg font-semibold">{item.title}</h3>
+                        <p className="mt-2 text-xs leading-5 text-white/80">{item.description}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="clinica" className="bg-white py-14 sm:py-16">
+          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
+            <div className="relative min-h-[560px] overflow-hidden rounded-[2rem] bg-[#F4F9FF] shadow-[0_26px_70px_-48px_rgba(20,80,139,0.85)]">
+              <Image
+                src={`${assetPath}/nogueira-cardiologia-pauloecris1.png`}
+                alt="Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira na clínica Nogueira Cardiologia"
+                fill
+                sizes="(max-width: 1023px) 100vw, 50vw"
+                className="object-cover object-[50%_18%]"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(15,55,96,0)_0%,rgba(15,55,96,0.84)_100%)] p-6 text-white">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/80">Corpo clínico aprovado</p>
+                <h3 className="mt-2 text-2xl font-semibold">Dr. Paulo Nogueira e Dra. Cristiani Nogueira</h3>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Nogueira Cardiologia</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
+                Cardiologia em São José do Rio Preto com experiência, prevenção e acompanhamento humanizado.
+              </h2>
+              <p className="mt-4 text-base leading-8 text-slate-600">
+                A Nogueira Cardiologia reúne o Prof. Dr. Paulo Roberto Nogueira e a Dra. Cristiani Nogueira em uma rotina de cuidado voltada à saúde do coração, check-up cardiológico, prevenção cardiovascular, investigação de sintomas e seguimento clínico contínuo.
+              </p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <div className="border-l-2 border-[#14508B] bg-[#F4F9FF] p-4">
+                  <h3 className="font-semibold text-[#0F3760]">Professor, cardiologista e educador</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Conteúdo médico, aulas e experiência clínica do Prof. Dr. Paulo aproximam o paciente de informação cardiovascular confiável.</p>
+                </div>
+                <div className="border-l-2 border-[#15A7DD] bg-[#F4F9FF] p-4">
+                  <h3 className="font-semibold text-[#0F3760]">Cuidado próximo com a Dra. Cristiani</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Escuta qualificada, orientação clara e acompanhamento para hipertensão, sintomas cardíacos e prevenção de risco cardiovascular.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="especialidades" className="bg-[#F4F9FF] py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#14508B]">Especialidades</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
+                Especialidades em cardiologia para prevenção, diagnóstico e acompanhamento do coração.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                Da consulta cardiológica ao check-up preventivo, a Nogueira Cardiologia orienta pacientes de São José do Rio Preto com acompanhamento humanizado e foco em segurança cardiovascular.
+              </p>
+            </div>
+            <div className="specialties-carousel mt-8 overflow-hidden" aria-label="Especialidades da Nogueira Cardiologia">
+              <div className="specialties-carousel-track">
+                {[...specialties, ...specialties].map((specialty, index) => (
+                  <article
+                    key={`${specialty.title}-${index}`}
+                    className="min-h-[252px] w-[286px] shrink-0 rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)] sm:w-[350px]"
+                  >
+                    <div className="mb-5 flex items-center gap-3">
+                      <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EAF6FF] text-[#14508B] ring-1 ring-[#14508B]/10">
+                        <SpecialtyIcon name={specialty.icon} />
+                      </span>
+                      <span className="h-1.5 w-12 rounded-full bg-[#15A7DD]" />
+                    </div>
+                    <h3 className="text-lg font-semibold leading-snug text-[#14508B]">{specialty.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">{specialty.description}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href={portalLink}
+                  className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760]"
+                >
+                  Marcar Consulta
+                </Link>
+              <span className="text-sm leading-6 text-slate-600">
+                Atendimento em cardiologia clínica, prevenção cardiovascular e acompanhamento cardiológico contínuo.
+              </span>
+            </div>
+          </div>
+        </section>
+
         <section id="corpo-clinico" className="bg-white py-14 sm:py-16">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-4xl">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#14508B] sm:text-sm">Corpo clínico</p>
-                <h2 className="mt-2 text-2xl font-semibold text-[#103E6A] sm:text-3xl lg:text-4xl">Equipe médica da Nogueira Cardiologia</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Corpo clínico</p>
+                <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">Corpo clínico para consulta cardiológica, prevenção e seguimento do coração.</h2>
               </div>
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-600 md:text-right sm:text-base">
-                Autoridade médica construída com experiência, conduta ética e acompanhamento próximo para decisões cardiovasculares seguras.
-              </p>
             </div>
 
             <div className="mt-8 grid gap-5 lg:grid-cols-2">
               {doctors.map((doctor) => (
-                <article key={doctor.name} className="overflow-hidden rounded-3xl border border-[#14508B]/15 bg-white shadow-[0_22px_48px_-34px_rgba(20,80,139,0.52)]">
-                  <div className="grid gap-0 sm:grid-cols-[220px_1fr]">
-                    <div className="relative aspect-[4/5] overflow-hidden border-b border-[#14508B]/10 sm:aspect-[4/5] sm:border-b-0 sm:border-r">
-                      <Image
-                        src={doctor.image}
-                        alt={`Foto de ${doctor.name}`}
-                        fill
-                        sizes="(max-width: 639px) 100vw, 220px"
-                        className="object-cover object-center"
-                      />
+                <article key={doctor.name} className="overflow-hidden rounded-2xl border border-[#14508B]/12 bg-white shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
+                  <div className="grid sm:grid-cols-[260px_1fr]">
+                    <div className="relative min-h-[360px] bg-[#F4F9FF] sm:min-h-full">
+                      <Image src={doctor.image} alt={`Foto oficial de ${doctor.name}`} fill sizes="(max-width: 639px) 100vw, 260px" className="object-cover object-[50%_16%]" />
                     </div>
                     <div className="p-6">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15A7DD]">Cardiologia</p>
-                      <h3 className="mt-2 text-xl font-semibold text-[#103E6A]">{doctor.name}</h3>
-                      <p className="mt-1 text-sm font-medium text-[#14508B]">{doctor.crm}</p>
-                      <p className="mt-4 text-sm leading-relaxed text-slate-600">{doctor.bio}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Cardiologia</p>
+                      <h3 className="mt-2 text-2xl font-semibold text-[#0F3760]">{doctor.name}</h3>
+                      <p className="mt-1 text-sm font-bold text-[#14508B]">{doctor.crm}</p>
+                      <p className="mt-4 text-sm leading-7 text-slate-600">{doctor.bio}</p>
                     </div>
                   </div>
                 </article>
@@ -248,181 +600,120 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="blog" className="py-14 sm:py-16">
+        <section id="blog" className="bg-[#F4F9FF] py-14 sm:py-16">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl border border-[#14508B]/12 bg-white p-6 shadow-[0_26px_60px_-40px_rgba(20,80,139,0.55)] sm:p-8 lg:p-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#15A7DD] sm:text-sm">Blog Nogueira Cardiologia</p>
-              <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">Conteúdo médico para orientar decisões e proteger sua saúde cardiovascular</h2>
-              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                Acompanhe orientações do nosso corpo clínico sobre prevenção cardiovascular, sinais de alerta e cuidados contínuos para manter a saúde do coração em dia.
-              </p>
-              <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                {blogHighlights.map((item) => (
-                  <article key={item} className="rounded-2xl border border-[#14508B]/10 bg-[#F8FBFF] p-4 text-sm leading-relaxed text-slate-700">
-                    {item}
-                  </article>
-                ))}
+            <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#14508B]">Educativo</p>
+                <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
+                  Conteúdo educativo em cardiologia para orientar pacientes, famílias e a comunidade.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-600">
+                  Este espaço reúne aulas, materiais e orientações sobre prevenção cardiovascular, hipertensão, sintomas cardíacos, check-up cardiológico, coronariopatias e cardiomiopatias. A proposta é transformar conhecimento médico em linguagem clara para ajudar a comunidade a tomar decisões melhores sobre a saúde do coração.
+                </p>
+                <div className="mt-6 rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_56px_-44px_rgba(20,80,139,0.72)]">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Professor e educador</p>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    O Prof. Dr. Paulo Roberto Nogueira atua como cardiologista intensivista e professor, com foco em cardiologia clínica, coronariopatias e cardiomiopatias. O Educativo da Nogueira nasce para publicar conteúdos frequentes, úteis e responsáveis.
+                  </p>
+                </div>
+                <Link href="/blog" className="mt-7 inline-flex rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760]">
+                  Acessar todos os conteúdos educativos
+                </Link>
               </div>
-              <a
-                href="/blog"
-                className="mt-7 inline-flex items-center justify-center rounded-full border border-[#14508B]/30 bg-white px-6 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:border-[#14508B]/60"
-              >
-                Acessar o Blog da Nogueira Cardiologia
-              </a>
+
+              <div className="grid gap-4">
+                <div className="relative min-h-[300px] overflow-hidden rounded-2xl bg-[#0F3760] shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
+                  <Image
+                    src={`${assetPath}/paulo-socesp4.jpeg`}
+                    alt="Prof. Dr. Paulo Roberto Nogueira em aula de cardiologia"
+                    fill
+                    sizes="(max-width: 1023px) 100vw, 55vw"
+                    className="object-cover object-[50%_18%]"
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,55,96,0)_0%,rgba(15,55,96,0.84)_100%)]" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/80">Aulas, prevenção e cardiologia clínica</p>
+                    <h3 className="mt-2 text-xl font-semibold">Educação médica para aproximar ciência, prevenção e cuidado humanizado.</h3>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {educationalPosts.map((post) => (
+                    <article key={post.slug} className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)]">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">{post.category}</p>
+                      <h3 className="mt-2 text-lg font-semibold leading-snug text-[#0F3760]">
+                        <Link href={`/blog/${post.slug}`} className="hover:text-[#14508B]">
+                          {post.title}
+                        </Link>
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{post.excerpt}</p>
+                      <Link href={`/blog/${post.slug}`} className="mt-4 inline-flex text-sm font-bold text-[#14508B] hover:text-[#0F3760]">
+                        Ler conteúdo educativo
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="pb-14 sm:pb-16">
+        <section className="bg-white py-14 sm:py-16">
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-            <article className="rounded-3xl bg-gradient-to-br from-[#103E6A] via-[#14508B] to-[#15A7DD] p-7 text-white sm:p-9 lg:p-10">
-              <h2 className="text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">Seu coração merece acompanhamento especializado com confiança e excelência clínica</h2>
-              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-white/90 sm:text-base">
-                Agende sua consulta na Nogueira Cardiologia e tenha ao seu lado um corpo clínico experiente, estrutura moderna e cuidado humano para
-                prevenção, diagnóstico e seguimento cardiovascular com segurança.
+            <div className="rounded-[2rem] bg-[#14508B] p-7 text-white sm:p-10">
+              <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">Pronto para cuidar do coração com uma jornada mais simples?</h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/90 sm:text-base">
+                Acesse o portal do paciente para solicitar sua consulta ou fale diretamente com a clínica pelo WhatsApp.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href="#contato"
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#14508B] transition-colors hover:bg-[#F8F8F9]"
-                >
+                <Link href={portalLink} className="inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] transition-colors hover:bg-[#EAF6FF]">
                   Marcar consulta
-                </a>
-                <a
-                  href={whatsappLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-white/35 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                >
-                  Falar com a clínica no WhatsApp
+                </Link>
+                <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex justify-center rounded-full border border-white/35 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10">
+                  Falar no WhatsApp
                 </a>
               </div>
-            </article>
+            </div>
           </div>
         </section>
       </main>
 
-      <footer id="contato" className="bg-[#0F3760] pb-10 pt-12 text-white">
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-white/15 bg-white/5 p-6 sm:p-8 lg:p-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/85 sm:text-sm">Newsletter Nogueira Cardiologia + NogIA</p>
-            <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">Receba orientações semanais para cuidar melhor do seu coração</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/85 sm:text-base">
-              Cadastre-se para receber conteúdos úteis sobre coração, sono, alimentação, hidratação, rotina, prevenção cardiovascular e hábitos saudáveis.
-              A NogIA, assistente da Nogueira Cardiologia, ajuda você com lembretes e dicas semanais com linguagem clara e foco no seu bem-estar.
+      <footer id="contato" className="bg-[#0A2C4D] pb-10 pt-12 text-white">
+          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.2fr_0.9fr_0.9fr] lg:px-8">
+          <div>
+            <Image
+              src={`${assetPath}/nogueira-cardio2-transparent.png`}
+              alt="Símbolo da Nogueira Cardiologia"
+              width={72}
+              height={72}
+              className="h-[58px] w-[58px] object-contain"
+            />
+            <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
+              Referência em cardiologia em São José do Rio Preto desde 1998, agora com uma frente digital preparada para agendamento, agenda médica e conteúdo educativo.
             </p>
-            <form className="mt-6 grid gap-3 sm:grid-cols-2" action="#" method="post">
-              <label htmlFor="newsletter-name" className="sr-only">
-                Nome completo
-              </label>
-              <input
-                id="newsletter-name"
-                name="name"
-                type="text"
-                placeholder="Nome completo"
-                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
-                required
-              />
-              <label htmlFor="newsletter-cpf" className="sr-only">
-                CPF
-              </label>
-              <input
-                id="newsletter-cpf"
-                name="cpf"
-                type="text"
-                placeholder="CPF"
-                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
-                required
-              />
-              <label htmlFor="newsletter-email" className="sr-only">
-                E-mail
-              </label>
-              <input
-                id="newsletter-email"
-                name="email"
-                type="email"
-                placeholder="E-mail"
-                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
-                required
-              />
-              <label htmlFor="newsletter-phone" className="sr-only">
-                Telefone
-              </label>
-              <input
-                id="newsletter-phone"
-                name="phone"
-                type="tel"
-                placeholder="Telefone"
-                className="w-full rounded-full border border-white/25 bg-white px-5 py-3 text-sm text-slate-900 outline-none ring-[#15A7DD] placeholder:text-slate-500 focus:ring-2"
-                required
-              />
-              <label className="sm:col-span-2 mt-1 inline-flex items-start gap-2 text-xs text-white/85 sm:text-sm">
-                <input type="checkbox" name="consent" required className="mt-0.5 h-4 w-4 rounded border-white/40 text-[#14508B] accent-[#14508B]" />
-                <span>Autorizo o uso dos meus dados para receber orientações semanais da Nogueira Cardiologia, conforme a política de privacidade.</span>
-              </label>
-              <button
-                type="submit"
-                className="sm:col-span-2 inline-flex items-center justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#11457B]"
-              >
-                Quero receber dicas semanais
-              </button>
-            </form>
           </div>
-
-          <div className="mt-8 grid gap-7 text-sm lg:grid-cols-3">
-            <div>
-              <p className="text-base font-semibold">Nogueira Cardiologia</p>
-              <p className="mt-2 text-white/80">
-                Referência em cardiologia em São José do Rio Preto desde 1998, unindo tradição médica, precisão diagnóstica e cuidado humano.
-              </p>
-              <div className="mt-4 flex items-center gap-2.5">
-                {[
-                  { label: 'LinkedIn', href: '#', hover: 'hover:text-[#0A66C2]' },
-                  { label: 'Facebook', href: '#', hover: 'hover:text-[#1877F2]' },
-                  { label: 'Instagram', href: '#', hover: 'hover:text-[#E4405F]' },
-                  { label: 'YouTube', href: '#', hover: 'hover:text-[#FF0000]' },
-                  { label: 'WhatsApp', href: whatsappLink, hover: 'hover:text-[#25D366]' },
-                ].map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target={social.label === 'WhatsApp' ? '_blank' : undefined}
-                    rel={social.label === 'WhatsApp' ? 'noreferrer' : undefined}
-                    aria-label={`${social.label} da Nogueira Cardiologia`}
-                    title={social.label}
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/5 text-white/85 transition-colors ${social.hover}`}
-                  >
-                    <span className="text-[11px] font-semibold">{social.label.slice(0, 2)}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="font-semibold">Contato</p>
-              <p className="mt-2 text-white/80">Av. José Munia, 7301 - Jardim Redentor, São José do Rio Preto - SP, 15085-895</p>
-              <p className="mt-2 text-white/80">Telefone: (17) 2139-8338</p>
-              <p className="text-white/80">WhatsApp: (17) 99744-0223</p>
-            </div>
-            <div className="lg:text-right">
-              <p className="text-white/80">© {new Date().getFullYear()} Nogueira Cardiologia</p>
-              <p className="mt-1 text-white/70">Todos os direitos reservados.</p>
+          <div>
+            <h2 className="font-semibold">Contato</h2>
+            <p className="mt-3 text-sm leading-7 text-white/80">Av. José Munia, 7301 - Jardim Redentor, São José do Rio Preto - SP, 15085-895</p>
+            <p className="mt-2 text-sm text-white/80">Telefone: (17) 2139-8338</p>
+            <p className="mt-1 text-sm text-white/80">WhatsApp: (17) 99744-0223</p>
+          </div>
+          <div>
+            <h2 className="font-semibold">Acessos rápidos</h2>
+            <div className="mt-3 grid gap-2 text-sm text-white/80">
+              <a href="#portal-paciente" className="hover:text-white">Portal do paciente</a>
+              <a href="#presenca-socesp" className="hover:text-white">Presença médica na SOCESP</a>
+              <Link href="/blog" className="hover:text-white">Educativo de cardiologia</Link>
+              <a href={whatsappLink} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp da clínica</a>
             </div>
           </div>
         </div>
+        <p className="mx-auto mt-8 w-full max-w-7xl px-4 text-xs text-white/55 sm:px-6 lg:px-8">
+          © {new Date().getFullYear()} Nogueira Cardiologia. Todos os direitos reservados.
+        </p>
       </footer>
 
-      <a
-        href={whatsappLink}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Falar com a clínica no WhatsApp"
-        title="Suporte via WhatsApp"
-        className="fixed bottom-4 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_24px_-8px_rgba(0,0,0,0.45)] transition-transform hover:scale-[1.03] sm:bottom-5 sm:right-5"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-7 w-7 fill-current">
-          <path d="M20.52 3.48A11.79 11.79 0 0 0 12.09 0C5.53 0 .2 5.33.2 11.9c0 2.1.55 4.16 1.6 5.98L0 24l6.27-1.65a11.84 11.84 0 0 0 5.82 1.48h.01c6.56 0 11.9-5.33 11.9-11.9 0-3.17-1.24-6.15-3.48-8.45Zm-8.43 18.3h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.72.98.99-3.63-.24-.37a9.9 9.9 0 0 1-1.52-5.27c0-5.45 4.44-9.89 9.9-9.89a9.8 9.8 0 0 1 7 2.9 9.81 9.81 0 0 1 2.9 7c0 5.45-4.44 9.88-9.9 9.88Zm5.43-7.42c-.3-.15-1.8-.89-2.08-.99-.28-.1-.48-.15-.68.15-.2.3-.78.99-.96 1.19-.18.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.46-.89-.79-1.49-1.77-1.67-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.64-.93-2.24-.25-.6-.5-.52-.68-.53h-.58c-.2 0-.53.08-.8.38-.28.3-1.06 1.04-1.06 2.53s1.09 2.92 1.24 3.12c.15.2 2.13 3.24 5.16 4.54.72.31 1.28.49 1.72.62.72.23 1.37.2 1.89.12.58-.09 1.8-.73 2.06-1.44.25-.71.25-1.32.18-1.44-.08-.12-.28-.2-.58-.35Z" />
-        </svg>
-      </a>
     </div>
   );
 }

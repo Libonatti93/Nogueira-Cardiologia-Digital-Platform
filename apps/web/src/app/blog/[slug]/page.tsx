@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AuthorityBlock } from '@/components/blog/authority-block';
+import { LeadGate } from '@/components/educativo/lead-gate';
 import { blogPosts, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
 
 type PageProps = {
@@ -17,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = getPostBySlug(slug);
 
   if (!post) {
-    return { title: 'Artigo não encontrado | Nogueira Cardiologia' };
+    return { title: 'Conteúdo não encontrado | Nogueira Cardiologia' };
   }
 
   return {
@@ -53,7 +55,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           <ol className="flex flex-wrap items-center gap-2">
             <li><Link href="/" className="hover:text-[#14508B]">Início</Link></li>
             <li>/</li>
-            <li><Link href="/blog" className="hover:text-[#14508B]">Blog</Link></li>
+            <li><Link href="/blog" className="hover:text-[#14508B]">Educativo</Link></li>
             <li>/</li>
             <li className="text-[#14508B]">{post.category}</li>
           </ol>
@@ -74,27 +76,18 @@ export default async function BlogPostPage({ params }: PageProps) {
             <span>{post.readingTime} de leitura</span>
           </div>
 
-          <div className="mt-7 rounded-2xl border border-dashed border-[#14508B]/25 bg-[#F4F8FD] p-8 text-center text-sm text-slate-600">
-            Área reservada para imagem de capa (integração futura via automação n8n / CMS)
+          <div className="relative mt-7 h-[360px] overflow-hidden rounded-2xl bg-[#0F3760]">
+            <Image
+              src={post.coverImage}
+              alt={`Imagem oficial para ${post.title}`}
+              fill
+              sizes="(max-width: 896px) 100vw, 896px"
+              className="object-cover object-[50%_20%]"
+              priority
+            />
           </div>
 
-          <div className="prose prose-slate mt-8 max-w-none">
-            {post.sections.map((section) => (
-              <section key={section.heading} className="mt-8 first:mt-0">
-                <h2 className="text-2xl font-semibold text-[#103E6A]">{section.heading}</h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="mt-3 text-base leading-relaxed text-slate-700">{paragraph}</p>
-                ))}
-                {section.bullets ? (
-                  <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700">
-                    {section.bullets.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </section>
-            ))}
-          </div>
+          <LeadGate postSlug={post.slug} postTitle={post.title} sections={post.sections} />
         </article>
 
         <div className="mt-8 rounded-3xl bg-gradient-to-br from-[#11457B] to-[#15A7DD] p-6 text-white sm:p-8">

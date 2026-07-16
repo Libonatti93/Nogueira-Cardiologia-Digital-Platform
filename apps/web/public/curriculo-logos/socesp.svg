@@ -1,0 +1,8 @@
+<svg width="320" height="120" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="120" rx="18" fill="white"/>
+  <path d="M35 61c16-34 39-34 55 0 16 34 39 34 55 0" stroke="#14508B" stroke-width="10" stroke-linecap="round"/>
+  <path d="M42 61h30l8-18 18 39 10-21h30" stroke="#15A7DD" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="168" y="58" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="33" font-weight="800">SOCESP</text>
+  <text x="170" y="82" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">Sociedade de Cardiologia</text>
+  <text x="170" y="98" fill="#14508B" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">do Estado de Sao Paulo</text>
+</svg>

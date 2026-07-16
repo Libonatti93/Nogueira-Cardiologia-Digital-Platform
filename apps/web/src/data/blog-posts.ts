@@ -28,133 +28,254 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
-    slug: 'sinais-de-alerta-do-coracao',
-    title: 'Sinais de alerta do coração: quando os sintomas exigem atenção imediata',
+    slug: 'check-up-cardiologico-em-sao-jose-do-rio-preto',
+    title: 'Check-up cardiológico em São José do Rio Preto: quando fazer e o que avaliar',
     excerpt:
-      'Entenda os principais sinais cardiovasculares que merecem avaliação rápida e como agir com segurança em situações de risco.',
-    category: 'Sintomas e prevenção',
-    tags: ['cardiologia', 'saúde cardiovascular', 'prevenção cardiovascular'],
-    publishedAt: '2026-05-10',
-    updatedAt: '2026-05-10',
+      'Entenda quando a avaliação preventiva com cardiologista é indicada e como ela ajuda a identificar riscos antes de sintomas importantes.',
+    category: 'Check-up cardiológico',
+    tags: ['check-up cardiológico', 'cardiologista em São José do Rio Preto', 'prevenção cardiovascular'],
+    publishedAt: '2026-07-15',
+    updatedAt: '2026-07-15',
     readingTime: '6 min',
     author: {
-      name: 'Equipe Editorial Nogueira Cardiologia',
-      role: 'Conteúdo institucional revisado pela clínica',
+      name: 'Nogueira Cardiologia',
+      role: 'Conteúdo educativo revisado pela clínica',
     },
-    seoTitle: 'Sinais de alerta do coração | Nogueira Cardiologia',
+    seoTitle: 'Check-up cardiológico em São José do Rio Preto | Nogueira Cardiologia',
     seoDescription:
-      'Veja os sintomas cardíacos que merecem atenção e quando procurar consulta com cardiologista em São José do Rio Preto.',
-    coverImage: '/blog/placeholder-cover.jpg',
+      'Saiba quando fazer check-up cardiológico, quais fatores de risco avaliar e como a Nogueira Cardiologia orienta prevenção cardiovascular.',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png',
     featured: true,
     sections: [
       {
-        heading: 'Sintomas que não devem ser ignorados',
+        heading: 'Por que o check-up cardiológico é importante',
         paragraphs: [
-          'Dor no peito persistente, falta de ar súbita, palpitações acompanhadas de mal-estar e tontura intensa são sinais que podem indicar necessidade de avaliação cardiovascular urgente.',
-          'Mesmo quando os sintomas parecem leves, o ideal é não adiar a busca por atendimento, especialmente em pessoas com fatores de risco para doença coronariana.',
+          'O check-up cardiológico organiza a avaliação do risco cardiovascular antes que um problema se manifeste de forma grave. Ele é especialmente relevante para pessoas com hipertensão, diabetes, colesterol alto, tabagismo, sedentarismo ou histórico familiar de infarto e AVC.',
+          'Na consulta, o cardiologista analisa sintomas, histórico, exames prévios, pressão arterial, hábitos de vida e metas de prevenção. A partir disso, define se há necessidade de exames complementares e acompanhamento contínuo.',
         ],
         bullets: [
-          'Pressão ou aperto no peito com irradiação para braço, mandíbula ou costas.',
-          'Cansaço desproporcional e falta de ar em esforços habituais.',
-          'Desmaio, pré-desmaio ou palpitação com sudorese fria.',
+          'Adultos com fatores de risco cardiovascular devem discutir avaliação periódica com o cardiologista.',
+          'Pessoas que vão iniciar atividade física intensa podem precisar de liberação e orientação individualizada.',
+          'Exames alterados de colesterol, glicemia ou pressão arterial merecem investigação clínica.',
         ],
       },
       {
-        heading: 'Quem deve redobrar a atenção',
+        heading: 'O que pode ser avaliado na consulta',
         paragraphs: [
-          'Pacientes com hipertensão arterial, diabetes, tabagismo, colesterol elevado e histórico familiar de infarto precisam de acompanhamento regular em cardiologia.',
-          'A consulta com cardiologista permite identificar riscos precocemente e reduzir a chance de eventos agudos.',
+          'A avaliação pode incluir eletrocardiograma, exames laboratoriais, ecocardiograma, teste ergométrico ou outros métodos, conforme a história clínica. O ponto central não é pedir muitos exames, mas pedir os exames certos para a pergunta clínica correta.',
+          'Esse cuidado ajuda o paciente a entender seu risco, ajustar hábitos e acompanhar metas de pressão, colesterol, glicose e peso com mais clareza.',
         ],
       },
     ],
   },
   {
-    slug: 'quando-procurar-cardiologista',
-    title: 'Quando procurar um cardiologista: orientação prática para a rotina',
+    slug: 'pressao-alta-hipertensao-risco-para-o-coracao',
+    title: 'Pressão alta: por que a hipertensão é um risco silencioso para o coração',
     excerpt:
-      'Saiba em quais fases da vida e em quais situações a consulta com cardiologista é recomendada para prevenção e cuidado contínuo.',
-    category: 'Consulta e acompanhamento',
-    tags: ['cardiologista', 'consulta com cardiologista', 'check-up cardiológico'],
-    publishedAt: '2026-05-09',
-    updatedAt: '2026-05-09',
-    readingTime: '5 min',
-    author: {
-      name: 'Equipe Editorial Nogueira Cardiologia',
-      role: 'Conteúdo institucional revisado pela clínica',
-    },
-    seoTitle: 'Quando procurar um cardiologista | Nogueira Cardiologia',
-    seoDescription:
-      'Descubra quando agendar consulta com cardiologista e como a prevenção cardiovascular protege sua saúde no longo prazo.',
-    coverImage: '/blog/placeholder-cover.jpg',
-    featured: true,
-    sections: [
-      {
-        heading: 'Situações comuns em que a avaliação é indicada',
-        paragraphs: [
-          'A avaliação cardiovascular pode ser recomendada antes de iniciar atividade física intensa, após alterações em exames de rotina ou quando surgem sintomas como dor torácica e cansaço.',
-        ],
-        bullets: [
-          'Histórico familiar de doença cardíaca precoce.',
-          'Hipertensão, diabetes ou dislipidemia.',
-          'Mudanças de estilo de vida que exigem liberação clínica.',
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'exames-cardiologicos-mais-comuns',
-    title: 'Exames cardiológicos mais comuns e para que serve cada um',
-    excerpt:
-      'Conheça os principais exames usados na cardiologia clínica e como eles ajudam no diagnóstico e no acompanhamento terapêutico.',
-    category: 'Exames cardiológicos',
-    tags: ['exames', 'avaliação cardiovascular', 'cardiologia'],
-    publishedAt: '2026-05-08',
-    updatedAt: '2026-05-08',
+      'A hipertensão arterial pode evoluir sem sintomas por anos. Veja por que medir, acompanhar e tratar a pressão protege coração, cérebro e rins.',
+    category: 'Hipertensão arterial',
+    tags: ['pressão alta', 'hipertensão arterial', 'cardiologista', 'saúde do coração'],
+    publishedAt: '2026-07-14',
+    updatedAt: '2026-07-15',
     readingTime: '7 min',
     author: {
-      name: 'Equipe Editorial Nogueira Cardiologia',
-      role: 'Conteúdo institucional revisado pela clínica',
+      name: 'Nogueira Cardiologia',
+      role: 'Conteúdo educativo revisado pela clínica',
     },
-    seoTitle: 'Exames cardiológicos mais comuns | Dr. Paulo Roberto Nogueira',
+    seoTitle: 'Pressão alta e hipertensão arterial | Nogueira Cardiologia',
     seoDescription:
-      'Entenda eletrocardiograma, ecocardiograma, teste ergométrico e outros exames usados na avaliação cardiovascular.',
-    coverImage: '/blog/placeholder-cover.jpg',
-    featured: false,
+      'Entenda os riscos da pressão alta, quando procurar cardiologista e como controlar hipertensão arterial com acompanhamento médico.',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo3.png',
+    featured: true,
     sections: [
       {
-        heading: 'Principais exames da cardiologia clínica',
+        heading: 'Por que a pressão alta merece acompanhamento',
         paragraphs: [
-          'O eletrocardiograma analisa a atividade elétrica do coração, enquanto o ecocardiograma avalia estruturas, função e fluxo sanguíneo.',
-          'Já o teste ergométrico investiga resposta cardiovascular ao esforço e pode auxiliar na condução de condutas preventivas.',
+          'A hipertensão arterial é chamada de silenciosa porque muitas pessoas não sentem nada, mesmo com níveis elevados de pressão. Sem controle, ela aumenta o risco de infarto, AVC, insuficiência cardíaca, doença renal e alterações nos vasos.',
+          'Medir a pressão apenas quando há mal-estar não é suficiente. O acompanhamento precisa considerar medidas repetidas, contexto clínico, outros fatores de risco e resposta ao tratamento.',
+        ],
+        bullets: [
+          'Tenha registros confiáveis da pressão arterial em casa ou em serviços de saúde.',
+          'Não interrompa medicação por conta própria, mesmo quando a pressão melhora.',
+          'Leve exames e anotações de pressão para a consulta cardiológica.',
+        ],
+      },
+      {
+        heading: 'Controle envolve rotina e plano individual',
+        paragraphs: [
+          'O tratamento pode envolver mudanças de alimentação, redução de sal, atividade física, controle de peso, sono adequado e medicamentos. A escolha depende do perfil de risco e das condições associadas.',
+          'O papel do cardiologista é ajustar metas, identificar causas ou agravantes e acompanhar a segurança do plano ao longo do tempo.',
         ],
       },
     ],
   },
   {
-    slug: 'prevencao-cardiovascular-no-dia-a-dia',
-    title: 'Prevenção cardiovascular no dia a dia: hábitos que fazem diferença real',
+    slug: 'dor-no-peito-falta-de-ar-palpitacoes-quando-procurar-cardiologista',
+    title: 'Dor no peito, falta de ar e palpitações: quando procurar um cardiologista',
     excerpt:
-      'Veja como alimentação, atividade física e controle de fatores de risco contribuem para um cuidado cardiovascular duradouro.',
-    category: 'Prevenção cardiovascular',
-    tags: ['prevenção cardiovascular', 'saúde cardiovascular', 'cardiologia'],
-    publishedAt: '2026-05-07',
-    updatedAt: '2026-05-07',
-    readingTime: '6 min',
+      'Sintomas cardíacos nem sempre são iguais para todos. Entenda sinais que pedem atenção e quando buscar avaliação cardiovascular.',
+    category: 'Sintomas cardíacos',
+    tags: ['dor no peito', 'falta de ar', 'palpitações', 'cardiologista em Rio Preto'],
+    publishedAt: '2026-07-13',
+    updatedAt: '2026-07-15',
+    readingTime: '7 min',
     author: {
-      name: 'Equipe Editorial Nogueira Cardiologia',
-      role: 'Conteúdo institucional revisado pela clínica',
+      name: 'Nogueira Cardiologia',
+      role: 'Conteúdo educativo revisado pela clínica',
     },
-    seoTitle: 'Prevenção cardiovascular no dia a dia | Nogueira Cardiologia',
+    seoTitle: 'Dor no peito e palpitações: quando procurar cardiologista | Nogueira',
     seoDescription:
-      'Descubra hábitos de rotina para reduzir fatores de risco e fortalecer sua saúde cardiovascular com orientação médica.',
-    coverImage: '/blog/placeholder-cover.jpg',
+      'Saiba quando dor no peito, falta de ar, tontura e palpitações precisam de avaliação com cardiologista.',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris3.png',
     featured: false,
     sections: [
       {
-        heading: 'Estratégias de rotina para proteger o coração',
+        heading: 'Sintomas que não devem ser normalizados',
         paragraphs: [
-          'A prevenção cardiovascular envolve alimentação equilibrada, cessação do tabagismo, sono adequado e atividade física regular com orientação profissional.',
-          'Além dos hábitos, consultas periódicas ajudam a ajustar metas e identificar alterações precocemente.',
+          'Dor ou pressão no peito, falta de ar aos esforços, palpitações persistentes, desmaio, tontura intensa e cansaço desproporcional são sinais que merecem avaliação. Em alguns casos, podem estar ligados a doença coronariana, arritmias, insuficiência cardíaca ou outras condições.',
+          'Quando a dor no peito é intensa, prolongada, vem com suor frio, náusea, falta de ar ou irradiação para braço, mandíbula ou costas, a orientação é buscar atendimento de urgência.',
+        ],
+        bullets: [
+          'Dor no peito nova ou progressiva deve ser investigada.',
+          'Palpitações com tontura, desmaio ou mal-estar exigem atenção.',
+          'Falta de ar fora do padrão habitual pode ser sinal cardiovascular ou pulmonar.',
+        ],
+      },
+      {
+        heading: 'A consulta transforma sintoma em direção clínica',
+        paragraphs: [
+          'O cardiologista organiza a história, examina o paciente e define a necessidade de eletrocardiograma, ecocardiograma, teste ergométrico, monitorização ou exames laboratoriais.',
+          'Essa condução evita tanto a banalização de sintomas importantes quanto a realização de exames sem critério.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'colesterol-diabetes-tabagismo-fatores-de-risco-cardiovascular',
+    title: 'Colesterol alto, diabetes e tabagismo: fatores de risco que aceleram doenças do coração',
+    excerpt:
+      'Conheça fatores que aumentam o risco cardiovascular e por que preveni-los exige acompanhamento, metas claras e mudança sustentável.',
+    category: 'Prevenção cardiovascular',
+    tags: ['colesterol alto', 'diabetes', 'tabagismo', 'risco cardiovascular'],
+    publishedAt: '2026-07-12',
+    updatedAt: '2026-07-15',
+    readingTime: '6 min',
+    author: {
+      name: 'Nogueira Cardiologia',
+      role: 'Conteúdo educativo revisado pela clínica',
+    },
+    seoTitle: 'Colesterol, diabetes e tabagismo: risco cardiovascular | Nogueira',
+    seoDescription:
+      'Entenda como colesterol alto, diabetes e tabagismo aumentam risco de infarto e AVC e quando procurar avaliação cardiológica.',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris3.png',
+    featured: false,
+    sections: [
+      {
+        heading: 'Fatores de risco se somam',
+        paragraphs: [
+          'O risco cardiovascular não depende de um único número. Pressão arterial, colesterol, glicemia, tabagismo, peso, sono, sedentarismo, idade e histórico familiar se combinam e mudam a probabilidade de eventos como infarto e AVC.',
+          'Por isso, a prevenção precisa ser individualizada. Duas pessoas com o mesmo colesterol podem ter riscos diferentes, dependendo do conjunto clínico.',
+        ],
+        bullets: [
+          'Colesterol LDL elevado favorece formação de placas nas artérias.',
+          'Diabetes aumenta risco vascular e exige metas de controle bem definidas.',
+          'Tabagismo agride os vasos e eleva risco de eventos cardiovasculares.',
+        ],
+      },
+      {
+        heading: 'Prevenção é uma estratégia contínua',
+        paragraphs: [
+          'Redução de risco envolve alimentação, movimento, abandono do tabagismo, controle de pressão e glicemia, além de medicamentos quando indicados.',
+          'A consulta cardiológica ajuda a transformar orientações gerais em um plano aplicável para a rotina real do paciente.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'coronariopatias-cardiomiopatias-entenda-o-acompanhamento',
+    title: 'Coronariopatias e cardiomiopatias: entenda por que o acompanhamento especializado importa',
+    excerpt:
+      'Doenças das artérias coronárias e alterações do músculo cardíaco exigem avaliação cuidadosa, seguimento e decisões clínicas bem fundamentadas.',
+    category: 'Cardiologia clínica',
+    tags: ['coronariopatias', 'cardiomiopatias', 'cardiologia clínica', 'Dr Paulo Nogueira'],
+    publishedAt: '2026-07-11',
+    updatedAt: '2026-07-15',
+    readingTime: '8 min',
+    author: {
+      name: 'Nogueira Cardiologia',
+      role: 'Conteúdo educativo revisado pela clínica',
+    },
+    seoTitle: 'Coronariopatias e cardiomiopatias | Dr. Paulo Roberto Nogueira',
+    seoDescription:
+      'Entenda coronariopatias, cardiomiopatias e a importância do acompanhamento com cardiologista clínico em São José do Rio Preto.',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
+    featured: true,
+    sections: [
+      {
+        heading: 'O que são coronariopatias',
+        paragraphs: [
+          'Coronariopatias são doenças que envolvem as artérias coronárias, responsáveis por levar sangue ao músculo do coração. Quando há estreitamentos ou obstruções, o paciente pode apresentar dor no peito, falta de ar, limitação aos esforços ou eventos agudos.',
+          'O acompanhamento busca avaliar sintomas, fatores de risco, exames e necessidade de tratamento clínico, investigação adicional ou encaminhamentos específicos.',
+        ],
+      },
+      {
+        heading: 'O que são cardiomiopatias',
+        paragraphs: [
+          'Cardiomiopatias são alterações do músculo cardíaco que podem comprometer força de contração, relaxamento, ritmo ou estrutura do coração. Algumas têm relação familiar, outras aparecem associadas a pressão alta, inflamações, doença coronariana ou outras condições.',
+          'O seguimento clínico permite acompanhar função cardíaca, sintomas, medicações, risco de arritmias e evolução ao longo do tempo.',
+        ],
+        bullets: [
+          'Cansaço progressivo, inchaço, falta de ar e palpitações merecem avaliação.',
+          'Histórico familiar de doença cardíaca pode mudar a estratégia de investigação.',
+          'Exames de imagem e acompanhamento regular ajudam a orientar decisões.',
+        ],
+      },
+      {
+        heading: 'Por que esse tema combina com educação médica',
+        paragraphs: [
+          'Coronariopatias e cardiomiopatias são temas centrais da cardiologia clínica. Explicar esses assuntos com linguagem clara ajuda pacientes e familiares a reconhecer sinais, valorizar prevenção e compreender a importância do seguimento médico.',
+          'Na Nogueira Cardiologia, esse conteúdo educativo reforça uma proposta de cuidado baseada em experiência clínica, acompanhamento humanizado e informação responsável para a comunidade.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'atividade-fisica-segura-para-o-coracao',
+    title: 'Atividade física e coração: como começar com mais segurança cardiovascular',
+    excerpt:
+      'Exercício faz bem para o coração, mas algumas pessoas precisam de avaliação antes de aumentar intensidade ou iniciar treinos.',
+    category: 'Prevenção cardiovascular',
+    tags: ['atividade física', 'exercício e coração', 'check-up cardiológico', 'prevenção cardiovascular'],
+    publishedAt: '2026-07-10',
+    updatedAt: '2026-07-15',
+    readingTime: '6 min',
+    author: {
+      name: 'Nogueira Cardiologia',
+      role: 'Conteúdo educativo revisado pela clínica',
+    },
+    seoTitle: 'Atividade física e coração: avaliação cardiológica | Nogueira',
+    seoDescription:
+      'Veja quando fazer avaliação cardiológica antes de iniciar atividade física e como proteger a saúde cardiovascular.',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris1.png',
+    featured: false,
+    sections: [
+      {
+        heading: 'Exercício é prevenção, mas precisa respeitar o contexto clínico',
+        paragraphs: [
+          'A atividade física regular ajuda no controle da pressão arterial, glicemia, peso, condicionamento e saúde mental. Para muitas pessoas, começar com caminhada e progressão gradual já traz benefícios importantes.',
+          'Alguns pacientes, porém, precisam de avaliação cardiológica antes de aumentar intensidade: pessoas com dor no peito, falta de ar fora do habitual, palpitações, desmaio, hipertensão sem controle, diabetes, doença cardíaca conhecida ou histórico familiar relevante.',
+        ],
+        bullets: [
+          'Comece de forma progressiva e evite mudanças bruscas de intensidade.',
+          'Procure avaliação se houver sintomas durante ou após esforço.',
+          'Leve exames prévios e histórico familiar para orientar a consulta.',
+        ],
+      },
+      {
+        heading: 'O cardiologista ajuda a definir segurança e metas',
+        paragraphs: [
+          'A avaliação pode envolver exame físico, eletrocardiograma, teste ergométrico ou outros exames conforme o perfil. O objetivo é identificar riscos, orientar limites e permitir que o exercício seja aliado da saúde, não motivo de insegurança.',
+          'A recomendação ideal considera idade, fatores de risco, medicações, rotina, condicionamento e objetivos do paciente.',
         ],
       },
     ],
@@ -166,4 +287,7 @@ export const getPostBySlug = (slug: string) => blogPosts.find((post) => post.slu
 export const getRecentPosts = () =>
   [...blogPosts].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 export const getRelatedPosts = (slug: string, category: string) =>
-  blogPosts.filter((post) => post.slug !== slug && post.category === category).slice(0, 3);
+  [
+    ...blogPosts.filter((post) => post.slug !== slug && post.category === category),
+    ...getRecentPosts().filter((post) => post.slug !== slug && post.category !== category),
+  ].slice(0, 3);
