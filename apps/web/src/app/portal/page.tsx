@@ -44,6 +44,19 @@ export default function PortalPage() {
         <div className="mt-8">
           <PortalAccess />
         </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {[
+            ['Portal do paciente', '/portal/paciente', 'Agendamento, dados cadastrais, pré-anamnese e pagamento.'],
+            ['CRM da secretária', '/portal/secretaria', 'Funil comercial para trabalhar leads e confirmar consultas.'],
+            ['Dashboard médico', '/portal/medico', 'Métricas, agenda, pacientes, pagamentos e conteúdos educativos.'],
+          ].map(([title, href, description]) => (
+            <Link key={href} href={href} className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)] hover:border-[#14508B]/35">
+              <h2 className="text-lg font-semibold text-[#0F3760]">{title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+            </Link>
+          ))}
+        </div>
       </section>
     </main>
   );
