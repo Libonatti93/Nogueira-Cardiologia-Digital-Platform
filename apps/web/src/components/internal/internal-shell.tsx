@@ -6,6 +6,7 @@ const navItems = [
   ['Pacientes', '#pacientes'],
   ['Leads', '#leads'],
   ['Consultas', '#consultas'],
+  ['Exames', '#exames'],
   ['Pagamentos', '#pagamentos'],
 ] as const;
 

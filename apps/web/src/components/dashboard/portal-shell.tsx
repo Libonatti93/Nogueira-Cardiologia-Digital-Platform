@@ -4,6 +4,7 @@ import Link from 'next/link';
 const navItems = [
   ['Paciente', '/portal/paciente'],
   ['Agendar', '/portal/paciente/agendar'],
+  ['Exames', '/portal/paciente/exames'],
   ['Conteúdos', '/blog'],
 ] as const;
 

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AuthorityBlock } from '@/components/blog/authority-block';
 import { LeadGate } from '@/components/educativo/lead-gate';
+import { PublicFooter } from '@/components/site/public-footer';
+import { PublicHeader } from '@/components/site/public-header';
 import { blogPosts, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
 
 type PageProps = {
@@ -48,7 +50,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8F8F9] py-10 text-slate-900 sm:py-14">
+    <div className="min-h-screen bg-[#F8F8F9] text-slate-900">
+      <PublicHeader />
+      <main className="py-10 sm:py-14">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
@@ -123,6 +127,8 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         </section>
       </div>
-    </main>
+      </main>
+      <PublicFooter />
+    </div>
   );
 }

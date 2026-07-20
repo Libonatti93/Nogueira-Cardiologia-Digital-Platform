@@ -1,0 +1,119 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
+const whatsappLink = 'https://wa.me/5517997440223';
+const developerLink = 'https://github.com/';
+const socialLinks = [
+  ['Instagram', 'https://www.instagram.com/', 'instagram'],
+  ['LinkedIn', 'https://www.linkedin.com/', 'linkedin'],
+  ['Wikipedia', 'https://www.wikipedia.org/', 'wikipedia'],
+] as const;
+
+type SocialIconName = (typeof socialLinks)[number][2];
+
+function SocialIcon({ name }: { name: SocialIconName }) {
+  const iconProps = {
+    className: 'h-5 w-5',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  };
+
+  switch (name) {
+    case 'instagram':
+      return (
+        <svg {...iconProps}>
+          <rect x="4" y="4" width="16" height="16" rx="4.5" />
+          <circle cx="12" cy="12" r="3.4" />
+          <path d="M17.2 6.8h.01" />
+        </svg>
+      );
+    case 'linkedin':
+      return (
+        <svg {...iconProps}>
+          <rect x="4" y="4" width="16" height="16" rx="2.5" />
+          <path d="M8 11v5" />
+          <path d="M8 8.5h.01" />
+          <path d="M12 16v-5" />
+          <path d="M12 13.1c0-1.3.9-2.1 2.1-2.1 1.3 0 1.9.8 1.9 2.4V16" />
+        </svg>
+      );
+    case 'wikipedia':
+      return (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M6.8 8h2" />
+          <path d="M15.2 8h2" />
+          <path d="m7.8 8 2.2 8 2-5.2 2 5.2 2.2-8" />
+          <path d="M10 8h4" />
+        </svg>
+      );
+  }
+}
+
+export function PublicFooter() {
+  return (
+    <footer id="contato" className="bg-[#0A2C4D] pb-10 pt-12 text-white">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.2fr_0.9fr_0.9fr] lg:px-8">
+        <div>
+          <Image
+            src="/uploads-imagens-nogueira/nogueira-cardio2-transparent.png"
+            alt="Simbolo da Nogueira Cardiologia"
+            width={72}
+            height={72}
+            className="h-[58px] w-[58px] object-contain"
+          />
+          <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
+            Referencia em cardiologia em Sao Jose do Rio Preto desde 1998, com uma frente digital preparada para agendamento, agenda medica e conteudo educativo.
+          </p>
+          <div className="mt-5 flex items-center gap-3" aria-label="Redes sociais da Nogueira Cardiologia">
+            {socialLinks.map(([label, href, icon]) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Acessar ${label} da Nogueira Cardiologia`}
+                title={label}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/18 text-white/78 transition-colors hover:border-white/45 hover:bg-white/10 hover:text-white"
+              >
+                <SocialIcon name={icon} />
+              </a>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h2 className="font-semibold">Contato</h2>
+          <p className="mt-3 text-sm leading-7 text-white/80">Av. Jose Munia, 7301 - Jardim Redentor, Sao Jose do Rio Preto - SP, 15085-895</p>
+          <p className="mt-2 text-sm text-white/80">Telefone: (17) 2139-8338</p>
+          <p className="mt-1 text-sm text-white/80">WhatsApp: (17) 99744-0223</p>
+        </div>
+        <div>
+          <h2 className="font-semibold">Acessos rapidos</h2>
+          <div className="mt-3 grid gap-2 text-sm text-white/80">
+            <Link href="/portal" className="hover:text-white">Portal do paciente</Link>
+            <Link href="/exames" className="hover:text-white">Envio digital de exames</Link>
+            <Link href="/#presenca-socesp" className="hover:text-white">Presenca medica na SOCESP</Link>
+            <Link href="/blog" className="hover:text-white">Educativo de cardiologia</Link>
+            <a href={whatsappLink} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp da clinica</a>
+            <Link href="/privacidade" className="hover:text-white">Privacidade, LGPD e termos</Link>
+          </div>
+        </div>
+      </div>
+      <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-2 px-4 text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
+        <p>CNPJ 12.388.371/0001-71 - Nogueira Cardiologia LTDA. © 2026 Todos os direitos reservados.</p>
+        <p>
+          Desenvolvido por{' '}
+          <a href={developerLink} target="_blank" rel="noreferrer" className="font-semibold text-white/78 hover:text-white">
+            Matheus Libonatti, Engenheiro de Software
+          </a>
+          .
+        </p>
+      </div>
+    </footer>
+  );
+}

@@ -5,6 +5,7 @@ import { getRecentPosts } from '@/data/blog-posts';
 const navigationItems = [
   ['Clínica', '#clinica'],
   ['Paciente', '#portal-paciente'],
+  ['Exames', '#exames'],
   ['Corpo clínico', '#corpo-clinico'],
   ['Especialidades', '#especialidades'],
   ['Educativo', '#blog'],
@@ -153,8 +154,15 @@ const doctors = [
 const whatsappLink = 'https://wa.me/5517997440223';
 const portalLink = '/portal';
 const assetPath = '/uploads-imagens-nogueira';
+const socialLinks = [
+  ['Instagram', 'https://www.instagram.com/', 'instagram'],
+  ['LinkedIn', 'https://www.linkedin.com/', 'linkedin'],
+  ['Wikipedia', 'https://www.wikipedia.org/', 'wikipedia'],
+] as const;
+const developerLink = 'https://github.com/';
 
 type SpecialtyIconName = (typeof specialties)[number]['icon'];
+type SocialIconName = (typeof socialLinks)[number][2];
 
 function SpecialtyIcon({ name }: { name: SpecialtyIconName }) {
   const iconProps = {
@@ -218,6 +226,50 @@ function SpecialtyIcon({ name }: { name: SpecialtyIconName }) {
           <path d="M12 13s-3.2-1.9-3.2-4A2 2 0 0 1 12 7.4 2 2 0 0 1 15.2 9c0 2.1-3.2 4-3.2 4Z" />
           <path d="M5 14V9" />
           <path d="M19 14V9" />
+        </svg>
+      );
+  }
+}
+
+function SocialIcon({ name }: { name: SocialIconName }) {
+  const iconProps = {
+    className: 'h-5 w-5',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  };
+
+  switch (name) {
+    case 'instagram':
+      return (
+        <svg {...iconProps}>
+          <rect x="4" y="4" width="16" height="16" rx="4.5" />
+          <circle cx="12" cy="12" r="3.4" />
+          <path d="M17.2 6.8h.01" />
+        </svg>
+      );
+    case 'linkedin':
+      return (
+        <svg {...iconProps}>
+          <rect x="4" y="4" width="16" height="16" rx="2.5" />
+          <path d="M8 11v5" />
+          <path d="M8 8.5h.01" />
+          <path d="M12 16v-5" />
+          <path d="M12 13.1c0-1.3.9-2.1 2.1-2.1 1.3 0 1.9.8 1.9 2.4V16" />
+        </svg>
+      );
+    case 'wikipedia':
+      return (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M6.8 8h2" />
+          <path d="M15.2 8h2" />
+          <path d="m7.8 8 2.2 8 2-5.2 2 5.2 2.2-8" />
+          <path d="M10 8h4" />
         </svg>
       );
   }
@@ -420,6 +472,46 @@ export default function Home() {
                   ))}
                 </div>
               </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="exames" className="bg-[#F4F9FF] py-14 sm:py-16">
+          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:px-8">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#14508B]">Envio digital de exames</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
+                Anexe exames cardiológicos antes da consulta e ajude a equipe a preparar seu atendimento.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                O portal do paciente permite enviar PDFs e imagens de exames como eletrocardiograma, ecocardiograma, Holter, MAPA, teste ergométrico, laudos e relatórios médicos. A secretaria e o médico acompanham os arquivos pela dashboard interna.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link href="/exames" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
+                  Conhecer envio de exames
+                </Link>
+                <Link href="/portal" className="inline-flex w-fit rounded-full border border-[#14508B]/25 bg-white px-6 py-3 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
+                  Enviar pelo portal
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
+              <h3 className="text-2xl font-semibold text-[#0F3760]">Plataforma em evolução contínua</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                A Central de Exames nasce como upload seguro e organizado. A arquitetura foi pensada para evoluir com automações, n8n, análise assistida por IA, histórico por paciente e apoio à rotina médica.
+              </p>
+              <div className="mt-5 grid gap-3">
+                {[
+                  'Documentos centralizados antes da consulta.',
+                  'Visualização pela secretaria e pelo médico no painel interno.',
+                  'Base preparada para futuras análises assistidas por tecnologia.',
+                ].map((item) => (
+                  <p key={item} className="border-l-2 border-[#15A7DD] bg-[#F8FBFF] px-4 py-3 text-sm font-semibold text-[#0F3760]">
+                    {item}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -692,6 +784,21 @@ export default function Home() {
             <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
               Referência em cardiologia em São José do Rio Preto desde 1998, agora com uma frente digital preparada para agendamento, agenda médica e conteúdo educativo.
             </p>
+            <div className="mt-5 flex items-center gap-3" aria-label="Redes sociais da Nogueira Cardiologia">
+              {socialLinks.map(([label, href, icon]) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Acessar ${label} da Nogueira Cardiologia`}
+                  title={label}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/18 text-white/78 transition-colors hover:border-white/45 hover:bg-white/10 hover:text-white"
+                >
+                  <SocialIcon name={icon} />
+                </a>
+              ))}
+            </div>
           </div>
           <div>
             <h2 className="font-semibold">Contato</h2>
@@ -703,15 +810,24 @@ export default function Home() {
             <h2 className="font-semibold">Acessos rápidos</h2>
             <div className="mt-3 grid gap-2 text-sm text-white/80">
               <a href="#portal-paciente" className="hover:text-white">Portal do paciente</a>
+              <Link href="/exames" className="hover:text-white">Envio digital de exames</Link>
               <a href="#presenca-socesp" className="hover:text-white">Presença médica na SOCESP</a>
               <Link href="/blog" className="hover:text-white">Educativo de cardiologia</Link>
               <a href={whatsappLink} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp da clínica</a>
+              <Link href="/privacidade" className="hover:text-white">Privacidade, LGPD e termos</Link>
             </div>
           </div>
         </div>
-        <p className="mx-auto mt-8 w-full max-w-7xl px-4 text-xs text-white/55 sm:px-6 lg:px-8">
-          © {new Date().getFullYear()} Nogueira Cardiologia. Todos os direitos reservados.
-        </p>
+        <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-2 px-4 text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
+          <p>CNPJ 12.388.371/0001-71 - Nogueira Cardiologia LTDA. © 2026 Todos os direitos reservados.</p>
+          <p>
+            Desenvolvido por{' '}
+            <a href={developerLink} target="_blank" rel="noreferrer" className="font-semibold text-white/78 hover:text-white">
+              Matheus Libonatti, Engenheiro de Software
+            </a>
+            .
+          </p>
+        </div>
       </footer>
 
     </div>

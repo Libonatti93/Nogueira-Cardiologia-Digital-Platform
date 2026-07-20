@@ -44,6 +44,9 @@ public/uploads-imagens-nogueira/3D Objects/
 vps-pacotes-instalados.txt
 vps-pastas-maxdepth2.txt
 
+# private medical uploads
+/storage/
+
 # vercel
 .vercel
 

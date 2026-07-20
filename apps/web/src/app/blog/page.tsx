@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AuthorityBlock } from '@/components/blog/authority-block';
+import { PublicFooter } from '@/components/site/public-footer';
+import { PublicHeader } from '@/components/site/public-header';
 import { getFeaturedPosts, getRecentPosts } from '@/data/blog-posts';
 
 export const metadata: Metadata = {
@@ -23,7 +25,9 @@ export default function BlogPage() {
   const recentPosts = getRecentPosts();
 
   return (
-    <main className="min-h-screen bg-[#F8F8F9] pb-16 text-slate-900">
+    <div className="min-h-screen bg-[#F8F8F9] text-slate-900">
+      <PublicHeader />
+      <main className="pb-16">
       <section className="bg-gradient-to-br from-[#103E6A] via-[#14508B] to-[#15A7DD] py-16 text-white sm:py-20">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/85 sm:text-sm">Educativo Nogueira Cardiologia</p>
@@ -127,6 +131,8 @@ export default function BlogPage() {
           </ul>
         </aside>
       </section>
-    </main>
+      </main>
+      <PublicFooter />
+    </div>
   );
 }

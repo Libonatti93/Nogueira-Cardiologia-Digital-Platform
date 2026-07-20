@@ -84,6 +84,21 @@ export async function requireInternalUser() {
   return user;
 }
 
+export async function getSessionUser() {
+  const cookieStore = await cookies();
+  return verifySessionToken(cookieStore.get(sessionCookieName)?.value);
+}
+
+export async function requirePatientUser() {
+  const user = await getSessionUser();
+
+  if (!user || user.role !== 'patient') {
+    redirect('/portal');
+  }
+
+  return user;
+}
+
 export const sessionCookie = {
   name: sessionCookieName,
   maxAge: sessionMaxAgeSeconds,

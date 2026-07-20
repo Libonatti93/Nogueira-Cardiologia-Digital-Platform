@@ -56,6 +56,20 @@ type RecentPayment = {
   paid_at: Date | null;
 };
 
+type RecentExam = {
+  id: string;
+  patient_full_name: string;
+  patient_email: string;
+  patient_phone_whatsapp: string | null;
+  exam_type: string;
+  exam_date: Date | null;
+  original_file_name: string;
+  file_size_bytes: number;
+  status: string;
+  notes: string | null;
+  created_at: Date;
+};
+
 type StageRow = {
   stage: string;
   total: string;
@@ -117,8 +131,20 @@ function formatMoney(cents: number) {
   }).format(cents / 100);
 }
 
+function formatShortDate(value: Date | null) {
+  if (!value) return 'Nao informado';
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeZone: 'America/Sao_Paulo',
+  }).format(value);
+}
+
+function formatFileSize(bytes: number) {
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 async function getDashboardData() {
-  const [metricsResult, usersResult, leadsResult, appointmentsResult, paymentsResult, stagesResult] = await Promise.all([
+  const [metricsResult, usersResult, leadsResult, appointmentsResult, paymentsResult, stagesResult, examsResult] = await Promise.all([
     query<{
       users_total: string;
       patients_total: string;
@@ -128,12 +154,16 @@ async function getDashboardData() {
       revenue_paid_cents: string;
       requested_appointments_total: string;
       pending_payments_total: string;
+      exams_total: string;
+      exams_pending_total: string;
     }>(`
       select
         (select count(*) from app_users) as users_total,
         (select count(*) from patient_profiles) as patients_total,
         (select count(*) from leads) as leads_total,
         (select count(*) from appointments) as appointments_total,
+        (select count(*) from patient_exam_uploads) as exams_total,
+        (select count(*) from patient_exam_uploads where status = 'received') as exams_pending_total,
         (select count(*) from payments where status = 'paid') as payments_paid_total,
         (select coalesce(sum(amount_cents), 0) from payments where status = 'paid') as revenue_paid_cents,
         (select count(*) from appointments where status = 'requested') as requested_appointments_total,
@@ -186,6 +216,23 @@ async function getDashboardData() {
       group by stage
       order by count(*) desc, stage
     `),
+    query<RecentExam>(`
+      select
+        id,
+        patient_full_name,
+        patient_email,
+        patient_phone_whatsapp,
+        exam_type,
+        exam_date,
+        original_file_name,
+        file_size_bytes,
+        status,
+        notes,
+        created_at
+      from patient_exam_uploads
+      order by created_at desc
+      limit 10
+    `),
   ]);
 
   const row = metricsResult.rows[0];
@@ -210,6 +257,11 @@ async function getDashboardData() {
       value: formatMoney(Number(row.revenue_paid_cents)),
       detail: `${row.payments_paid_total} pagos / ${row.pending_payments_total} pendentes`,
     },
+    {
+      label: 'Exames',
+      value: row.exams_total,
+      detail: `${row.exams_pending_total} aguardando revisao`,
+    },
   ];
 
   return {
@@ -219,6 +271,7 @@ async function getDashboardData() {
     appointments: appointmentsResult.rows,
     payments: paymentsResult.rows,
     stages: stagesResult.rows,
+    exams: examsResult.rows,
   };
 }
 
@@ -246,7 +299,7 @@ export default async function InternalDashboardPage() {
         </a>
       </div>
 
-      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {data.metrics.map((metric) => (
           <article key={metric.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)]">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#15A7DD]">{metric.label}</p>
@@ -254,6 +307,56 @@ export default async function InternalDashboardPage() {
             <p className="mt-2 text-sm text-slate-600">{metric.detail}</p>
           </article>
         ))}
+      </section>
+
+      <section className="mt-8" id="exames">
+        <Panel title="Exames enviados pelos pacientes" subtitle="Arquivos anexados no portal do paciente para adiantar a documentacao medica.">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                <tr>
+                  <th className="py-3 pr-4">Paciente</th>
+                  <th className="py-3 pr-4">Exame</th>
+                  <th className="py-3 pr-4">Arquivo</th>
+                  <th className="py-3 pr-4">Status</th>
+                  <th className="py-3 pr-4">Enviado</th>
+                  <th className="py-3 pr-4">Ação</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {data.exams.length ? (
+                  data.exams.map((exam) => (
+                    <tr key={exam.id}>
+                      <td className="py-3 pr-4">
+                        <strong className="block text-[#0F3760]">{exam.patient_full_name}</strong>
+                        <span className="text-xs text-slate-500">{exam.patient_phone_whatsapp ?? exam.patient_email}</span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className="block text-slate-700">{exam.exam_type}</span>
+                        <span className="text-xs text-slate-500">Data do exame: {formatShortDate(exam.exam_date)}</span>
+                      </td>
+                      <td className="py-3 pr-4 text-slate-600">
+                        <span className="block max-w-[220px] truncate">{exam.original_file_name}</span>
+                        <span className="text-xs text-slate-500">{formatFileSize(exam.file_size_bytes)}</span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <StatusBadge>{exam.status === 'received' ? 'Recebido' : exam.status}</StatusBadge>
+                      </td>
+                      <td className="py-3 pr-4 text-slate-600">{formatDate(exam.created_at)}</td>
+                      <td className="py-3 pr-4">
+                        <a href={`/api/exams/${exam.id}/file`} target="_blank" rel="noreferrer" className="inline-flex rounded-lg bg-[#14508B] px-3 py-2 text-xs font-bold text-white hover:bg-[#0F3760]">
+                          Abrir
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <EmptyRow colSpan={6} text="Nenhum exame enviado ainda." />
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
       </section>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.9fr]" id="consultas">
