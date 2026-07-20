@@ -356,13 +356,13 @@ export default function Home() {
               {curriculumHighlights.map((item) => (
                 <article key={item.title} className="min-h-[172px] border-l-2 border-[#9FE6FF] bg-white/14 p-4 text-center text-white shadow-[0_18px_45px_-34px_rgba(0,0,0,0.55)] backdrop-blur">
                   <div className="flex h-12 w-full items-center justify-center">
-                    <span className="inline-flex h-12 w-28 items-center justify-center">
+                    <span className="inline-flex h-12 w-28 items-center justify-center rounded-xl border border-white/25 bg-white/92 px-3 py-2 shadow-[0_10px_24px_-18px_rgba(255,255,255,0.75)] ring-1 ring-[#14508B]/8">
                       <Image
                         src={item.logo}
                         alt={item.logoAlt}
                         width={128}
                         height={64}
-                        className="max-h-10 w-auto object-contain"
+                        className="max-h-9 w-auto object-contain"
                       />
                     </span>
                   </div>
