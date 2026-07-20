@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 
 const navItems = [
   ['Dashboard', '/interno/dashboard'],
@@ -37,6 +38,11 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
+      <AuthorityBackdrop
+        eyebrow="Dashboard medico/admin"
+        title="Visao interna da operacao digital, pacientes, consultas, pagamentos e exames enviados."
+        description="A equipe acompanha a jornada com dados reais, central de exames e estrutura preparada para evoluir com automacoes, PACS, DICOM e analises assistidas."
+      />
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
     </main>
   );

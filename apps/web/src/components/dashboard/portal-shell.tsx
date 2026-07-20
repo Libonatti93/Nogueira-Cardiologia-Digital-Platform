@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 
 const navItems = [
   ['Paciente', '/portal/paciente'],
@@ -32,6 +33,11 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
+      <AuthorityBackdrop
+        eyebrow="Portal do paciente"
+        title="Uma jornada digital para cadastro, agendamento e envio de exames cardiologicos."
+        description="O paciente acessa dados, solicita consulta, envia documentacao medica e acompanha a experiencia com mais clareza antes do atendimento."
+      />
       <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</div>
     </main>
   );

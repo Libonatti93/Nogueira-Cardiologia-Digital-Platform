@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PortalAccess } from '@/components/portal/portal-access';
+import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 
 export const metadata: Metadata = {
   title: 'Portal do Paciente | Nogueira Cardiologia',
@@ -29,6 +30,12 @@ export default function PortalPage() {
           </Link>
         </div>
       </header>
+
+      <AuthorityBackdrop
+        eyebrow="Portal do paciente"
+        title="Acesso digital para marcar consulta, entrar no portal e preparar sua documentacao."
+        description="A Nogueira Cardiologia conecta cadastro, agendamento, conteudo educativo e central de exames em uma jornada simples para o paciente."
+      />
 
       <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <div className="max-w-4xl">

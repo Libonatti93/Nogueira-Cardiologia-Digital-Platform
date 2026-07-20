@@ -55,6 +55,23 @@ body {
   animation-play-state: running;
 }
 
+.authority-backdrop-image {
+  opacity: 0;
+  animation: authority-backdrop-fade 18s linear infinite;
+}
+
+.authority-backdrop-image:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.authority-backdrop-image:nth-child(2) {
+  animation-delay: 6s;
+}
+
+.authority-backdrop-image:nth-child(3) {
+  animation-delay: 12s;
+}
+
 @keyframes socesp-scroll {
   from {
     transform: translateX(0);
@@ -62,6 +79,28 @@ body {
 
   to {
     transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
+@keyframes authority-backdrop-fade {
+  0% {
+    opacity: 0;
+  }
+
+  6% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  38% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
   }
 }
 
@@ -78,5 +117,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .socesp-carousel-track {
     animation: none;
+  }
+
+  .authority-backdrop-image {
+    animation: none;
+  }
+
+  .authority-backdrop-image:first-child {
+    opacity: 1;
   }
 }

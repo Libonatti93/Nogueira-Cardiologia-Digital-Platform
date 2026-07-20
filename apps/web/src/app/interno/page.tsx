@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { InternalLogin } from '@/components/internal/internal-login';
+import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 
 export const metadata: Metadata = {
   title: 'Acesso Interno | Nogueira Cardiologia',
@@ -26,6 +27,12 @@ export default function InternalPage() {
           </Link>
         </div>
       </header>
+
+      <AuthorityBackdrop
+        eyebrow="Acesso interno"
+        title="Gestao medica e administrativa da plataforma digital Nogueira Cardiologia."
+        description="Area reservada para acompanhar pacientes, leads, consultas, pagamentos, exames enviados e evolucao tecnologica da operacao."
+      />
 
       <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
         <div className="flex flex-col justify-center">
