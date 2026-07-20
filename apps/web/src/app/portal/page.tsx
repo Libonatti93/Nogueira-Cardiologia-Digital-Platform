@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { PortalAccess } from '@/components/portal/portal-access';
 
 export const metadata: Metadata = {
-  title: 'Portal do Paciente e Médico | Nogueira Cardiologia',
+  title: 'Portal do Paciente | Nogueira Cardiologia',
   description:
-    'Acesse o portal da Nogueira Cardiologia para marcar consulta, entrar como paciente ou acessar a área médico/admin.',
+    'Acesse o portal da Nogueira Cardiologia para criar cadastro, entrar como paciente e solicitar consulta.',
 };
 
 export default function PortalPage() {
@@ -34,10 +34,10 @@ export default function PortalPage() {
         <div className="max-w-4xl">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Portal Nogueira Cardiologia</p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight text-[#0F3760] sm:text-5xl">
-            Marque sua consulta, acesse conteúdos educativos e entre na área médica.
+            Marque sua consulta e acesse conteúdos educativos da clínica.
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
-            Pacientes podem criar cadastro gratuito para solicitar consulta e acessar materiais da clínica. Médicos e administradores acessam a área restrita para gestão da agenda e publicação de conteúdos educativos.
+            Este portal e exclusivo para pacientes. A equipe interna usa uma entrada separada para acompanhar leads, consultas, pagamentos e relatórios.
           </p>
         </div>
 
@@ -47,9 +47,9 @@ export default function PortalPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {[
-            ['Portal do paciente', '/portal/paciente', 'Agendamento, dados cadastrais, pré-anamnese e pagamento.'],
-            ['CRM da secretária', '/portal/secretaria', 'Funil comercial para trabalhar leads e confirmar consultas.'],
-            ['Dashboard médico', '/portal/medico', 'Métricas, agenda, pacientes, pagamentos e conteúdos educativos.'],
+            ['Cadastro gratuito', '/portal', 'Crie seu acesso com nome, e-mail, WhatsApp e senha.'],
+            ['Portal do paciente', '/portal/paciente', 'Continue para dados cadastrais, pré-anamnese e solicitação de consulta.'],
+            ['Conteúdo educativo', '/blog', 'Acesse materiais da clínica sobre saúde cardiovascular.'],
           ].map(([title, href, description]) => (
             <Link key={href} href={href} className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)] hover:border-[#14508B]/35">
               <h2 className="text-lg font-semibold text-[#0F3760]">{title}</h2>

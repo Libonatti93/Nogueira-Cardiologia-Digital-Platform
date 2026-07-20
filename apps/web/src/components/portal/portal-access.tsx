@@ -33,7 +33,6 @@ async function submitJson(endpoint: string, form: HTMLFormElement, extra?: Recor
 export function PortalAccess() {
   const [patientSignup, setPatientSignup] = useState<Feedback>(initialFeedback);
   const [patientLogin, setPatientLogin] = useState<Feedback>(initialFeedback);
-  const [adminLogin, setAdminLogin] = useState<Feedback>(initialFeedback);
 
   async function handlePatientSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,19 +56,6 @@ export function PortalAccess() {
       window.location.href = body?.redirectTo ?? '/portal/paciente';
     } catch (error) {
       setPatientLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível entrar.' });
-    }
-  }
-
-  async function handleAdminLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setAdminLogin({ status: 'submitting', message: 'Validando acesso médico/admin...' });
-
-    try {
-      const body = await submitJson('/api/auth/login', event.currentTarget, { portal: 'admin' });
-      setAdminLogin({ status: 'success', message: 'Acesso médico validado. Abrindo dashboard...' });
-      window.location.href = body?.redirectTo ?? '/portal/medico';
-    } catch (error) {
-      setAdminLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível entrar.' });
     }
   }
 
@@ -107,32 +93,22 @@ export function PortalAccess() {
       </section>
 
       <section className="rounded-3xl bg-[#0A2C4D] p-6 text-white shadow-[0_26px_70px_-48px_rgba(20,80,139,0.85)] sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Médico / admin</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Jornada do paciente</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">
-          Acesso restrito para agenda, conteúdos educativos e gestão da clínica.
+          Um acesso simples para cadastro, solicitação de consulta e acompanhamento.
         </h2>
-        <p className="mt-3 text-sm leading-7 text-white/80">
-          Este acesso será usado pelo Dr. Paulo, Dra. Cristiani e administradores para publicar materiais, gerenciar imagens e acompanhar a operação digital.
-        </p>
-
-        <form onSubmit={handleAdminLogin} className="mt-6 grid gap-4">
-          <DarkField label="E-mail institucional" name="email" type="email" autoComplete="email" placeholder="medico@nogueira..." />
-          <DarkField label="Senha" name="password" type="password" autoComplete="current-password" placeholder="Sua senha" />
-          <button
-            type="submit"
-            disabled={adminLogin.status === 'submitting'}
-            className="inline-flex w-fit rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] transition-colors hover:bg-[#EAF6FF] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {adminLogin.status === 'submitting' ? 'Validando...' : 'Entrar como médico/admin'}
-          </button>
-          <FeedbackMessage feedback={adminLogin} dark />
-        </form>
-
-        <div className="mt-8 rounded-2xl border border-white/14 bg-white/8 p-5">
-          <h3 className="font-semibold">Próxima etapa do painel</h3>
-          <p className="mt-2 text-sm leading-7 text-white/78">
-            O painel médico já está conectado ao login local da VPS. A próxima etapa é liberar editor de conteúdos, upload de imagem, rascunho, publicação e histórico.
-          </p>
+        <div className="mt-6 grid gap-4">
+          {[
+            ['Cadastro', 'O paciente cria acesso com nome, e-mail, WhatsApp e senha.'],
+            ['Portal', 'Depois entra na área do paciente para iniciar o agendamento.'],
+            ['Agendamento', 'O formulário coleta dados cadastrais, LGPD e informações cardiovasculares.'],
+            ['Secretaria', 'A equipe interna acompanha a solicitação no painel separado.'],
+          ].map(([title, text]) => (
+            <div key={title} className="rounded-2xl border border-white/14 bg-white/8 p-4">
+              <h3 className="font-semibold">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-white/78">{text}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>
@@ -161,34 +137,6 @@ function Field({
         autoComplete={autoComplete}
         required
         className="rounded-2xl border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-        placeholder={placeholder}
-      />
-    </label>
-  );
-}
-
-function DarkField({
-  label,
-  name,
-  type = 'text',
-  autoComplete,
-  placeholder,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  autoComplete?: string;
-  placeholder?: string;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-semibold text-white">
-      {label}
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required
-        className="rounded-2xl border border-white/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#9FE6FF] focus:ring-2"
         placeholder={placeholder}
       />
     </label>

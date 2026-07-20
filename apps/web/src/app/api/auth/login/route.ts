@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createSessionToken, sessionCookie } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
 
@@ -62,10 +63,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Este acesso é exclusivo para médicos e administradores.' }, { status: 403 });
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     ok: true,
     portal: isAdminPortal ? 'admin' : 'patient',
-    redirectTo: isAdminPortal ? '/portal/medico' : '/portal/paciente',
+    redirectTo: isAdminPortal ? '/interno/dashboard' : '/portal/paciente',
     user: {
       id: user.id,
       email: user.email,
@@ -73,4 +74,21 @@ export async function POST(request: Request) {
       role,
     },
   });
+
+  response.cookies.set({
+    name: sessionCookie.name,
+    value: createSessionToken({
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name,
+      role,
+    }),
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: sessionCookie.maxAge,
+  });
+
+  return response;
 }

@@ -3,8 +3,8 @@ import Link from 'next/link';
 
 const navItems = [
   ['Paciente', '/portal/paciente'],
-  ['Secretária', '/portal/secretaria'],
-  ['Médico', '/portal/medico'],
+  ['Agendar', '/portal/paciente/agendar'],
+  ['Conteúdos', '/blog'],
 ] as const;
 
 export function PortalShell({ children }: { children: React.ReactNode }) {
