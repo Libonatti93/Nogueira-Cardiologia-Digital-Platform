@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PortalAccess } from '@/components/portal/portal-access';
 import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
+import { PublicFooter } from '@/components/site/public-footer';
 
 export const metadata: Metadata = {
   title: 'Portal do Paciente | Nogueira Cardiologia',
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function PortalPage() {
   return (
-    <main className="min-h-screen bg-[#F4F9FF] text-slate-950">
+    <div className="min-h-screen bg-[#F4F9FF] text-slate-950">
       <header className="border-b border-[#14508B]/10 bg-white">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="Voltar para a Nogueira Cardiologia">
@@ -37,7 +38,7 @@ export default function PortalPage() {
         description="A Nogueira Cardiologia conecta cadastro, agendamento, conteudo educativo e central de exames em uma jornada simples para o paciente."
       />
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <div className="max-w-4xl">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Portal Nogueira Cardiologia</p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight text-[#0F3760] sm:text-5xl">
@@ -64,7 +65,9 @@ export default function PortalPage() {
             </Link>
           ))}
         </div>
-      </section>
-    </main>
+      </main>
+
+      <PublicFooter />
+    </div>
   );
 }
