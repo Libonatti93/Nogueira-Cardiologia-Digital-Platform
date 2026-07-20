@@ -44,6 +44,18 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
     return NextResponse.json({ message: 'Acesso nao autorizado.' }, { status: 403 });
   }
 
+  if (!isInternal) {
+    const userResult = await query<{ email_verified_at: Date | null; is_active: boolean }>(
+      'select email_verified_at, is_active from app_users where id = $1 limit 1',
+      [user.id],
+    );
+    const currentUser = userResult.rows[0];
+
+    if (!currentUser?.is_active || !currentUser.email_verified_at) {
+      return NextResponse.json({ message: 'Confirme seu e-mail para acessar seus exames.' }, { status: 403 });
+    }
+  }
+
   const file = await readFile(exam.storage_path).catch(() => null);
 
   if (!file) {

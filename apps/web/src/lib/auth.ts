@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { query } from '@/lib/db';
 
 export type SessionUser = {
   id: string;
@@ -96,7 +97,35 @@ export async function requirePatientUser() {
     redirect('/portal');
   }
 
+  if (!(await isVerifiedPatient(user.id))) {
+    redirect('/portal?confirm=1');
+  }
+
   return user;
+}
+
+export async function getVerifiedPatientUser() {
+  const user = await getSessionUser();
+
+  if (!user || user.role !== 'patient') {
+    return null;
+  }
+
+  if (!(await isVerifiedPatient(user.id))) {
+    return null;
+  }
+
+  return user;
+}
+
+async function isVerifiedPatient(userId: string) {
+  const result = await query<{ email_verified_at: Date | null; is_active: boolean }>(
+    'select email_verified_at, is_active from app_users where id = $1 limit 1',
+    [userId],
+  );
+  const currentUser = result.rows[0];
+
+  return Boolean(currentUser?.is_active && currentUser.email_verified_at);
 }
 
 export const sessionCookie = {

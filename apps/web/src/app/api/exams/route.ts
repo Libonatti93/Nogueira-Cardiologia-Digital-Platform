@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
-import { getSessionUser } from '@/lib/auth';
+import { getVerifiedPatientUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 
 export const runtime = 'nodejs';
@@ -31,10 +31,10 @@ function extensionForType(mimeType: string) {
 }
 
 export async function POST(request: Request) {
-  const user = await getSessionUser();
+  const user = await getVerifiedPatientUser();
 
-  if (!user || user.role !== 'patient') {
-    return NextResponse.json({ message: 'Entre no portal do paciente para enviar exames.' }, { status: 401 });
+  if (!user) {
+    return NextResponse.json({ message: 'Confirme seu e-mail e entre no portal do paciente para enviar exames.' }, { status: 401 });
   }
 
   const formData = await request.formData().catch(() => null);

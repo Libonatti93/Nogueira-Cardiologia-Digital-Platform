@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { createEmailVerification, sendVerificationEmail } from '@/lib/email-verification';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
 
 export const runtime = 'nodejs';
@@ -47,16 +48,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Este e-mail já possui cadastro. Use a área de login.' }, { status: 409 });
   }
 
-  await query(
+  const createdUser = await query<{ id: string }>(
     `
-      insert into app_users (email, password_hash, role, full_name, phone_whatsapp)
-      values ($1, crypt($2, gen_salt('bf')), 'patient', $3, $4)
+      insert into app_users (email, password_hash, role, full_name, phone_whatsapp, email_verified_at)
+      values ($1, crypt($2, gen_salt('bf')), 'patient', $3, $4, null)
+      returning id
     `,
     [email, password, fullName, phoneWhatsapp],
   );
 
+  const verification = await createEmailVerification(createdUser.rows[0].id, email, request);
+  const emailResult = await sendVerificationEmail({
+    to: email,
+    fullName,
+    verifyUrl: verification.verifyUrl,
+  });
+
   return NextResponse.json({
     ok: true,
-    message: 'Cadastro criado. Você já pode entrar no portal do paciente e solicitar sua consulta.',
+    emailSent: emailResult.sent,
+    verifyUrl: emailResult.sent ? undefined : verification.verifyUrl,
+    message: emailResult.sent
+      ? 'Cadastro criado. Enviamos um link de confirmação para seu e-mail. Confirme para liberar o portal.'
+      : 'Cadastro criado. O envio de e-mail ainda não está configurado; use o link de teste abaixo para confirmar o cadastro.',
   });
 }

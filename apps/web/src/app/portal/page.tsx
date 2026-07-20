@@ -11,7 +11,21 @@ export const metadata: Metadata = {
     'Acesse o portal da Nogueira Cardiologia para criar cadastro, entrar como paciente e solicitar consulta.',
 };
 
-export default function PortalPage() {
+export default async function PortalPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ verified?: string; confirm?: string }>;
+}) {
+  const params = await searchParams;
+  const initialNotice =
+    params.verified === '1'
+      ? 'E-mail confirmado com sucesso. Você já pode entrar no portal do paciente.'
+      : params.verified === 'invalid'
+        ? 'Este link de confirmação expirou ou já foi usado. Solicite um novo link.'
+        : params.confirm === '1'
+          ? 'Confirme seu e-mail para liberar o acesso completo ao portal.'
+          : undefined;
+
   return (
     <div className="min-h-screen bg-[#F4F9FF] text-slate-950">
       <header className="border-b border-[#14508B]/10 bg-white">
@@ -50,7 +64,7 @@ export default function PortalPage() {
         </div>
 
         <div className="mt-8">
-          <PortalAccess />
+          <PortalAccess initialNotice={initialNotice} />
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">

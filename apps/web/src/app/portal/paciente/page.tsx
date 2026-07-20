@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { PortalShell } from '@/components/dashboard/portal-shell';
+import { requirePatientUser } from '@/lib/auth';
 
-export default function PatientDashboardPage() {
+export default async function PatientDashboardPage() {
+  await requirePatientUser();
+
   return (
     <PortalShell>
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">

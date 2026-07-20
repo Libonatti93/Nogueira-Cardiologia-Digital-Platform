@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PortalShell } from '@/components/dashboard/portal-shell';
+import { requirePatientUser } from '@/lib/auth';
 
 const healthQuestions = [
   ['hasHypertension', 'Você tem hipertensão arterial, também conhecida como pressão alta?'],
@@ -8,7 +9,9 @@ const healthQuestions = [
   ['isSmoker', 'Você fuma ou é tabagista?'],
 ] as const;
 
-export default function PatientSchedulePage() {
+export default async function PatientSchedulePage() {
+  const user = await requirePatientUser();
+
   return (
     <PortalShell>
       <div className="max-w-4xl">
@@ -23,10 +26,10 @@ export default function PatientSchedulePage() {
 
       <form action="/api/appointments" method="post" className="mt-8 grid gap-6 rounded-3xl border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)] sm:p-8">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Nome completo" name="fullName" autoComplete="name" />
+          <Field label="Nome completo" name="fullName" autoComplete="name" defaultValue={user.fullName} />
           <Field label="CPF" name="cpf" placeholder="000.000.000-00" />
           <Field label="WhatsApp" name="phoneWhatsapp" type="tel" autoComplete="tel" />
-          <Field label="E-mail" name="email" type="email" autoComplete="email" />
+          <Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={user.email} />
           <Field label="Data de nascimento" name="birthDate" type="date" />
           <Field label="Altura em cm" name="heightCm" type="number" placeholder="Ex: 175" />
           <Field label="Peso em kg" name="weightKg" type="number" placeholder="Ex: 82" />
@@ -76,12 +79,14 @@ function Field({
   type = 'text',
   autoComplete,
   placeholder,
+  defaultValue,
 }: {
   label: string;
   name: string;
   type?: string;
   autoComplete?: string;
   placeholder?: string;
+  defaultValue?: string;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
@@ -92,6 +97,7 @@ function Field({
         autoComplete={autoComplete}
         required
         placeholder={placeholder}
+        defaultValue={defaultValue}
         className="rounded-2xl border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
       />
     </label>

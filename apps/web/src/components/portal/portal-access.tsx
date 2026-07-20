@@ -7,9 +7,19 @@ type Status = 'idle' | 'submitting' | 'success' | 'error';
 type Feedback = {
   status: Status;
   message: string;
+  verifyUrl?: string;
 };
 
 const initialFeedback: Feedback = { status: 'idle', message: '' };
+
+class ApiError extends Error {
+  code?: string;
+
+  constructor(message: string, code?: string) {
+    super(message);
+    this.code = code;
+  }
+}
 
 async function submitJson(endpoint: string, form: HTMLFormElement, extra?: Record<string, string>) {
   const formData = new FormData(form);
@@ -24,15 +34,18 @@ async function submitJson(endpoint: string, form: HTMLFormElement, extra?: Recor
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(body?.message ?? 'Não foi possível concluir agora.');
+    throw new ApiError(body?.message ?? 'Não foi possível concluir agora.', body?.code);
   }
 
   return body;
 }
 
-export function PortalAccess() {
+export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
   const [patientSignup, setPatientSignup] = useState<Feedback>(initialFeedback);
-  const [patientLogin, setPatientLogin] = useState<Feedback>(initialFeedback);
+  const [patientLogin, setPatientLogin] = useState<Feedback>(
+    initialNotice ? { status: 'success', message: initialNotice } : initialFeedback,
+  );
+  const [resendEmail, setResendEmail] = useState('');
 
   async function handlePatientSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,7 +53,13 @@ export function PortalAccess() {
 
     try {
       const body = await submitJson('/api/auth/signup', event.currentTarget);
-      setPatientSignup({ status: 'success', message: body?.message ?? 'Cadastro criado com sucesso.' });
+      setResendEmail(String(new FormData(event.currentTarget).get('email') ?? ''));
+      setPatientSignup({
+        status: 'success',
+        message: body?.message ?? 'Cadastro criado com sucesso.',
+        verifyUrl: body?.verifyUrl,
+      });
+      event.currentTarget.reset();
     } catch (error) {
       setPatientSignup({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível criar o cadastro.' });
     }
@@ -55,7 +74,26 @@ export function PortalAccess() {
       setPatientLogin({ status: 'success', message: 'Acesso liberado. Abrindo o portal do paciente...' });
       window.location.href = body?.redirectTo ?? '/portal/paciente';
     } catch (error) {
+      if (error instanceof ApiError && error.code === 'email_not_verified') {
+        setResendEmail(String(new FormData(event.currentTarget).get('email') ?? ''));
+      }
       setPatientLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível entrar.' });
+    }
+  }
+
+  async function handleResendVerification(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPatientLogin({ status: 'submitting', message: 'Enviando novo link...' });
+
+    try {
+      const body = await submitJson('/api/auth/resend-verification', event.currentTarget);
+      setPatientLogin({
+        status: 'success',
+        message: body?.message ?? 'Se houver cadastro pendente, enviaremos um novo link.',
+        verifyUrl: body?.verifyUrl,
+      });
+    } catch (error) {
+      setPatientLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível reenviar o link.' });
     }
   }
 
@@ -77,7 +115,7 @@ export function PortalAccess() {
           </div>
           <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
           <Field label="Senha" name="password" type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" />
-          <SubmitButton loading={patientSignup.status === 'submitting'}>Criar acesso e marcar consulta</SubmitButton>
+          <SubmitButton loading={patientSignup.status === 'submitting'}>Criar acesso</SubmitButton>
           <FeedbackMessage feedback={patientSignup} />
         </form>
 
@@ -89,6 +127,21 @@ export function PortalAccess() {
             <SubmitButton loading={patientLogin.status === 'submitting'}>Entrar no portal do paciente</SubmitButton>
             <FeedbackMessage feedback={patientLogin} />
           </form>
+          {resendEmail ? (
+            <form onSubmit={handleResendVerification} className="mt-4 rounded-2xl border border-[#14508B]/12 bg-[#F4F9FF] p-4">
+              <input type="hidden" name="email" value={resendEmail} />
+              <p className="text-sm leading-6 text-slate-600">
+                Precisa de outro link de confirmação para <strong>{resendEmail}</strong>?
+              </p>
+              <button
+                type="submit"
+                disabled={patientLogin.status === 'submitting'}
+                className="mt-3 inline-flex w-fit rounded-full border border-[#14508B]/20 bg-white px-4 py-2 text-xs font-bold text-[#14508B] hover:border-[#14508B]/55 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Reenviar confirmação
+              </button>
+            </form>
+          ) : null}
         </div>
       </section>
 
@@ -100,7 +153,7 @@ export function PortalAccess() {
         <div className="mt-6 grid gap-4">
           {[
             ['Cadastro', 'O paciente cria acesso com nome, e-mail, WhatsApp e senha.'],
-            ['Portal', 'Depois entra na área do paciente para iniciar o agendamento.'],
+            ['Confirmação', 'O paciente confirma o e-mail para liberar o acesso ao portal.'],
             ['Agendamento', 'O formulário coleta dados cadastrais, LGPD e informações cardiovasculares.'],
             ['Secretaria', 'A equipe interna acompanha a solicitação no painel separado.'],
           ].map(([title, text]) => (
@@ -160,5 +213,14 @@ function FeedbackMessage({ feedback, dark = false }: { feedback: Feedback; dark?
 
   const color = feedback.status === 'error' ? (dark ? 'text-red-100' : 'text-red-700') : dark ? 'text-[#9FE6FF]' : 'text-[#14508B]';
 
-  return <p className={`text-sm font-semibold ${color}`}>{feedback.message}</p>;
+  return (
+    <div className={`grid gap-2 text-sm font-semibold ${color}`}>
+      <p>{feedback.message}</p>
+      {feedback.verifyUrl ? (
+        <a className="break-all rounded-2xl bg-[#EAF7FF] p-3 text-xs text-[#0F3760] underline" href={feedback.verifyUrl}>
+          Link de teste: {feedback.verifyUrl}
+        </a>
+      ) : null}
+    </div>
+  );
 }

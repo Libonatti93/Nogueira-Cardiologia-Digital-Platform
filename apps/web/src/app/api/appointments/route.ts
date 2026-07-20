@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getVerifiedPatientUser } from '@/lib/auth';
 import { transaction } from '@/lib/db';
 
 export const runtime = 'nodejs';
@@ -26,6 +27,12 @@ function clean(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  const user = await getVerifiedPatientUser();
+
+  if (!user) {
+    return NextResponse.json({ message: 'Confirme seu e-mail e entre no portal do paciente para solicitar consulta.' }, { status: 401 });
+  }
+
   const contentType = request.headers.get('content-type') ?? '';
   let payload: AppointmentPayload;
 
@@ -54,6 +61,10 @@ export async function POST(request: Request) {
 
   if (!emailRegex.test(email)) {
     return NextResponse.json({ message: 'Informe um e-mail válido.' }, { status: 400 });
+  }
+
+  if (email !== user.email.toLowerCase()) {
+    return NextResponse.json({ message: 'Use o mesmo e-mail confirmado da sua conta do portal.' }, { status: 400 });
   }
 
   if (phoneWhatsapp.length < 10) {
