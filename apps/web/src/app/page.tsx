@@ -784,7 +784,7 @@ export default function Home() {
               />
             </div>
             <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
-              Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira, une cuidado médico, prevenção cardiovascular e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
+              Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira e da Dra. Cristiani Nogueira, une cuidado médico, prevenção cardiovascular e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
             </p>
             <div className="mt-5 flex items-center gap-3" aria-label="Redes sociais da Nogueira Cardiologia">
               {socialLinks.map(([label, href, icon]) => (
