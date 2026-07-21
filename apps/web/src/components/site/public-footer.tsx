@@ -60,15 +60,17 @@ export function PublicFooter() {
     <footer id="contato" className="bg-[#0A2C4D] pb-10 pt-12 text-white">
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.2fr_0.9fr_0.9fr] lg:px-8">
         <div>
-          <Image
-            src="/uploads-imagens-nogueira/nogueira-cardio2-transparent.png"
-            alt="Simbolo da Nogueira Cardiologia"
-            width={72}
-            height={72}
-            className="h-[58px] w-[58px] object-contain"
-          />
+          <div className="inline-flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-white p-2 shadow-[0_18px_40px_-28px_rgba(255,255,255,0.9)] ring-1 ring-white/60">
+            <Image
+              src="/uploads-imagens-nogueira/nogueira-cardio2-transparent.png"
+              alt="Símbolo da Nogueira Cardiologia"
+              width={72}
+              height={72}
+              className="h-[58px] w-[58px] object-contain"
+            />
+          </div>
           <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
-            Referencia em cardiologia em Sao Jose do Rio Preto desde 1998, com uma frente digital preparada para agendamento, agenda medica e conteudo educativo.
+            Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira, une cuidado médico, prevenção cardiovascular e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
           </p>
           <div className="mt-5 flex items-center gap-3" aria-label="Redes sociais da Nogueira Cardiologia">
             {socialLinks.map(([label, href, icon]) => (
@@ -91,6 +93,12 @@ export function PublicFooter() {
           <p className="mt-3 text-sm leading-7 text-white/80">Av. Jose Munia, 7301 - Jardim Redentor, Sao Jose do Rio Preto - SP, 15085-895</p>
           <p className="mt-2 text-sm text-white/80">Telefone: (17) 2139-8338</p>
           <p className="mt-1 text-sm text-white/80">WhatsApp: (17) 99744-0223</p>
+          <p className="mt-1 text-sm text-white/80">
+            E-mail:{' '}
+            <a href="mailto:contato@nogueiracardiologia.com.br" className="hover:text-white">
+              contato@nogueiracardiologia.com.br
+            </a>
+          </p>
         </div>
         <div>
           <h2 className="font-semibold">Acessos rapidos</h2>
