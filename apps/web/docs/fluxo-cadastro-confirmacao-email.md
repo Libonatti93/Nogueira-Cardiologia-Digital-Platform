@@ -162,6 +162,7 @@ Para escala, o ideal e separar:
 - adicionar Redirect URL `https://www.nogueiracardiologia.com.br/portal?verified=1`;
 - configurar `NEXT_PUBLIC_SUPABASE_URL`;
 - configurar `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`;
+- adicionar Redirect URL `https://www.nogueiracardiologia.com.br/portal/redefinir-senha`;
 - criar layout visual final dos emails;
 - criar tela dedicada de "verifique sua caixa de entrada";
 - adicionar painel interno para secretaria ver pacientes pendentes de confirmacao.

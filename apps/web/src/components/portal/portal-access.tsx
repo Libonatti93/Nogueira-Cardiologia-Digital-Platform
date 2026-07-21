@@ -41,11 +41,12 @@ async function submitJson(endpoint: string, form: HTMLFormElement, extra?: Recor
 }
 
 export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
-  const [mode, setMode] = useState<'signup' | 'login'>(initialNotice ? 'login' : 'signup');
+  const [mode, setMode] = useState<'signup' | 'login' | 'forgot'>(initialNotice ? 'login' : 'signup');
   const [patientSignup, setPatientSignup] = useState<Feedback>(initialFeedback);
   const [patientLogin, setPatientLogin] = useState<Feedback>(
     initialNotice ? { status: 'success', message: initialNotice } : initialFeedback,
   );
+  const [passwordReset, setPasswordReset] = useState<Feedback>(initialFeedback);
   const [resendEmail, setResendEmail] = useState('');
 
   async function handlePatientSignup(event: FormEvent<HTMLFormElement>) {
@@ -99,6 +100,21 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
     }
   }
 
+  async function handleForgotPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordReset({ status: 'submitting', message: 'Enviando link de recuperação...' });
+
+    try {
+      const body = await submitJson('/api/auth/forgot-password', event.currentTarget);
+      setPasswordReset({
+        status: 'success',
+        message: body?.message ?? 'Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.',
+      });
+    } catch (error) {
+      setPasswordReset({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível enviar o link.' });
+    }
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <section className="rounded-3xl border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)] sm:p-8">
@@ -114,7 +130,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
           <ModeButton active={mode === 'signup'} onClick={() => setMode('signup')}>
             Criar cadastro
           </ModeButton>
-          <ModeButton active={mode === 'login'} onClick={() => setMode('login')}>
+          <ModeButton active={mode === 'login' || mode === 'forgot'} onClick={() => setMode('login')}>
             Já tenho acesso
           </ModeButton>
         </div>
@@ -126,16 +142,46 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
               <Field label="WhatsApp" name="phoneWhatsapp" type="tel" autoComplete="tel" placeholder="(17) 99999-9999" />
             </div>
             <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
-            <Field label="Senha" name="password" type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" />
+            <Field
+              label="Senha"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Mínimo 6 caracteres"
+              helpText="Use pelo menos 6 caracteres. Você pode trocar essa senha depois se precisar."
+              minLength={6}
+            />
             <SubmitButton loading={patientSignup.status === 'submitting'}>Criar acesso</SubmitButton>
             <FeedbackMessage feedback={patientSignup} />
+          </form>
+        ) : mode === 'forgot' ? (
+          <form onSubmit={handleForgotPassword} className="mt-6 grid gap-4 rounded-2xl border border-[#14508B]/12 bg-[#F4F9FF] p-4">
+            <div>
+              <h3 className="font-semibold text-[#0F3760]">Esqueci minha senha</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Informe o e-mail cadastrado. Se ele existir no portal, enviaremos um link para criar uma nova senha.
+              </p>
+            </div>
+            <Field label="E-mail cadastrado" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <SubmitButton loading={passwordReset.status === 'submitting'}>Enviar link de recuperação</SubmitButton>
+              <button type="button" onClick={() => setMode('login')} className="w-fit text-sm font-bold text-[#14508B] hover:text-[#0F3760]">
+                Voltar para login
+              </button>
+            </div>
+            <FeedbackMessage feedback={passwordReset} />
           </form>
         ) : (
           <>
             <form onSubmit={handlePatientLogin} className="mt-4 grid gap-4">
               <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
               <Field label="Senha" name="password" type="password" autoComplete="current-password" placeholder="Sua senha" />
-              <SubmitButton loading={patientLogin.status === 'submitting'}>Entrar no portal do paciente</SubmitButton>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <SubmitButton loading={patientLogin.status === 'submitting'}>Entrar no portal do paciente</SubmitButton>
+                <button type="button" onClick={() => setMode('forgot')} className="w-fit text-sm font-bold text-[#14508B] hover:text-[#0F3760]">
+                  Esqueci minha senha
+                </button>
+              </div>
               <FeedbackMessage feedback={patientLogin} />
             </form>
           {resendEmail ? (
@@ -166,7 +212,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
           {[
             ['Cadastro', 'O paciente cria acesso com nome, e-mail, WhatsApp e senha.'],
             ['Confirmação', 'O paciente confirma o e-mail para liberar o acesso ao portal.'],
-            ['Agendamento', 'O formulário coleta dados cadastrais, LGPD e informações cardiovasculares.'],
+            ['Senha', 'Se esquecer a senha, o paciente recebe um link seguro por e-mail.'],
             ['Secretaria', 'A equipe interna acompanha a solicitação no painel separado.'],
           ].map(([title, text]) => (
             <div key={title} className="rounded-2xl border border-white/14 bg-white/8 p-4">
@@ -200,12 +246,16 @@ function Field({
   type = 'text',
   autoComplete,
   placeholder,
+  helpText,
+  minLength,
 }: {
   label: string;
   name: string;
   type?: string;
   autoComplete?: string;
   placeholder?: string;
+  helpText?: string;
+  minLength?: number;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
@@ -215,9 +265,11 @@ function Field({
         type={type}
         autoComplete={autoComplete}
         required
+        minLength={minLength}
         className="rounded-2xl border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
         placeholder={placeholder}
       />
+      {helpText ? <span className="text-xs font-normal leading-5 text-slate-500">{helpText}</span> : null}
     </label>
   );
 }

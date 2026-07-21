@@ -89,6 +89,7 @@ URL Configuration
   +--> Redirect URLs:
        https://www.nogueiracardiologia.com.br/portal?verified=1
        https://www.nogueiracardiologia.com.br/portal
+       https://www.nogueiracardiologia.com.br/portal/redefinir-senha
 ```
 
 ## Fluxo Final
@@ -124,6 +125,30 @@ Next.js cria sessao local segura
 Portal do paciente e liberado
 ```
 
+## Recuperacao De Senha
+
+```text
+Paciente clica em "Esqueci minha senha"
+        |
+        v
+Informa o e-mail cadastrado
+        |
+        v
+Next.js chama Supabase Auth resetPasswordForEmail
+        |
+        v
+Supabase envia link de recuperacao
+        |
+        v
+Paciente abre /portal/redefinir-senha
+        |
+        v
+Paciente cria nova senha
+        |
+        v
+Supabase Auth atualiza a senha
+```
+
 ## Status
 
 ```text
@@ -133,4 +158,3 @@ Publicacao: depende das credenciais do Supabase no ambiente
 Equipe interna: permanece no auth local
 Paciente: usa Supabase Auth quando configurado
 ```
-

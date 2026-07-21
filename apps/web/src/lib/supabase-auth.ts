@@ -30,6 +30,10 @@ export function getSupabaseEmailRedirectUrl(request: Request) {
   return `${getPublicBaseUrl(request)}/portal?verified=1`;
 }
 
+export function getSupabasePasswordResetRedirectUrl(request: Request) {
+  return `${getPublicBaseUrl(request)}/portal/redefinir-senha`;
+}
+
 export function normalizeSupabaseAuthError(message: string) {
   const normalized = message.toLowerCase();
 
@@ -66,6 +70,13 @@ export function normalizeSupabaseAuthError(message: string) {
     return {
       message: 'O envio de e-mails atingiu o limite temporário do provedor. Aguarde alguns minutos e tente novamente.',
       status: 429,
+    };
+  }
+
+  if (normalized.includes('password') && normalized.includes('6')) {
+    return {
+      message: 'A senha precisa ter pelo menos 6 caracteres.',
+      status: 400,
     };
   }
 

@@ -39,8 +39,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Informe um WhatsApp válido com DDD.' }, { status: 400 });
   }
 
-  if (password.length < 8) {
-    return NextResponse.json({ message: 'A senha precisa ter pelo menos 8 caracteres.' }, { status: 400 });
+  if (password.length < 6) {
+    return NextResponse.json({ message: 'A senha precisa ter pelo menos 6 caracteres.' }, { status: 400 });
   }
 
   const existing = await query('select id from app_users where email = $1 limit 1', [email]);
