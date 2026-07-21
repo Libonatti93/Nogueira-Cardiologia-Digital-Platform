@@ -55,6 +55,20 @@ export function normalizeSupabaseAuthError(message: string) {
     };
   }
 
+  if (normalized.includes('email address') && normalized.includes('invalid')) {
+    return {
+      message: 'Informe um e-mail válido. Alguns domínios de teste podem ser recusados pelo verificador.',
+      status: 400,
+    };
+  }
+
+  if (normalized.includes('rate limit') || normalized.includes('too many')) {
+    return {
+      message: 'O envio de e-mails atingiu o limite temporário do provedor. Aguarde alguns minutos e tente novamente.',
+      status: 429,
+    };
+  }
+
   return {
     message: 'Não foi possível concluir agora. Tente novamente em alguns instantes.',
     status: 400,
