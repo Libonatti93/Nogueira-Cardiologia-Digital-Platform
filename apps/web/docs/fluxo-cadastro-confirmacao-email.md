@@ -18,26 +18,22 @@ Preenche nome, WhatsApp, email e senha
 API /api/auth/signup cria usuario patient pendente
         |
         v
-Sistema gera token seguro de confirmacao
+Supabase Auth cria credencial e gera confirmacao
         |
         v
-Token e salvo em email_verification_tokens
+Supabase envia email de confirmacao
         |
         v
-Sistema envia email, se provedor estiver configurado
+Paciente confirma pelo link
         |
         v
-Paciente clica no link
-        |
-        v
-API /api/auth/confirm-email valida token
-        |
-        v
-app_users.email_verified_at e preenchido
+Login sincroniza app_users.email_verified_at
         |
         v
 Paciente consegue entrar no portal
 ```
+
+Enquanto o Supabase nao estiver configurado no ambiente, o sistema usa o fluxo interno de teste com token proprio para nao quebrar o portal.
 
 ## Banco de Dados
 
@@ -47,6 +43,7 @@ Novo campo:
 
 ```text
 email_verified_at
+supabase_user_id
 ```
 
 Quando este campo esta vazio, o paciente ainda nao confirmou o email.
@@ -69,6 +66,8 @@ purpose
 ```
 
 O token real nao fica salvo no banco. O banco guarda apenas o hash do token, o que reduz risco em caso de vazamento.
+
+Esta tabela continua existindo como fallback tecnico. Com Supabase configurado, a confirmacao principal fica em Supabase Auth.
 
 ## Regras de Acesso
 
@@ -106,17 +105,25 @@ Novo link e enviado ou exibido em modo de teste
 
 ## Envio de Email
 
-O sistema foi preparado para usar Resend via API, sem instalar dependencia adicional.
+O sistema foi preparado para usar Supabase Auth como caminho principal para cadastro, senha e confirmacao de email do paciente.
 
 Variaveis futuras:
 
 ```text
-RESEND_API_KEY
-EMAIL_FROM
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 NEXT_PUBLIC_SITE_URL
 ```
 
-Enquanto `RESEND_API_KEY` nao estiver configurada, o sistema entra em modo de teste:
+Tambem sao aceitas estas variaveis equivalentes no servidor:
+
+```text
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_PUBLISHABLE_KEY
+```
+
+Enquanto o Supabase nao estiver configurado, o sistema entra em modo de teste:
 
 - cria usuario;
 - cria token seguro;
@@ -129,28 +136,32 @@ Isso permite testar tudo agora sem custo mensal.
 
 ### Agora
 
-Usar modo de teste para validar o fluxo completo.
+Usar Supabase Auth free para cadastro, senha e confirmacao de email do paciente.
 
 ### Producao
 
-Escolher um provedor:
+Configurar Supabase Auth:
 
-- Google Workspace ou Microsoft 365 para email corporativo da equipe;
-- Resend, Brevo, SendGrid ou outro provedor transacional para emails automaticos da plataforma.
+- criar projeto Supabase;
+- ativar Confirm Email;
+- configurar Site URL;
+- liberar Redirect URL do dominio;
+- configurar as variaveis no servidor.
 
 Para escala, o ideal e separar:
 
 - email humano da clinica: Gmail/Outlook corporativo;
-- email automatico do sistema: provedor transacional.
+- autenticacao de paciente: Supabase Auth;
+- email transacional avancado: provedor dedicado somente quando o volume justificar.
 
 ## Pendencias Futuras
 
-- escolher provedor de envio real;
-- configurar SPF, DKIM e DMARC no DNS;
-- configurar `RESEND_API_KEY`;
-- configurar `EMAIL_FROM`;
+- criar projeto Supabase;
+- ativar Confirm Email no Supabase;
+- configurar Site URL como `https://www.nogueiracardiologia.com.br`;
+- adicionar Redirect URL `https://www.nogueiracardiologia.com.br/portal?verified=1`;
+- configurar `NEXT_PUBLIC_SUPABASE_URL`;
+- configurar `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`;
 - criar layout visual final dos emails;
 - criar tela dedicada de "verifique sua caixa de entrada";
-- criar rotina de limpeza de tokens expirados;
 - adicionar painel interno para secretaria ver pacientes pendentes de confirmacao.
-

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { createEmailVerification, sendVerificationEmail } from '@/lib/email-verification';
+import { createSupabaseAuthClient, getSupabaseEmailRedirectUrl, normalizeSupabaseAuthError } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
 
 export const runtime = 'nodejs';
@@ -46,6 +47,47 @@ export async function POST(request: Request) {
 
   if (existing.rowCount) {
     return NextResponse.json({ message: 'Este e-mail já possui cadastro. Use a área de login.' }, { status: 409 });
+  }
+
+  const supabase = createSupabaseAuthClient();
+
+  if (supabase) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: getSupabaseEmailRedirectUrl(request),
+        data: {
+          full_name: fullName,
+          phone_whatsapp: phoneWhatsapp,
+          portal: 'patient',
+        },
+      },
+    });
+
+    if (error) {
+      const normalizedError = normalizeSupabaseAuthError(error.message);
+      return NextResponse.json({ message: normalizedError.message }, { status: normalizedError.status });
+    }
+
+    await query(
+      `
+        insert into app_users (email, password_hash, role, full_name, phone_whatsapp, email_verified_at, supabase_user_id)
+        values ($1, null, 'patient', $2, $3, null, $4)
+        on conflict (email) do update set
+          updated_at = now(),
+          full_name = excluded.full_name,
+          phone_whatsapp = excluded.phone_whatsapp,
+          supabase_user_id = coalesce(app_users.supabase_user_id, excluded.supabase_user_id)
+      `,
+      [email, fullName, phoneWhatsapp, data.user?.id ?? null],
+    );
+
+    return NextResponse.json({
+      ok: true,
+      emailSent: true,
+      message: 'Cadastro criado. Enviamos um link de confirmação para seu e-mail. Confirme para liberar o portal.',
+    });
   }
 
   const createdUser = await query<{ id: string }>(

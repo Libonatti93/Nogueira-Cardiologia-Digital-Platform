@@ -41,6 +41,7 @@ async function submitJson(endpoint: string, form: HTMLFormElement, extra?: Recor
 }
 
 export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
+  const [mode, setMode] = useState<'signup' | 'login'>(initialNotice ? 'login' : 'signup');
   const [patientSignup, setPatientSignup] = useState<Feedback>(initialFeedback);
   const [patientLogin, setPatientLogin] = useState<Feedback>(
     initialNotice ? { status: 'success', message: initialNotice } : initialFeedback,
@@ -59,6 +60,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
         message: body?.message ?? 'Cadastro criado com sucesso.',
         verifyUrl: body?.verifyUrl,
       });
+      setMode('login');
       event.currentTarget.reset();
     } catch (error) {
       setPatientSignup({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível criar o cadastro.' });
@@ -105,28 +107,37 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
           Cadastre-se gratuitamente para marcar consulta e acessar conteúdos educativos.
         </h2>
         <p className="mt-3 text-sm leading-7 text-slate-600">
-          O cadastro cria a base do portal do paciente: agendamento, comunicação com a clínica e acesso aos materiais da Nogueira Cardiologia.
+          Entre com seu e-mail e senha ou crie seu acesso em poucos segundos. A confirmação por e-mail libera o portal com mais segurança.
         </p>
 
-        <form onSubmit={handlePatientSignup} className="mt-6 grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nome completo" name="fullName" autoComplete="name" placeholder="Seu nome" />
-            <Field label="WhatsApp" name="phoneWhatsapp" type="tel" autoComplete="tel" placeholder="(17) 99999-9999" />
-          </div>
-          <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
-          <Field label="Senha" name="password" type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" />
-          <SubmitButton loading={patientSignup.status === 'submitting'}>Criar acesso</SubmitButton>
-          <FeedbackMessage feedback={patientSignup} />
-        </form>
+        <div className="mt-6 grid grid-cols-2 rounded-2xl bg-[#F4F9FF] p-1">
+          <ModeButton active={mode === 'signup'} onClick={() => setMode('signup')}>
+            Criar cadastro
+          </ModeButton>
+          <ModeButton active={mode === 'login'} onClick={() => setMode('login')}>
+            Já tenho acesso
+          </ModeButton>
+        </div>
 
-        <div className="mt-8 border-t border-[#14508B]/10 pt-6">
-          <h3 className="font-semibold text-[#0F3760]">Já tenho cadastro</h3>
-          <form onSubmit={handlePatientLogin} className="mt-4 grid gap-4">
+        {mode === 'signup' ? (
+          <form onSubmit={handlePatientSignup} className="mt-6 grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Nome completo" name="fullName" autoComplete="name" placeholder="Seu nome" />
+              <Field label="WhatsApp" name="phoneWhatsapp" type="tel" autoComplete="tel" placeholder="(17) 99999-9999" />
+            </div>
             <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
-            <Field label="Senha" name="password" type="password" autoComplete="current-password" placeholder="Sua senha" />
-            <SubmitButton loading={patientLogin.status === 'submitting'}>Entrar no portal do paciente</SubmitButton>
-            <FeedbackMessage feedback={patientLogin} />
+            <Field label="Senha" name="password" type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" />
+            <SubmitButton loading={patientSignup.status === 'submitting'}>Criar acesso</SubmitButton>
+            <FeedbackMessage feedback={patientSignup} />
           </form>
+        ) : (
+          <>
+            <form onSubmit={handlePatientLogin} className="mt-4 grid gap-4">
+              <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
+              <Field label="Senha" name="password" type="password" autoComplete="current-password" placeholder="Sua senha" />
+              <SubmitButton loading={patientLogin.status === 'submitting'}>Entrar no portal do paciente</SubmitButton>
+              <FeedbackMessage feedback={patientLogin} />
+            </form>
           {resendEmail ? (
             <form onSubmit={handleResendVerification} className="mt-4 rounded-2xl border border-[#14508B]/12 bg-[#F4F9FF] p-4">
               <input type="hidden" name="email" value={resendEmail} />
@@ -142,7 +153,8 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
               </button>
             </form>
           ) : null}
-        </div>
+          </>
+        )}
       </section>
 
       <section className="rounded-3xl bg-[#0A2C4D] p-6 text-white shadow-[0_26px_70px_-48px_rgba(20,80,139,0.85)] sm:p-8">
@@ -165,6 +177,20 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
         </div>
       </section>
     </div>
+  );
+}
+
+function ModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl px-4 py-3 text-sm font-bold transition-colors ${
+        active ? 'bg-white text-[#0F3760] shadow-[0_12px_28px_-24px_rgba(20,80,139,0.9)]' : 'text-slate-500 hover:text-[#14508B]'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

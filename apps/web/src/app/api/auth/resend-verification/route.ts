@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { createEmailVerification, sendVerificationEmail } from '@/lib/email-verification';
+import { createSupabaseAuthClient, getSupabaseEmailRedirectUrl, normalizeSupabaseAuthError } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
 
 export const runtime = 'nodejs';
@@ -22,6 +23,29 @@ export async function POST(request: Request) {
 
   if (!emailRegex.test(email)) {
     return NextResponse.json({ message: 'Informe um e-mail válido.' }, { status: 400 });
+  }
+
+  const supabase = createSupabaseAuthClient();
+
+  if (supabase) {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: getSupabaseEmailRedirectUrl(request),
+      },
+    });
+
+    if (error) {
+      const normalizedError = normalizeSupabaseAuthError(error.message);
+      return NextResponse.json({ message: normalizedError.message }, { status: normalizedError.status });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      emailSent: true,
+      message: 'Se este e-mail tiver um cadastro pendente, enviaremos um novo link de confirmação.',
+    });
   }
 
   const result = await query<{
