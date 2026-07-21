@@ -8,7 +8,7 @@ import { PublicFooter } from '@/components/site/public-footer';
 export const metadata: Metadata = {
   title: 'Portal do Paciente | Nogueira Cardiologia',
   description:
-    'Acesse o portal da Nogueira Cardiologia para criar cadastro, entrar como paciente e solicitar consulta.',
+    'Acesse o portal da Nogueira Cardiologia para marcar consulta com cardiologista, enviar exames e acompanhar conteúdos de saúde cardiovascular.',
 };
 
 export default async function PortalPage({
@@ -48,18 +48,18 @@ export default async function PortalPage({
 
       <AuthorityBackdrop
         eyebrow="Portal do paciente"
-        title="Acesso digital para marcar consulta, entrar no portal e preparar sua documentacao."
-        description="A Nogueira Cardiologia conecta cadastro, agendamento, conteudo educativo e central de exames em uma jornada simples para o paciente."
+        title="Acesso digital para marcar consulta, enviar exames e cuidar melhor da sua saúde cardiovascular."
+        description="A Nogueira Cardiologia conecta agendamento médico, portal do paciente, central de exames, prevenção cardiológica e conteúdo educativo em uma jornada simples, segura e moderna."
       />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <div className="max-w-4xl">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Portal Nogueira Cardiologia</p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight text-[#0F3760] sm:text-5xl">
-            Marque sua consulta e acesse conteúdos educativos da clínica.
+            Marque sua consulta cardiológica e acesse orientações confiáveis sobre saúde do coração.
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
-            Este portal e exclusivo para pacientes. A equipe interna usa uma entrada separada para acompanhar leads, consultas, pagamentos e relatórios.
+            O portal reúne cadastro rápido, confirmação por e-mail, agendamento online, envio de exames e materiais educativos para quem busca cardiologista, check-up cardiológico, prevenção e acompanhamento especializado.
           </p>
         </div>
 
@@ -69,9 +69,9 @@ export default async function PortalPage({
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {[
-            ['Cadastro gratuito', '/portal', 'Crie seu acesso com nome, e-mail, WhatsApp e senha.'],
-            ['Portal do paciente', '/portal/paciente', 'Continue para dados cadastrais, pré-anamnese e solicitação de consulta.'],
-            ['Conteúdo educativo', '/blog', 'Acesse materiais da clínica sobre saúde cardiovascular.'],
+            ['Cadastro gratuito', '/portal', 'Crie seu acesso com nome, e-mail, WhatsApp e senha para iniciar sua jornada.'],
+            ['Consulta cardiológica', '/portal/paciente', 'Solicite atendimento, organize seus dados e prepare informações importantes antes da consulta.'],
+            ['Educação cardiovascular', '/blog', 'Leia conteúdos sobre pressão alta, check-up, dor no peito, exames cardiológicos e prevenção.'],
           ].map(([title, href, description]) => (
             <Link key={href} href={href} className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)] hover:border-[#14508B]/35">
               <h2 className="text-lg font-semibold text-[#0F3760]">{title}</h2>

@@ -120,10 +120,10 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
       <section className="rounded-3xl border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)] sm:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Paciente</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#0F3760] sm:text-3xl">
-          Cadastre-se gratuitamente para marcar consulta e acessar conteúdos educativos.
+          Crie seu acesso gratuito para marcar consulta e preparar seus exames.
         </h2>
         <p className="mt-3 text-sm leading-7 text-slate-600">
-          Entre com seu e-mail e senha ou crie seu acesso em poucos segundos. A confirmação por e-mail libera o portal com mais segurança.
+          Entre com e-mail e senha ou cadastre-se em poucos segundos. A confirmação por e-mail protege seu acesso e libera recursos do portal.
         </p>
 
         <div className="mt-6 grid grid-cols-2 rounded-2xl bg-[#F4F9FF] p-1">
@@ -204,16 +204,16 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
       </section>
 
       <section className="rounded-3xl bg-[#0A2C4D] p-6 text-white shadow-[0_26px_70px_-48px_rgba(20,80,139,0.85)] sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Jornada do paciente</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Jornada digital</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">
-          Um acesso simples para cadastro, solicitação de consulta e acompanhamento.
+          Tecnologia para facilitar consulta, exames e cuidado cardiológico.
         </h2>
         <div className="mt-6 grid gap-4">
           {[
-            ['Cadastro', 'O paciente cria acesso com nome, e-mail, WhatsApp e senha.'],
-            ['Confirmação', 'O paciente confirma o e-mail para liberar o acesso ao portal.'],
-            ['Senha', 'Se esquecer a senha, o paciente recebe um link seguro por e-mail.'],
-            ['Secretaria', 'A equipe interna acompanha a solicitação no painel separado.'],
+            ['Cadastro seguro', 'Crie sua conta com e-mail confirmado, WhatsApp e senha protegida.'],
+            ['Consulta cardiológica', 'Solicite atendimento e organize dados importantes antes da avaliação médica.'],
+            ['Envio de exames', 'Anexe laudos, PDFs e imagens para adiantar sua documentação clínica.'],
+            ['Conteúdo educativo', 'Acesse informações sobre pressão alta, check-up cardiológico, prevenção e saúde do coração.'],
           ].map(([title, text]) => (
             <div key={title} className="rounded-2xl border border-white/14 bg-white/8 p-4">
               <h3 className="font-semibold">{title}</h3>
