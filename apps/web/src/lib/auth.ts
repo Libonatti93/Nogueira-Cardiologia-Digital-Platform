@@ -10,6 +10,8 @@ export type SessionUser = {
   role: string;
 };
 
+const internalAccessEmails = new Set(['drpaulo@nogueiracardiologia.com.br', 'dracris@nogueiracardiologia.com.br']);
+const internalAccessRoles = new Set(['admin', 'doctor', 'medico', 'médico']);
 const sessionCookieName = 'nogueira_session';
 const sessionMaxAgeSeconds = 60 * 60 * 8;
 
@@ -78,7 +80,7 @@ export async function requireInternalUser() {
   const cookieStore = await cookies();
   const user = verifySessionToken(cookieStore.get(sessionCookieName)?.value);
 
-  if (!user || !['admin', 'doctor', 'medico', 'médico'].includes(user.role)) {
+  if (!user || !canAccessInternalArea(user)) {
     redirect('/acesso');
   }
 
@@ -88,6 +90,10 @@ export async function requireInternalUser() {
 export async function getSessionUser() {
   const cookieStore = await cookies();
   return verifySessionToken(cookieStore.get(sessionCookieName)?.value);
+}
+
+export function canAccessInternalArea(user: Pick<SessionUser, 'email' | 'role'>) {
+  return internalAccessRoles.has(user.role) && internalAccessEmails.has(user.email.toLowerCase());
 }
 
 export async function requirePatientUser() {

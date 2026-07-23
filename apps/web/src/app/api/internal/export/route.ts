@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getSessionUser } from '@/lib/auth';
+import { canAccessInternalArea, getSessionUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ const exportLabels: Record<ExportKind, string> = {
 export async function GET(request: NextRequest) {
   const user = await getSessionUser();
 
-  if (!user || !['admin', 'doctor', 'medico', 'médico'].includes(user.role)) {
+  if (!user || !canAccessInternalArea(user)) {
     return NextResponse.json({ message: 'Acesso não autorizado.' }, { status: 401 });
   }
 

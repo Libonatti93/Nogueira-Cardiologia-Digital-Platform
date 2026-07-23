@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { NextResponse, type NextRequest } from 'next/server';
-import { getSessionUser } from '@/lib/auth';
+import { canAccessInternalArea, getSessionUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 
 export const runtime = 'nodejs';
@@ -37,7 +37,7 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
     return NextResponse.json({ message: 'Exame não encontrado.' }, { status: 404 });
   }
 
-  const isInternal = ['admin', 'doctor', 'secretary', 'medico', 'médico'].includes(user.role);
+  const isInternal = canAccessInternalArea(user);
   const isOwner = exam.uploaded_by_user_id === user.id || exam.patient_email.toLowerCase() === user.email.toLowerCase();
 
   if (!isInternal && !isOwner) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSessionToken, sessionCookie } from '@/lib/auth';
+import { canAccessInternalArea, createSessionToken, sessionCookie } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { createSupabaseAuthClient, normalizeSupabaseAuthError } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
   }
 
   const role = user.role;
-  const canAccessAdmin = ['admin', 'doctor', 'medico', 'médico'].includes(role);
+  const canAccessAdmin = canAccessInternalArea(user);
 
   if (!isAdminPortal && role === 'patient' && !user.email_verified_at) {
     return NextResponse.json(
