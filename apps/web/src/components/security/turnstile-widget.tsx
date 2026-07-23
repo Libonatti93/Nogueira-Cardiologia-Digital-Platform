@@ -15,9 +15,10 @@ declare global {
 }
 
 const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const isProductionTestKey = process.env.NODE_ENV === 'production' && Boolean(siteKey?.match(/^[123]x0{20}[A-Z]{2}$/));
 
 export function TurnstileWidget({ action }: TurnstileWidgetProps) {
-  if (!siteKey) return null;
+  if (!siteKey || isProductionTestKey) return null;
 
   return (
     <div className="grid gap-2">

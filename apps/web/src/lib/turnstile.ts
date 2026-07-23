@@ -6,7 +6,18 @@ type TurnstileVerificationResponse = {
 };
 
 export function isTurnstileServerEnabled() {
-  return Boolean(process.env.TURNSTILE_SECRET_KEY);
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  if (!secretKey) return false;
+
+  if (process.env.NODE_ENV === 'production' && isTurnstileTestKey(secretKey)) {
+    return false;
+  }
+
+  return true;
+}
+
+function isTurnstileTestKey(value: string) {
+  return /^[123]x0{31}[A-Z]{2}$/.test(value);
 }
 
 function getClientIp(request: Request) {
@@ -18,6 +29,10 @@ export async function verifyTurnstileToken(request: Request, token: unknown, exp
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
   if (!secretKey) return { ok: true, skipped: true };
+
+  if (process.env.NODE_ENV === 'production' && isTurnstileTestKey(secretKey)) {
+    return { ok: true, skipped: true };
+  }
 
   if (typeof token !== 'string' || !token.trim()) {
     return { ok: false, message: 'Confirme que você não é um robô para continuar.' };
