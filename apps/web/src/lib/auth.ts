@@ -79,7 +79,7 @@ export async function requireInternalUser() {
   const user = verifySessionToken(cookieStore.get(sessionCookieName)?.value);
 
   if (!user || !['admin', 'doctor', 'medico', 'médico'].includes(user.role)) {
-    redirect('/interno');
+    redirect('/acesso');
   }
 
   return user;

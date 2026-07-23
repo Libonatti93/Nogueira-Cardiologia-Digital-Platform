@@ -25,6 +25,23 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.cta-pulse {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  animation: cta-breath 2.6s ease-in-out infinite;
+}
+
+.cta-pulse::after {
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: rgba(21, 167, 221, 0.28);
+  content: "";
+  animation: cta-ring 2.6s ease-out infinite;
+}
+
 .socesp-carousel {
   mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
 }
@@ -114,7 +131,40 @@ body {
   }
 }
 
+@keyframes cta-breath {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-1px) scale(1.025);
+  }
+}
+
+@keyframes cta-ring {
+  0% {
+    opacity: 0.58;
+    transform: scale(0.92);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .cta-pulse,
+  .cta-pulse::after {
+    animation: none;
+  }
+
   .socesp-carousel-track {
     animation: none;
   }

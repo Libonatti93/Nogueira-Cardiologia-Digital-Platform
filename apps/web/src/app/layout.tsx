@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { BackToTopButton } from "@/components/back-to-top-button";
 import { FloatingWhatsappButton } from "@/components/floating-whatsapp-button";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Nogueira Cardiologia | Cardiologista em São José do Rio Preto",
+  metadataBase: new URL("https://www.nogueiracardiologia.com.br"),
+  title: "Nogueira Cardiologia | Cardiologista, Telemedicina e Check-up em Rio Preto",
   description:
-    "Nogueira Cardiologia: consultas, portal do paciente, agenda médica e espaço educativo com orientações de prevenção cardiovascular em São José do Rio Preto.",
+    "Nogueira Cardiologia: consulta com cardiologista, telemedicina, atendimento virtual, portal do paciente, exames e prevenção cardiovascular em São José do Rio Preto.",
 };
 
 export default function RootLayout({
@@ -20,6 +22,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <BackToTopButton />
         <FloatingWhatsappButton />
       </body>
     </html>

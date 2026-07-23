@@ -4,10 +4,10 @@ import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
 
 const steps = [
-  ['Entre no portal', 'O paciente acessa sua area segura para manter o envio vinculado ao cadastro e ao historico da jornada.'],
-  ['Anexe o exame', 'Envie PDF, JPG, PNG ou WEBP de laudos, ECG, ecocardiograma, Holter, MAPA e outros documentos cardiologicos.'],
-  ['Equipe acompanha', 'Secretaria e medico visualizam os arquivos na dashboard interna para organizar a documentacao antes da consulta.'],
-  ['Evolucao PACS', 'A base foi desenhada para evoluir com conceito de PACS, DICOM, automacoes via n8n e analises assistidas.'],
+  ['Entre no portal', 'O paciente acessa sua área segura para manter o envio vinculado ao cadastro e ao histórico da jornada.'],
+  ['Anexe o exame', 'Envie PDF, JPG, PNG ou WEBP de laudos, ECG, ecocardiograma, Holter, MAPA e outros documentos cardiológicos.'],
+  ['Equipe acompanha', 'Secretaria e médico visualizam os arquivos na dashboard interna para organizar a documentação antes da consulta.'],
+  ['Evolução PACS', 'A base foi desenhada para evoluir com conceito de PACS, DICOM, automações via n8n e análises assistidas.'],
 ] as const;
 
 const examExamples = [
@@ -15,29 +15,29 @@ const examExamples = [
   'Ecocardiograma',
   'Holter',
   'MAPA',
-  'Teste ergometrico',
+  'Teste ergométrico',
   'Exames laboratoriais',
   'Tomografia',
-  'Ressonancia',
-  'Relatorios medicos',
+  'Ressonância',
+  'Relatórios médicos',
 ] as const;
 
 export const metadata: Metadata = {
-  title: 'Envio Digital de Exames Cardiologicos | Nogueira Cardiologia',
+  title: 'Envio Digital de Exames Cardiológicos | Nogueira Cardiologia',
   description:
-    'Envie exames cardiologicos e documentos pelo portal do paciente da Nogueira Cardiologia. Central de exames com arquitetura preparada para evoluir com PACS, DICOM e analises assistidas.',
+    'Envie exames cardiológicos e documentos pelo portal do paciente da Nogueira Cardiologia. Central de exames com arquitetura preparada para evoluir com PACS, DICOM e análises assistidas.',
   keywords: [
-    'envio de exames cardiologicos',
-    'central de exames cardiologicos',
+    'envio de exames cardiológicos',
+    'central de exames cardiológicos',
     'PACS cardiologia',
     'DICOM cardiologia',
-    'PACS para clinica cardiologica',
+    'PACS para clínica cardiológica',
     'exames digitais cardiologia',
     'portal do paciente cardiologia',
     'exames para cardiologista',
     'Nogueira Cardiologia',
-    'cardiologista Sao Jose do Rio Preto',
-    'upload de exames medicos',
+    'cardiologista São José do Rio Preto',
+    'upload de exames médicos',
   ],
 };
 
@@ -55,14 +55,14 @@ export default function ExamsPage() {
                 Central de exames cardiológicos com base tecnológica para evoluir em PACS.
               </h1>
               <p className="mt-5 text-base leading-8 text-slate-600">
-                A Nogueira Cardiologia agora conta com uma central para o paciente anexar exames e documentos antes da consulta. O objetivo e organizar melhor a jornada, facilitar o acesso da equipe medica aos arquivos e preparar a plataforma para evoluir com tecnologia, conceito de PACS, padrao DICOM, automacoes e analises assistidas.
+                A Nogueira Cardiologia agora conta com uma central para o paciente anexar exames e documentos antes da consulta. O objetivo é organizar melhor a jornada, facilitar o acesso da equipe médica aos arquivos e preparar a plataforma para evoluir com tecnologia, conceito de PACS, padrão DICOM, automações e análises assistidas.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link href="/portal" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
                   Enviar exame pelo portal
                 </Link>
                 <Link href="/blog" className="inline-flex w-fit rounded-full border border-[#14508B]/20 px-6 py-3 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
-                  Ler conteudos educativos
+                  Ler conteúdos educativos
                 </Link>
               </div>
             </div>
@@ -77,7 +77,7 @@ export default function ExamsPage() {
                 ))}
               </div>
               <p className="mt-5 text-sm leading-7 text-slate-600">
-                Nesta primeira fase, aceitamos arquivos simples como PDF e imagens. A evolucao natural da plataforma podera incluir organizacao avancada de exames, automacoes via n8n, visualizacao especializada e integracao com padroes de imagem medica como DICOM.
+                Nesta primeira fase, aceitamos arquivos simples como PDF e imagens. A evolução natural da plataforma poderá incluir organização avançada de exames, automações via n8n, visualização especializada e integração com padrões de imagem médica como DICOM.
               </p>
             </div>
           </div>
@@ -120,16 +120,16 @@ export default function ExamsPage() {
                 Uma central de exames simples hoje, preparada para evoluir para um fluxo inspirado em PACS.
               </h2>
               <p className="mt-4 text-base leading-8 text-slate-600">
-                PACS significa Picture Archiving and Communication System, uma estrutura usada para arquivar, organizar e comunicar imagens medicas. DICOM e o padrao tecnico utilizado em muitos exames de imagem. A primeira entrega da Nogueira Cardiologia e o upload seguro de documentos, mas a arquitetura ja considera a evolucao para uma gestao mais avancada de exames cardiologicos digitais.
+                PACS significa Picture Archiving and Communication System, uma estrutura usada para arquivar, organizar e comunicar imagens médicas. DICOM é o padrão técnico utilizado em muitos exames de imagem. A primeira entrega da Nogueira Cardiologia é o upload seguro de documentos, mas a arquitetura já considera a evolução para uma gestão mais avançada de exames cardiológicos digitais.
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               {[
-                ['Central de exames', 'Organizacao de PDFs, imagens, laudos e documentos enviados pelo paciente.'],
-                ['Dashboard medico/admin', 'Secretaria e medico enxergam os arquivos vinculados ao paciente antes da consulta.'],
-                ['Base para PACS', 'Estrutura preparada para futura organizacao de estudos, series e imagens medicas.'],
-                ['IA e n8n no roadmap', 'Possibilidade de resumo auxiliar, classificacao e alerta operacional com revisao medica.'],
+                ['Central de exames', 'Organização de PDFs, imagens, laudos e documentos enviados pelo paciente.'],
+                ['Dashboard médico/admin', 'Secretaria e médico enxergam os arquivos vinculados ao paciente antes da consulta.'],
+                ['Base para PACS', 'Estrutura preparada para futura organização de estudos, séries e imagens médicas.'],
+                ['IA e n8n no roadmap', 'Possibilidade de resumo auxiliar, classificação e alerta operacional com revisão médica.'],
               ].map(([title, text]) => (
                 <article key={title} className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)]">
                   <h3 className="text-lg font-semibold text-[#0F3760]">{title}</h3>
@@ -143,10 +143,10 @@ export default function ExamsPage() {
         <section className="bg-[#0A2C4D] py-14 text-white sm:py-16">
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
-              Tecnologia a favor da cardiologia, com revisao medica no centro da decisao.
+              Tecnologia a favor da cardiologia, com revisão médica no centro da decisão.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-white/82 sm:text-base">
-              A plataforma esta em constante evolucao para apoiar a equipe com dados mais organizados, automacoes e futuras analises assistidas. A tecnologia entra como apoio para melhorar fluxo, documentacao, gestao de exames cardiologicos e preparo da consulta, sempre preservando a avaliacao medica responsavel.
+              A plataforma está em constante evolução para apoiar a equipe com dados mais organizados, automações e futuras análises assistidas. A tecnologia entra como apoio para melhorar fluxo, documentação, gestão de exames cardiológicos e preparo da consulta, sempre preservando a avaliação médica responsável.
             </p>
             <Link href="/portal" className="mt-7 inline-flex rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] hover:bg-[#EAF6FF]">
               Acessar portal do paciente

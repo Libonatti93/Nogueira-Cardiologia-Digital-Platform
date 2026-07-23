@@ -23,15 +23,15 @@ export default function InternalPage() {
             priority
           />
           <Link href="/" className="rounded-lg border border-[#14508B]/20 px-4 py-2 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
-            Site publico
+            Site público
           </Link>
         </div>
       </header>
 
       <AuthorityBackdrop
         eyebrow="Acesso interno"
-        title="Gestao medica e administrativa da plataforma digital Nogueira Cardiologia."
-        description="Area reservada para acompanhar pacientes, leads, consultas, pagamentos, exames enviados e evolucao tecnologica da operacao."
+        title="Gestão médica e administrativa da plataforma digital Nogueira Cardiologia."
+        description="Área reservada para acompanhar pacientes, leads, consultas, pagamentos, exames enviados e evolução tecnológica da operação."
       />
 
       <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
@@ -41,14 +41,14 @@ export default function InternalPage() {
             Dashboard da equipe Nogueira Cardiologia.
           </h1>
           <p className="mt-5 text-base leading-8 text-slate-600">
-            Entrada separada do portal do paciente para acompanhar cadastros, leads, consultas, pagamentos e indicadores operacionais sem confundir quem chega pelo botao Marcar Consulta.
+            Entrada separada do portal do paciente para acompanhar cadastros, leads, consultas, pagamentos e indicadores operacionais sem confundir quem chega pelo botão Marcar consulta.
           </p>
         </div>
 
         <section className="rounded-lg border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)] sm:p-8">
-          <h2 className="text-2xl font-semibold text-[#0F3760]">Entrar como medico/admin</h2>
+          <h2 className="text-2xl font-semibold text-[#0F3760]">Entrar como médico/admin</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Use um usuario com permissao de medico ou administrador.
+            Use um usuário com permissão de médico ou administrador.
           </p>
           <div className="mt-6">
             <InternalLogin />

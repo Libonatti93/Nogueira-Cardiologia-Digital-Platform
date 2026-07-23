@@ -6,11 +6,14 @@ import { AuthorityBlock } from '@/components/blog/authority-block';
 import { LeadGate } from '@/components/educativo/lead-gate';
 import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
-import { blogPosts, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
+import { blogPosts, getBlogPostHashtags, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
+import { getPublishedEducativoPostBySlug, getPublishedEducativoPosts } from '@/lib/educativo-posts';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
@@ -18,7 +21,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = getPostBySlug(slug) ?? (await getPublishedEducativoPostBySlug(slug));
 
   if (!post) {
     return { title: 'Conteúdo não encontrado | Nogueira Cardiologia' };
@@ -27,16 +30,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: post.seoTitle,
     description: post.seoDescription,
+    keywords: [...post.tags, ...getBlogPostHashtags(post)],
+    openGraph: {
+      title: post.seoTitle,
+      description: post.seoDescription,
+      images: [post.coverImage],
+      type: 'article',
+    },
   };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = getPostBySlug(slug) ?? (await getPublishedEducativoPostBySlug(slug));
 
   if (!post) notFound();
 
-  const relatedPosts = getRelatedPosts(post.slug, post.category);
+  const databasePosts = await getPublishedEducativoPosts();
+  const relatedPosts = [
+    ...databasePosts.filter((relatedPost) => relatedPost.slug !== post.slug && relatedPost.category === post.category),
+    ...getRelatedPosts(post.slug, post.category),
+  ].slice(0, 3);
+  const hashtags = getBlogPostHashtags(post);
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -46,6 +61,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     dateModified: post.updatedAt,
     author: { '@type': 'Organization', name: post.author.name },
     publisher: { '@type': 'MedicalClinic', name: 'Nogueira Cardiologia' },
+    keywords: hashtags.join(', '),
     mainEntityOfPage: `/blog/${post.slug}`,
   };
 
@@ -89,6 +105,14 @@ export default async function BlogPostPage({ params }: PageProps) {
               className="object-cover object-[50%_20%]"
               priority
             />
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2" aria-label="Hashtags do conteúdo educativo">
+            {hashtags.map((hashtag) => (
+              <span key={hashtag} className="rounded-full bg-[#EAF6FF] px-3 py-1.5 text-xs font-bold text-[#14508B]">
+                {hashtag}
+              </span>
+            ))}
           </div>
 
           <LeadGate postSlug={post.slug} postTitle={post.title} sections={post.sections} />

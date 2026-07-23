@@ -2,11 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const whatsappLink = 'https://wa.me/5517997440223';
-const developerLink = 'https://github.com/';
+const developerLink = 'https://github.com/Libonatti93';
 const socialLinks = [
-  ['Instagram', 'https://www.instagram.com/', 'instagram'],
-  ['LinkedIn', 'https://www.linkedin.com/', 'linkedin'],
-  ['Wikipedia', 'https://www.wikipedia.org/', 'wikipedia'],
+  ['Instagram', 'https://www.instagram.com/drpaulonogueiracardiologista/', 'instagram'],
+  ['LinkedIn', 'https://www.linkedin.com/in/paulo-roberto-nogueira-b704282a/', 'linkedin'],
 ] as const;
 
 type SocialIconName = (typeof socialLinks)[number][2];
@@ -42,16 +41,6 @@ function SocialIcon({ name }: { name: SocialIconName }) {
           <path d="M12 13.1c0-1.3.9-2.1 2.1-2.1 1.3 0 1.9.8 1.9 2.4V16" />
         </svg>
       );
-    case 'wikipedia':
-      return (
-        <svg {...iconProps}>
-          <circle cx="12" cy="12" r="8" />
-          <path d="M6.8 8h2" />
-          <path d="M15.2 8h2" />
-          <path d="m7.8 8 2.2 8 2-5.2 2 5.2 2.2-8" />
-          <path d="M10 8h4" />
-        </svg>
-      );
   }
 }
 
@@ -70,8 +59,9 @@ export function PublicFooter() {
             />
           </div>
           <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
-            Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira e da Dra. Cristiani Nogueira, une cuidado médico, prevenção cardiovascular e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
+            Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira e da Dra. Cristiani Nogueira, une cuidado médico, prevenção cardiovascular, telemedicina e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
           </p>
+          <p className="mt-4 text-sm font-semibold text-white/88">Nos acompanhe nas redes sociais.</p>
           <div className="mt-5 flex items-center gap-3" aria-label="Redes sociais da Nogueira Cardiologia">
             {socialLinks.map(([label, href, icon]) => (
               <a
@@ -90,7 +80,7 @@ export function PublicFooter() {
         </div>
         <div>
           <h2 className="font-semibold">Contato</h2>
-          <p className="mt-3 text-sm leading-7 text-white/80">Av. Jose Munia, 7301 - Jardim Redentor, Sao Jose do Rio Preto - SP, 15085-895</p>
+          <p className="mt-3 text-sm leading-7 text-white/80">Av. José Munia, 7301 - Jardim Redentor, São José do Rio Preto - SP, 15085-895</p>
           <p className="mt-2 text-sm text-white/80">Telefone: (17) 2139-8338</p>
           <p className="mt-1 text-sm text-white/80">WhatsApp: (17) 99744-0223</p>
           <p className="mt-1 text-sm text-white/80">
@@ -101,25 +91,26 @@ export function PublicFooter() {
           </p>
         </div>
         <div>
-          <h2 className="font-semibold">Acessos rapidos</h2>
+          <h2 className="font-semibold">Acessos rápidos</h2>
           <div className="mt-3 grid gap-2 text-sm text-white/80">
             <Link href="/portal" className="hover:text-white">Portal do paciente</Link>
+            <Link href="/#telemedicina" className="hover:text-white">Telemedicina cardiológica</Link>
             <Link href="/exames" className="hover:text-white">Envio digital de exames</Link>
-            <Link href="/#presenca-socesp" className="hover:text-white">Presenca medica na SOCESP</Link>
+            <Link href="/#presenca-socesp" className="hover:text-white">Presença médica na SOCESP</Link>
             <Link href="/blog" className="hover:text-white">Educativo de cardiologia</Link>
-            <a href={whatsappLink} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp da clinica</a>
+            <a href={whatsappLink} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp da clínica</a>
             <Link href="/privacidade" className="hover:text-white">Privacidade, LGPD e termos</Link>
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-2 px-4 text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
+      <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col items-center gap-2 px-4 text-center text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
         <p>CNPJ 12.388.371/0001-71 - Nogueira Cardiologia LTDA. © 2026 Todos os direitos reservados.</p>
         <p>
-          Desenvolvido por{' '}
+          Software e App desenvolvido por{' '}
           <a href={developerLink} target="_blank" rel="noreferrer" className="font-semibold text-white/78 hover:text-white">
-            Matheus Libonatti, Engenheiro de Software
+            Matheus Libonatti
           </a>
-          .
+          . Versão 1.001.001.
         </p>
       </div>
     </footer>

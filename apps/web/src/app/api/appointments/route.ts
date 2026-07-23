@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import {
+  AsaasError,
+  createAsaasCreditCardPayment,
+  createAsaasCustomer,
+  getAppointmentPaymentAmountCents,
+  mapAsaasPaymentStatus,
+} from '@/lib/asaas';
 import { getVerifiedPatientUser } from '@/lib/auth';
-import { transaction } from '@/lib/db';
+import { query, transaction } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
@@ -18,12 +26,42 @@ type AppointmentPayload = {
   hasHighCholesterol?: unknown;
   isSmoker?: unknown;
   lgpdConsent?: unknown;
+  cardHolderName?: unknown;
+  cardNumber?: unknown;
+  cardExpiryMonth?: unknown;
+  cardExpiryYear?: unknown;
+  cardCvv?: unknown;
+  holderCpf?: unknown;
+  holderPostalCode?: unknown;
+  holderAddressNumber?: unknown;
+  holderAddressComplement?: unknown;
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function clean(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function getTodayDate() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
+function getClientIp(headerValue: string | null) {
+  return headerValue?.split(',')[0]?.trim() || '127.0.0.1';
+}
+
+function sanitizeAsaasPayload(value: unknown) {
+  if (!value || typeof value !== 'object') return value;
+  const copy = JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+  delete copy.creditCard;
+  delete copy.creditCardToken;
+  return copy;
 }
 
 export async function POST(request: Request) {
@@ -50,6 +88,15 @@ export async function POST(request: Request) {
   const birthDate = clean(payload.birthDate);
   const heightCm = Number(clean(payload.heightCm));
   const weightKg = Number(clean(payload.weightKg));
+  const cardHolderName = clean(payload.cardHolderName);
+  const cardNumber = clean(payload.cardNumber).replace(/\D/g, '');
+  const cardExpiryMonth = clean(payload.cardExpiryMonth).padStart(2, '0');
+  const cardExpiryYear = clean(payload.cardExpiryYear);
+  const cardCvv = clean(payload.cardCvv).replace(/\D/g, '');
+  const holderCpf = clean(payload.holderCpf).replace(/\D/g, '');
+  const holderPostalCode = clean(payload.holderPostalCode).replace(/\D/g, '');
+  const holderAddressNumber = clean(payload.holderAddressNumber);
+  const holderAddressComplement = clean(payload.holderAddressComplement);
 
   if (fullName.length < 3) {
     return NextResponse.json({ message: 'Informe o nome completo.' }, { status: 400 });
@@ -79,12 +126,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'É necessário aceitar o consentimento de uso de dados.' }, { status: 400 });
   }
 
+  if (cardHolderName.length < 3 || cardNumber.length < 13 || cardNumber.length > 19) {
+    return NextResponse.json({ message: 'Informe os dados do cartão de crédito.' }, { status: 400 });
+  }
+
+  if (!/^\d{2}$/.test(cardExpiryMonth) || Number(cardExpiryMonth) < 1 || Number(cardExpiryMonth) > 12 || !/^\d{4}$/.test(cardExpiryYear)) {
+    return NextResponse.json({ message: 'Informe uma validade de cartão válida.' }, { status: 400 });
+  }
+
+  if (cardCvv.length < 3 || cardCvv.length > 4) {
+    return NextResponse.json({ message: 'Informe o CVV do cartão.' }, { status: 400 });
+  }
+
+  if (holderCpf.length !== 11 || holderPostalCode.length !== 8 || !holderAddressNumber) {
+    return NextResponse.json({ message: 'Informe CPF, CEP e número do endereço do titular.' }, { status: 400 });
+  }
+
   const healthIntake = {
     hasHypertension: payload.hasHypertension === 'true' || payload.hasHypertension === true,
     hasDiabetes: payload.hasDiabetes === 'true' || payload.hasDiabetes === true,
     hasHighCholesterol: payload.hasHighCholesterol === 'true' || payload.hasHighCholesterol === true,
     isSmoker: payload.isSmoker === 'true' || payload.isSmoker === true,
   };
+
+  const amountCents = getAppointmentPaymentAmountCents();
+  const amount = amountCents / 100;
+  const requestHeaders = await headers();
+  const remoteIp = getClientIp(requestHeaders.get('x-forwarded-for') ?? requestHeaders.get('x-real-ip'));
 
   const persisted = await transaction(async (client) => {
     const patientResult = await client.query<{ id: string }>(
@@ -147,7 +215,7 @@ export async function POST(request: Request) {
           patient_id,
           notes
         )
-        values ($1, $2, $3, 'portal_paciente', 'marcar_consulta', 'registered', $4, $5)
+        values ($1, $2, $3, 'portal_paciente', 'marcar_consulta', 'awaiting_payment', $4, $5)
         returning id
       `,
       [fullName, email, phoneWhatsapp, patientId, `Preferência médica: ${clean(payload.doctorPreference) || 'primeiro horário disponível'}`],
@@ -180,7 +248,7 @@ export async function POST(request: Request) {
           status,
           reason
         )
-        values ($1, $2, $3, 'requested', 'Solicitação criada pelo portal do paciente')
+        values ($1, $2, $3, 'awaiting_payment', 'Solicitação criada pelo portal do paciente')
         returning id, status
       `,
       [patientId, doctorResult.rows[0]?.id ?? null, leadId],
@@ -189,9 +257,9 @@ export async function POST(request: Request) {
     await client.query(
       `
         insert into lead_events (lead_id, event_type, new_stage, note, metadata)
-        values ($1, 'appointment_requested', 'registered', 'Paciente solicitou consulta pelo portal.', $2::jsonb)
+        values ($1, 'appointment_requested', 'awaiting_payment', 'Paciente solicitou consulta pelo portal e iniciou checkout Asaas.', $2::jsonb)
       `,
-      [leadId, JSON.stringify({ healthIntake, doctorPreference: doctorPreference || 'first-available' })],
+      [leadId, JSON.stringify({ healthIntake, doctorPreference: doctorPreference || 'first-available', amountCents })],
     );
 
     return {
@@ -202,12 +270,178 @@ export async function POST(request: Request) {
     };
   });
 
+  let asaasCustomerId = '';
+  let asaasPayment;
+
+  try {
+    const existingCustomer = await query<{ provider_customer_id: string }>(
+      `
+        select provider_customer_id
+        from payments
+        where patient_id = $1
+          and provider = 'asaas'
+          and provider_customer_id is not null
+        order by created_at desc
+        limit 1
+      `,
+      [persisted.patientId],
+    );
+
+    asaasCustomerId =
+      existingCustomer.rows[0]?.provider_customer_id ??
+      (
+        await createAsaasCustomer({
+          name: fullName,
+          cpfCnpj: cpf,
+          email,
+          mobilePhone: phoneWhatsapp,
+          externalReference: persisted.patientId,
+        })
+      ).id;
+
+    asaasPayment = await createAsaasCreditCardPayment({
+      customer: asaasCustomerId,
+      billingType: 'CREDIT_CARD',
+      value: amount,
+      dueDate: getTodayDate(),
+      description: 'Consulta cardiológica - Nogueira Cardiologia',
+      externalReference: persisted.appointmentId,
+      creditCard: {
+        holderName: cardHolderName,
+        number: cardNumber,
+        expiryMonth: cardExpiryMonth,
+        expiryYear: cardExpiryYear,
+        ccv: cardCvv,
+      },
+      creditCardHolderInfo: {
+        name: cardHolderName,
+        email,
+        cpfCnpj: holderCpf,
+        postalCode: holderPostalCode,
+        addressNumber: holderAddressNumber,
+        addressComplement: holderAddressComplement || null,
+        phone: phoneWhatsapp,
+        mobilePhone: phoneWhatsapp,
+      },
+      remoteIp,
+    });
+  } catch (error) {
+    await query(
+      `
+        insert into audit_logs (action, entity_type, entity_id, user_agent, metadata)
+        values ('asaas_checkout_failed', 'appointment', $1, $2, $3::jsonb)
+      `,
+      [
+        persisted.appointmentId,
+        request.headers.get('user-agent'),
+        JSON.stringify({
+          patientId: persisted.patientId,
+          leadId: persisted.leadId,
+          message: error instanceof Error ? error.message : 'Erro desconhecido no Asaas',
+          status: error instanceof AsaasError ? error.status : null,
+          details: error instanceof AsaasError ? error.details : null,
+        }),
+      ],
+    );
+
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : 'Não foi possível processar o pagamento no Asaas.' },
+      { status: error instanceof AsaasError ? 400 : 502 },
+    );
+  }
+
+  const paymentStatus = mapAsaasPaymentStatus(asaasPayment.status);
+  const checkoutUrl = asaasPayment.invoiceUrl ?? asaasPayment.bankSlipUrl ?? asaasPayment.transactionReceiptUrl ?? null;
+  const paymentResult = await transaction(async (client) => {
+    const result = await client.query<{ id: string }>(
+      `
+        insert into payments (
+          patient_id,
+          appointment_id,
+          provider,
+          provider_customer_id,
+          provider_payment_id,
+          billing_type,
+          status,
+          amount_cents,
+          checkout_url,
+          due_date,
+          paid_at,
+          raw_payload
+        )
+        values ($1, $2, 'asaas', $3, $4, $5, $6::payment_status, $7, $8, $9, case when $6::payment_status = 'paid' then now() else null end, $10::jsonb)
+        returning id
+      `,
+      [
+        persisted.patientId,
+        persisted.appointmentId,
+        asaasCustomerId,
+        asaasPayment.id,
+        asaasPayment.billingType ?? 'CREDIT_CARD',
+        paymentStatus,
+        amountCents,
+        checkoutUrl,
+        getTodayDate(),
+        JSON.stringify(sanitizeAsaasPayload(asaasPayment)),
+      ],
+    );
+
+    await client.query(
+      `
+        update appointments
+        set status = case when $2::payment_status = 'paid' then 'paid'::appointment_status else status end,
+          updated_at = now()
+        where id = $1
+      `,
+      [persisted.appointmentId, paymentStatus],
+    );
+
+    await client.query(
+      `
+        update leads
+        set stage = case when $2::payment_status = 'paid' then 'paid'::lead_stage else 'awaiting_payment'::lead_stage end,
+          updated_at = now()
+        where id = $1
+      `,
+      [persisted.leadId, paymentStatus],
+    );
+
+    await client.query(
+      `
+        insert into lead_events (lead_id, event_type, new_stage, note, metadata)
+        values ($1, 'asaas_payment_created', case when $2::payment_status = 'paid' then 'paid'::lead_stage else 'awaiting_payment'::lead_stage end, $3, $4::jsonb)
+      `,
+      [
+        persisted.leadId,
+        paymentStatus,
+        paymentStatus === 'paid' ? 'Pagamento confirmado pelo checkout transparente Asaas.' : 'Cobranca criada no checkout transparente Asaas.',
+        JSON.stringify({
+          paymentId: result.rows[0].id,
+          providerPaymentId: asaasPayment.id,
+          status: asaasPayment.status,
+          amountCents,
+          cardBrand: asaasPayment.creditCard?.creditCardBrand ?? null,
+          cardLastDigits: asaasPayment.creditCard?.creditCardNumber ?? null,
+        }),
+      ],
+    );
+
+    return result.rows[0];
+  });
+
   return NextResponse.json({
     ok: true,
-    status: 'appointment_requested',
-    message: 'Solicitação registrada. A secretaria poderá acompanhar o lead no CRM e seguir para confirmação/checkout.',
+    status: paymentStatus === 'paid' ? 'payment_confirmed' : 'awaiting_payment',
+    message:
+      paymentStatus === 'paid'
+        ? 'Pagamento confirmado. A secretaria seguira com a confirmacao do horário.'
+        : 'Solicitação registrada e pagamento criado no Asaas.',
     data: {
       ...persisted,
+      paymentId: paymentResult.id,
+      providerPaymentId: asaasPayment.id,
+      paymentStatus,
+      checkoutUrl,
       fullName,
       cpf,
       email,

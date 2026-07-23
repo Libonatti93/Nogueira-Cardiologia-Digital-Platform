@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import type { BlogSection } from '@/data/blog-posts';
 
 type LeadGateProps = {
@@ -11,10 +11,80 @@ type LeadGateProps = {
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
+type EducationalAccess = {
+  fullName: string;
+  email: string;
+  phoneWhatsapp: string;
+  expiresAt: number;
+  recordedPosts?: string[];
+};
+
+const educationalAccessKey = 'nogueira_educativo_access';
+const educationalAccessDurationMs = 1000 * 60 * 60 * 24 * 30;
+
+function readEducationalAccess(): EducationalAccess | null {
+  try {
+    if (typeof window === 'undefined') return null;
+    const stored = window.localStorage.getItem(educationalAccessKey);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as Partial<EducationalAccess>;
+    if (!parsed.fullName || !parsed.email || !parsed.phoneWhatsapp || !parsed.expiresAt || parsed.expiresAt < Date.now()) {
+      window.localStorage.removeItem(educationalAccessKey);
+      return null;
+    }
+
+    return {
+      fullName: parsed.fullName,
+      email: parsed.email,
+      phoneWhatsapp: parsed.phoneWhatsapp,
+      expiresAt: parsed.expiresAt,
+      recordedPosts: Array.isArray(parsed.recordedPosts) ? parsed.recordedPosts : [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeEducationalAccess(access: EducationalAccess) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(educationalAccessKey, JSON.stringify(access));
+}
+
 export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => Boolean(readEducationalAccess()));
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const access = readEducationalAccess();
+    if (!access) return;
+
+    if (access.recordedPosts?.includes(postSlug)) return;
+
+    const payload = {
+      fullName: access.fullName,
+      email: access.email,
+      phoneWhatsapp: access.phoneWhatsapp,
+      postSlug,
+      postTitle,
+      accessMode: 'cached',
+    };
+
+    fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        if (!response.ok) return;
+        writeEducationalAccess({
+          ...access,
+          recordedPosts: [...new Set([...(access.recordedPosts ?? []), postSlug])],
+        });
+      })
+      .catch(() => undefined);
+  }, [postSlug, postTitle]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,6 +112,13 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
         throw new Error(body?.message ?? 'Não foi possível liberar o conteúdo agora.');
       }
 
+      writeEducationalAccess({
+        fullName: payload.fullName,
+        email: payload.email,
+        phoneWhatsapp: payload.phoneWhatsapp,
+        expiresAt: Date.now() + educationalAccessDurationMs,
+        recordedPosts: [postSlug],
+      });
       setUnlocked(true);
       setStatus('success');
     } catch (submissionError) {

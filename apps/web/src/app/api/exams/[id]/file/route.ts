@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
   const user = await getSessionUser();
 
   if (!user) {
-    return NextResponse.json({ message: 'Acesso nao autorizado.' }, { status: 401 });
+    return NextResponse.json({ message: 'Acesso não autorizado.' }, { status: 401 });
   }
 
   const { id } = await context.params;
@@ -34,14 +34,14 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
   const exam = result.rows[0];
 
   if (!exam) {
-    return NextResponse.json({ message: 'Exame nao encontrado.' }, { status: 404 });
+    return NextResponse.json({ message: 'Exame não encontrado.' }, { status: 404 });
   }
 
   const isInternal = ['admin', 'doctor', 'secretary', 'medico', 'médico'].includes(user.role);
   const isOwner = exam.uploaded_by_user_id === user.id || exam.patient_email.toLowerCase() === user.email.toLowerCase();
 
   if (!isInternal && !isOwner) {
-    return NextResponse.json({ message: 'Acesso nao autorizado.' }, { status: 403 });
+    return NextResponse.json({ message: 'Acesso não autorizado.' }, { status: 403 });
   }
 
   if (!isInternal) {

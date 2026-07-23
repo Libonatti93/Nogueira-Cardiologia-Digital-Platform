@@ -6,7 +6,7 @@ import { query } from '@/lib/db';
 
 export const metadata: Metadata = {
   title: 'Meus Exames | Portal do Paciente',
-  description: 'Envie exames e documentos para adiantar a avaliacao da equipe medica da Nogueira Cardiologia.',
+  description: 'Envie exames e documentos para adiantar a avaliação da equipe médica da Nogueira Cardiologia.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -27,16 +27,16 @@ const examTypes = [
   'Ecocardiograma',
   'Holter',
   'MAPA',
-  'Teste ergometrico',
+  'Teste ergométrico',
   'Tomografia',
-  'Ressonancia',
+  'Ressonância',
   'Exames laboratoriais',
-  'Relatorio medico',
+  'Relatório médico',
   'Outro exame',
 ] as const;
 
 function formatDate(value: Date | null) {
-  if (!value) return 'Nao informado';
+  if (!value) return 'Não informado';
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(value);
 }
 
@@ -68,17 +68,17 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
             Envie seus exames antes da consulta.
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-            Anexe PDFs ou imagens de exames para ajudar a equipe medica a organizar sua documentacao. O medico acessa os arquivos pela dashboard interna.
+            Anexe PDFs ou imagens de exames para ajudar a equipe médica a organizar sua documentação. O médico acessa os arquivos pela dashboard interna.
           </p>
         </div>
-        <Link href="/portal/paciente/agendar" className="w-fit rounded-full border border-[#14508B]/20 px-5 py-2.5 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
+        <Link href="/portal/paciente/agendar" className="cta-pulse w-fit rounded-full border border-[#14508B]/20 bg-white px-5 py-2.5 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
           Ir para agendamento
         </Link>
       </div>
 
       {params.sent === '1' ? (
         <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          Exame recebido com sucesso. A equipe interna ja consegue visualizar este arquivo.
+          Exame recebido com sucesso. A equipe interna já consegue visualizar este arquivo.
         </div>
       ) : null}
 
@@ -99,7 +99,7 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
             </label>
             <Field label="Data do exame" name="examDate" type="date" required={false} />
             <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-              Observacoes
+              Observações
               <textarea
                 name="notes"
                 rows={4}
@@ -120,7 +120,7 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
             </label>
             <label className="flex items-start gap-3 text-xs leading-5 text-slate-500">
               <input name="lgpdConsent" type="checkbox" value="true" required className="mt-1 h-4 w-4 accent-[#14508B]" />
-              <span>Autorizo a Nogueira Cardiologia a armazenar e disponibilizar este exame para equipe autorizada com finalidade de organizacao do atendimento e apoio a avaliacao medica.</span>
+              <span>Autorizo a Nogueira Cardiologia a armazenar e disponibilizar este exame para equipe autorizada com finalidade de organização do atendimento e apoio a avaliação médica.</span>
             </label>
             <button type="submit" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
               Enviar exame
@@ -146,14 +146,14 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
                   </div>
                   {exam.doctor_comment ? (
                     <p className="mt-3 rounded-lg bg-white p-3 text-sm leading-6 text-slate-700">
-                      Comentario medico: {exam.doctor_comment}
+                      Comentario médico: {exam.doctor_comment}
                     </p>
                   ) : null}
                 </article>
               ))
             ) : (
               <p className="rounded-lg bg-[#F4F9FF] p-4 text-sm leading-6 text-slate-600">
-                Nenhum exame enviado ainda. Quando voce anexar um arquivo, ele aparecera aqui.
+                Nenhum exame enviado ainda. Quando você anexar um arquivo, ele aparecera aqui.
               </p>
             )}
           </div>

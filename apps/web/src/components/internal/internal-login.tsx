@@ -30,15 +30,15 @@ export function InternalLogin() {
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(body?.message ?? 'Nao foi possivel entrar.');
+        throw new Error(body?.message ?? 'Não foi possível entrar.');
       }
 
       setFeedback({ status: 'success', message: 'Acesso validado. Abrindo dashboard...' });
-      window.location.href = body?.redirectTo ?? '/interno/dashboard';
+      window.location.href = body?.redirectTo ?? '/acesso/dashboard';
     } catch (error) {
       setFeedback({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Nao foi possivel entrar.',
+        message: error instanceof Error ? error.message : 'Não foi possível entrar.',
       });
     }
   }

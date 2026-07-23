@@ -3,12 +3,12 @@ import Link from 'next/link';
 import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 
 const navItems = [
-  ['Dashboard', '/interno/dashboard'],
+  ['Dashboard', '/acesso/dashboard'],
   ['Pacientes', '#pacientes'],
   ['Leads', '#leads'],
   ['Consultas', '#consultas'],
   ['Exames', '#exames'],
-  ['Pagamentos', '#pagamentos'],
+  ['Financeiro', '#financeiro'],
 ] as const;
 
 export function InternalShell({ children }: { children: React.ReactNode }) {
@@ -16,7 +16,7 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
     <main className="min-h-screen bg-[#F6F8FB] text-slate-950">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <Link href="/interno/dashboard" className="flex items-center gap-3" aria-label="Dashboard interna Nogueira Cardiologia">
+          <Link href="/acesso/dashboard" className="flex items-center gap-3" aria-label="Dashboard interna Nogueira Cardiologia">
             <Image
               src="/uploads-imagens-nogueira/nogueira-cardio4-transparent.png"
               alt="Nogueira Cardiologia"
@@ -39,9 +39,9 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <AuthorityBackdrop
-        eyebrow="Dashboard medico/admin"
-        title="Visao interna da operacao digital, pacientes, consultas, pagamentos e exames enviados."
-        description="A equipe acompanha a jornada com dados reais, central de exames e estrutura preparada para evoluir com automacoes, PACS, DICOM e analises assistidas."
+        eyebrow="Dashboard médico/admin"
+        title="Visão interna da operação digital, pacientes, consultas, pagamentos e exames enviados."
+        description="A equipe acompanha a jornada com dados reais, central de exames e estrutura preparada para evoluir com automações, PACS, DICOM e análises assistidas."
       />
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
     </main>

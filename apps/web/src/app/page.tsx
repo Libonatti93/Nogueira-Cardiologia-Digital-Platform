@@ -4,6 +4,7 @@ import { getRecentPosts } from '@/data/blog-posts';
 
 const navigationItems = [
   ['Clínica', '#clinica'],
+  ['Telemedicina', '#telemedicina'],
   ['Paciente', '#portal-paciente'],
   ['Exames', '#exames'],
   ['Corpo clínico', '#corpo-clinico'],
@@ -54,13 +55,15 @@ const curriculumHighlights = [
 const patientSteps = [
   'Clique em Marcar Consulta',
   'Faça seu cadastro gratuito',
+  'Escolha atendimento presencial ou telemedicina',
   'Acesse a agenda e os conteúdos da clínica',
 ] as const;
 
 const portalBenefits = [
   'Dicas diárias e semanais dos Drs. Paulo e Cristiani para prevenção e rotina cardiovascular.',
-  'Contato direto com a agenda do Dr. Paulo e da Dra. Cris para solicitar sua consulta com mais praticidade.',
+  'Contato direto com a agenda do Dr. Paulo e da Dra. Cris para solicitar consulta presencial ou atendimento virtual com mais praticidade.',
   'Acesso ao conteúdo do Prof. Dr. Paulo Roberto Nogueira, com materiais didáticos e orientações em linguagem clara.',
+  'Telemedicina em cardiologia para retornos, acompanhamento, orientação de exames e avaliação clínica quando o atendimento virtual for adequado.',
   'Portal gratuito para acompanhar novidades, receber conteúdos educativos e manter o cuidado do coração mais próximo.',
 ] as const;
 
@@ -110,6 +113,11 @@ const specialties = [
     icon: 'stethoscope',
   },
   {
+    title: 'Telemedicina cardiológica e atendimento virtual',
+    description: 'Consulta online com cardiologista para acompanhamento, retornos, orientação de exames e cuidado cardiovascular com segurança quando indicado.',
+    icon: 'videoHeart',
+  },
+  {
     title: 'Check-up cardiológico preventivo',
     description: 'Rotina de prevenção para quem tem hipertensão, colesterol alto, diabetes, tabagismo ou deseja iniciar atividade física com segurança.',
     icon: 'clipboard',
@@ -155,11 +163,10 @@ const whatsappLink = 'https://wa.me/5517997440223';
 const portalLink = '/portal';
 const assetPath = '/uploads-imagens-nogueira';
 const socialLinks = [
-  ['Instagram', 'https://www.instagram.com/', 'instagram'],
-  ['LinkedIn', 'https://www.linkedin.com/', 'linkedin'],
-  ['Wikipedia', 'https://www.wikipedia.org/', 'wikipedia'],
+  ['Instagram', 'https://www.instagram.com/drpaulonogueiracardiologista/', 'instagram'],
+  ['LinkedIn', 'https://www.linkedin.com/in/paulo-roberto-nogueira-b704282a/', 'linkedin'],
 ] as const;
-const developerLink = 'https://github.com/';
+const developerLink = 'https://github.com/Libonatti93';
 
 type SpecialtyIconName = (typeof specialties)[number]['icon'];
 type SocialIconName = (typeof socialLinks)[number][2];
@@ -228,6 +235,14 @@ function SpecialtyIcon({ name }: { name: SpecialtyIconName }) {
           <path d="M19 14V9" />
         </svg>
       );
+    case 'videoHeart':
+      return (
+        <svg {...iconProps}>
+          <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 4 16.5v-9Z" />
+          <path d="m16 10 4-2.4v8.8L16 14" />
+          <path d="M10 14s-2.2-1.3-2.2-2.8A1.4 1.4 0 0 1 10 10a1.4 1.4 0 0 1 2.2 1.2C12.2 12.7 10 14 10 14Z" />
+        </svg>
+      );
   }
 }
 
@@ -262,16 +277,6 @@ function SocialIcon({ name }: { name: SocialIconName }) {
           <path d="M12 13.1c0-1.3.9-2.1 2.1-2.1 1.3 0 1.9.8 1.9 2.4V16" />
         </svg>
       );
-    case 'wikipedia':
-      return (
-        <svg {...iconProps}>
-          <circle cx="12" cy="12" r="8" />
-          <path d="M6.8 8h2" />
-          <path d="M15.2 8h2" />
-          <path d="m7.8 8 2.2 8 2-5.2 2 5.2 2.2-8" />
-          <path d="M10 8h4" />
-        </svg>
-      );
   }
 }
 
@@ -303,9 +308,9 @@ export default function Home() {
 
           <Link
             href={portalLink}
-            className="inline-flex rounded-full bg-[#14508B] px-5 py-2.5 text-xs font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-all hover:-translate-y-0.5 hover:bg-[#0F3760] sm:px-6 sm:text-sm"
+            className="cta-pulse inline-flex rounded-full bg-[#14508B] px-5 py-2.5 text-xs font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-colors hover:bg-[#0F3760] sm:px-6 sm:text-sm"
           >
-            Marcar Consulta
+            Marcar consulta
           </Link>
         </div>
       </header>
@@ -332,15 +337,15 @@ export default function Home() {
                 Nogueira Cardiologia: tradição médica, estrutura moderna e acesso digital ao cuidado do coração.
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-white/85 sm:text-lg">
-                Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira unem experiência clínica, escuta próxima e uma jornada digital preparada para agendamento e acompanhamento humanizado.
+                Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira unem experiência clínica, escuta próxima e uma jornada digital preparada para agendamento, telemedicina e acompanhamento humanizado.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href={portalLink}
-                  className="inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] shadow-[0_18px_36px_-20px_rgba(255,255,255,0.65)] transition-colors hover:bg-[#EAF6FF]"
+                  className="cta-pulse inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] shadow-[0_18px_36px_-20px_rgba(255,255,255,0.65)] transition-colors hover:bg-[#EAF6FF]"
                 >
-                  Marcar Consulta
+                  Marcar consulta
                 </Link>
                 <a
                   href="#blog"
@@ -391,7 +396,7 @@ export default function Home() {
                 Marcar sua consulta é simples: clique, cadastre-se gratuitamente e acesse a Nogueira por dentro.
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                O cadastro gratuito libera uma experiência mais próxima da clínica, com acesso à agenda dos médicos, dicas de cuidado cardiovascular e conteúdos educativos preparados para pacientes.
+                O cadastro gratuito libera uma experiência mais próxima da clínica, com acesso à agenda dos médicos, solicitação de consulta presencial ou telemedicina, dicas de cuidado cardiovascular e conteúdos educativos preparados para pacientes.
               </p>
               <div className="mt-7 grid gap-3">
                 {patientSteps.map((step, index) => (
@@ -407,9 +412,9 @@ export default function Home() {
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href={portalLink}
-                  className="inline-flex justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_36px_-20px_rgba(20,80,139,0.85)] transition-colors hover:bg-[#0F3760]"
+                  className="cta-pulse inline-flex justify-center rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white shadow-[0_18px_36px_-20px_rgba(20,80,139,0.85)] transition-colors hover:bg-[#0F3760]"
                 >
-                  Marcar Consulta
+                  Marcar consulta
                 </Link>
                 <a
                   href="#blog"
@@ -476,6 +481,45 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="telemedicina" className="bg-[#0F3760] py-14 text-white sm:py-16">
+          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:px-8">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Telemedicina em cardiologia</p>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">
+                Atendimento virtual para cuidar do coração com orientação médica, segurança e praticidade.
+              </h2>
+              <p className="mt-4 text-base leading-7 text-white/82">
+                A Nogueira Cardiologia também realiza consulta online com cardiologista para pacientes que precisam de retorno, acompanhamento clínico, orientação sobre exames, revisão de tratamento e prevenção cardiovascular sem perder o vínculo com a equipe médica.
+              </p>
+              <p className="mt-4 text-sm leading-7 text-white/74">
+                Quando a avaliação exige exame físico imediato, urgência ou investigação presencial, a equipe orienta o melhor caminho. A telemedicina entra como uma extensão segura da clínica, especialmente para manter continuidade de cuidado e facilitar acesso a quem está fora de São José do Rio Preto.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link href={portalLink} className="inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] transition-colors hover:bg-[#EAF6FF]">
+                  Solicitar telemedicina
+                </Link>
+                <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex justify-center rounded-full border border-white/35 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10">
+                  Tirar dúvidas no WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ['Retornos e acompanhamento', 'Continuidade para hipertensão, colesterol alto, sintomas controlados e prevenção cardiovascular.'],
+                ['Orientação de exames', 'Envie laudos pelo portal e discuta resultados em consulta virtual quando for clinicamente adequado.'],
+                ['Acesso para outras cidades', 'Atendimento online para pacientes que buscam cardiologista da Nogueira sem deslocamento inicial.'],
+                ['Segurança assistencial', 'Dados, exames e pagamento organizados pelo portal, com triagem para indicar presencial quando necessário.'],
+              ].map(([title, description]) => (
+                <article key={title} className="border-l-2 border-[#9FE6FF] bg-white/8 p-5 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.65)]">
+                  <h3 className="text-lg font-semibold">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/78">{description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="exames" className="bg-[#F4F9FF] py-14 sm:py-16">
           <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:px-8">
             <div>
@@ -484,7 +528,7 @@ export default function Home() {
                 Anexe exames cardiológicos antes da consulta e ajude a equipe a preparar seu atendimento.
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                O portal do paciente permite enviar PDFs e imagens de exames como eletrocardiograma, ecocardiograma, Holter, MAPA, teste ergométrico, laudos e relatórios médicos. A secretaria e o médico acompanham os arquivos pela dashboard interna.
+                O portal do paciente permite enviar PDFs e imagens de exames como eletrocardiograma, ecocardiograma, Holter, MAPA, teste ergométrico, laudos e relatórios médicos. A secretaria e o médico acompanham os arquivos pela dashboard interna, inclusive para preparar retornos e atendimentos virtuais quando a telemedicina for indicada.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link href="/exames" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
@@ -603,7 +647,7 @@ export default function Home() {
                 Cardiologia em São José do Rio Preto com experiência, prevenção e acompanhamento humanizado.
               </h2>
               <p className="mt-4 text-base leading-8 text-slate-600">
-                A Nogueira Cardiologia reúne o Prof. Dr. Paulo Roberto Nogueira e a Dra. Cristiani Nogueira em uma rotina de cuidado voltada à saúde do coração, check-up cardiológico, prevenção cardiovascular, investigação de sintomas e seguimento clínico contínuo.
+                A Nogueira Cardiologia reúne o Prof. Dr. Paulo Roberto Nogueira e a Dra. Cristiani Nogueira em uma rotina de cuidado voltada à saúde do coração, check-up cardiológico, prevenção cardiovascular, investigação de sintomas, telemedicina e seguimento clínico contínuo.
               </p>
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 <div className="border-l-2 border-[#14508B] bg-[#F4F9FF] p-4">
@@ -627,7 +671,7 @@ export default function Home() {
                 Especialidades em cardiologia para prevenção, diagnóstico e acompanhamento do coração.
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                Da consulta cardiológica ao check-up preventivo, a Nogueira Cardiologia orienta pacientes de São José do Rio Preto com acompanhamento humanizado e foco em segurança cardiovascular.
+                Da consulta cardiológica ao check-up preventivo, da telemedicina ao acompanhamento presencial, a Nogueira Cardiologia orienta pacientes de São José do Rio Preto e de outras cidades com foco em segurança cardiovascular.
               </p>
             </div>
             <div className="specialties-carousel mt-8 overflow-hidden" aria-label="Especialidades da Nogueira Cardiologia">
@@ -652,12 +696,12 @@ export default function Home() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
                   href={portalLink}
-                  className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760]"
+                  className="cta-pulse inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760]"
                 >
-                  Marcar Consulta
+                  Marcar consulta
                 </Link>
               <span className="text-sm leading-6 text-slate-600">
-                Atendimento em cardiologia clínica, prevenção cardiovascular e acompanhamento cardiológico contínuo.
+                Atendimento em cardiologia clínica, telemedicina, prevenção cardiovascular e acompanhamento cardiológico contínuo.
               </span>
             </div>
           </div>
@@ -756,10 +800,10 @@ export default function Home() {
             <div className="rounded-[2rem] bg-[#14508B] p-7 text-white sm:p-10">
               <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">Pronto para cuidar do coração com uma jornada mais simples?</h2>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-white/90 sm:text-base">
-                Acesse o portal do paciente para solicitar sua consulta ou fale diretamente com a clínica pelo WhatsApp.
+                Acesse o portal do paciente para solicitar consulta presencial, atendimento virtual por telemedicina ou fale diretamente com a clínica pelo WhatsApp.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link href={portalLink} className="inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] transition-colors hover:bg-[#EAF6FF]">
+                <Link href={portalLink} className="cta-pulse inline-flex justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] transition-colors hover:bg-[#EAF6FF]">
                   Marcar consulta
                 </Link>
                 <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex justify-center rounded-full border border-white/35 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10">
@@ -784,8 +828,9 @@ export default function Home() {
               />
             </div>
             <p className="mt-4 max-w-md text-sm leading-7 text-white/80">
-              Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira e da Dra. Cristiani Nogueira, une cuidado médico, prevenção cardiovascular e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
+              Experiência em cardiologia desde 1998. A Nogueira Cardiologia, com a trajetória do Prof. Dr. Paulo Roberto Nogueira e da Dra. Cristiani Nogueira, une cuidado médico, prevenção cardiovascular, telemedicina e uma frente digital para facilitar consulta, exames e acesso à informação em saúde do coração.
             </p>
+            <p className="mt-4 text-sm font-semibold text-white/88">Nos acompanhe nas redes sociais.</p>
             <div className="mt-5 flex items-center gap-3" aria-label="Redes sociais da Nogueira Cardiologia">
               {socialLinks.map(([label, href, icon]) => (
                 <a
@@ -818,6 +863,7 @@ export default function Home() {
             <h2 className="font-semibold">Acessos rápidos</h2>
             <div className="mt-3 grid gap-2 text-sm text-white/80">
               <a href="#portal-paciente" className="hover:text-white">Portal do paciente</a>
+              <a href="#telemedicina" className="hover:text-white">Telemedicina cardiológica</a>
               <Link href="/exames" className="hover:text-white">Envio digital de exames</Link>
               <a href="#presenca-socesp" className="hover:text-white">Presença médica na SOCESP</a>
               <Link href="/blog" className="hover:text-white">Educativo de cardiologia</Link>
@@ -826,14 +872,14 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-2 px-4 text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col items-center gap-2 px-4 text-center text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
           <p>CNPJ 12.388.371/0001-71 - Nogueira Cardiologia LTDA. © 2026 Todos os direitos reservados.</p>
           <p>
-            Desenvolvido por{' '}
+            Software e App desenvolvido por{' '}
             <a href={developerLink} target="_blank" rel="noreferrer" className="font-semibold text-white/78 hover:text-white">
-              Matheus Libonatti, Engenheiro de Software
+              Matheus Libonatti
             </a>
-            .
+            . Versão 1.001.001.
           </p>
         </div>
       </footer>

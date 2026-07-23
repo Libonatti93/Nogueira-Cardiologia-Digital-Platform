@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   if (examFile.size <= 0 || examFile.size > maxFileSizeBytes) {
-    return NextResponse.json({ message: 'O arquivo precisa ter ate 15 MB.' }, { status: 400 });
+    return NextResponse.json({ message: 'O arquivo precisa ter até 15 MB.' }, { status: 400 });
   }
 
   const patientFullName = clean(formData.get('patientFullName')) || user.fullName;

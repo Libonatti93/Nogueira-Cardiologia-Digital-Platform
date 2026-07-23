@@ -197,7 +197,7 @@ function createLoginResponse(
   const response = NextResponse.json({
     ok: true,
     portal: isAdminPortal ? 'admin' : 'patient',
-    redirectTo: isAdminPortal ? '/interno/dashboard' : '/portal/paciente',
+    redirectTo: isAdminPortal ? '/acesso/dashboard' : '/portal/paciente',
     user: {
       id: user.id,
       email: user.email,

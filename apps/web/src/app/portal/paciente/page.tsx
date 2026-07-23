@@ -17,7 +17,7 @@ export default async function PatientDashboardPage() {
             Para agendar, a Nogueira Cardiologia precisa confirmar dados cadastrais e informações simples de risco cardiovascular. Esses dados ajudam a organizar o atendimento e a jornada do paciente.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Link href="/portal/paciente/agendar" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
+            <Link href="/portal/paciente/agendar" className="cta-pulse inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
               Iniciar agendamento
             </Link>
             <Link href="/portal/paciente/exames" className="inline-flex w-fit rounded-full border border-[#14508B]/20 px-6 py-3 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
