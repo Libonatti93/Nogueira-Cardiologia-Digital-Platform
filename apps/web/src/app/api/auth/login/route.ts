@@ -3,6 +3,7 @@ import { createSessionToken, sessionCookie } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { createSupabaseAuthClient, normalizeSupabaseAuthError } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +11,7 @@ type LoginPayload = {
   email?: unknown;
   password?: unknown;
   portal?: unknown;
+  'cf-turnstile-response'?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -24,6 +26,14 @@ export async function POST(request: Request) {
   const email = cleanString(payload.email).toLowerCase();
   const password = cleanString(payload.password);
   const portal = cleanString(payload.portal);
+  const isAdminPortal = portal === 'admin';
+
+  if (!isAdminPortal) {
+    const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'patient-login');
+    if (!turnstile.ok) {
+      return NextResponse.json({ message: turnstile.message }, { status: 403 });
+    }
+  }
 
   if (!emailRegex.test(email)) {
     return NextResponse.json({ message: 'Informe um e-mail válido.' }, { status: 400 });
@@ -33,7 +43,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Informe sua senha.' }, { status: 400 });
   }
 
-  const isAdminPortal = portal === 'admin';
   const supabase = createSupabaseAuthClient();
 
   if (!isAdminPortal && supabase) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { transaction } from '@/lib/db';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 type LeadPayload = {
   fullName?: unknown;
@@ -8,6 +9,7 @@ type LeadPayload = {
   postSlug?: unknown;
   postTitle?: unknown;
   accessMode?: unknown;
+  'cf-turnstile-response'?: unknown;
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,6 +34,13 @@ export async function POST(request: Request) {
   const postSlug = asCleanString(payload.postSlug);
   const postTitle = asCleanString(payload.postTitle);
   const accessMode = asCleanString(payload.accessMode) || 'form';
+
+  if (accessMode !== 'cached') {
+    const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'educativo-lead');
+    if (!turnstile.ok) {
+      return NextResponse.json({ message: turnstile.message }, { status: 403 });
+    }
+  }
 
   if (fullName.length < 3) {
     return NextResponse.json({ message: 'Informe seu nome completo.' }, { status: 400 });

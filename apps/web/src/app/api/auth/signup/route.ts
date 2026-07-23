@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import { createEmailVerification, sendVerificationEmail } from '@/lib/email-verification';
 import { createSupabaseAuthClient, getSupabaseEmailRedirectUrl, normalizeSupabaseAuthError } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +12,7 @@ type SignupPayload = {
   email?: unknown;
   phoneWhatsapp?: unknown;
   password?: unknown;
+  'cf-turnstile-response'?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -26,6 +28,11 @@ export async function POST(request: Request) {
   const email = cleanString(payload.email).toLowerCase();
   const phoneWhatsapp = cleanString(payload.phoneWhatsapp);
   const password = cleanString(payload.password);
+
+  const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'patient-signup');
+  if (!turnstile.ok) {
+    return NextResponse.json({ message: turnstile.message }, { status: 403 });
+  }
 
   if (fullName.length < 3) {
     return NextResponse.json({ message: 'Informe seu nome completo.' }, { status: 400 });

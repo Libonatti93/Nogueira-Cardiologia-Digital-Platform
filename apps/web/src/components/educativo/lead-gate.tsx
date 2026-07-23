@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import type { BlogSection } from '@/data/blog-posts';
+import { resetTurnstile, TurnstileWidget } from '@/components/security/turnstile-widget';
 
 type LeadGateProps = {
   postSlug: string;
@@ -122,6 +123,7 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
       setUnlocked(true);
       setStatus('success');
     } catch (submissionError) {
+      resetTurnstile();
       setStatus('error');
       setError(submissionError instanceof Error ? submissionError.message : 'Não foi possível liberar o conteúdo agora.');
     }
@@ -180,6 +182,8 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
           <p className="text-xs leading-5 text-slate-500">
             Ao continuar, você autoriza o contato da Nogueira Cardiologia por e-mail ou WhatsApp com conteúdos educativos e informações relacionadas à clínica.
           </p>
+
+          <TurnstileWidget action="educativo-lead" />
 
           {error ? <p className="text-sm font-semibold text-red-700">{error}</p> : null}
 

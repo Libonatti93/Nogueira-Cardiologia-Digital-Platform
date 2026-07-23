@@ -9,6 +9,7 @@ import {
 } from '@/lib/asaas';
 import { getVerifiedPatientUser } from '@/lib/auth';
 import { query, transaction } from '@/lib/db';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export const runtime = 'nodejs';
 
@@ -35,6 +36,7 @@ type AppointmentPayload = {
   holderPostalCode?: unknown;
   holderAddressNumber?: unknown;
   holderAddressComplement?: unknown;
+  'cf-turnstile-response'?: unknown;
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -97,6 +99,11 @@ export async function POST(request: Request) {
   const holderPostalCode = clean(payload.holderPostalCode).replace(/\D/g, '');
   const holderAddressNumber = clean(payload.holderAddressNumber);
   const holderAddressComplement = clean(payload.holderAddressComplement);
+
+  const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'appointment-checkout');
+  if (!turnstile.ok) {
+    return NextResponse.json({ message: turnstile.message }, { status: 403 });
+  }
 
   if (fullName.length < 3) {
     return NextResponse.json({ message: 'Informe o nome completo.' }, { status: 400 });

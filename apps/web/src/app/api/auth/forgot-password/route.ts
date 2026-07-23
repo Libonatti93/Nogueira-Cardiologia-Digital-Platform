@@ -5,11 +5,13 @@ import {
   normalizeSupabaseAuthError,
 } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export const runtime = 'nodejs';
 
 type ForgotPasswordPayload = {
   email?: unknown;
+  'cf-turnstile-response'?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -22,6 +24,11 @@ export async function POST(request: Request) {
   }
 
   const email = cleanString(payload.email).toLowerCase();
+
+  const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'password-reset');
+  if (!turnstile.ok) {
+    return NextResponse.json({ message: turnstile.message }, { status: 403 });
+  }
 
   if (!emailRegex.test(email)) {
     return NextResponse.json({ message: 'Informe um e-mail válido.' }, { status: 400 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { resetTurnstile, TurnstileWidget } from '@/components/security/turnstile-widget';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -64,6 +65,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
       setMode('login');
       event.currentTarget.reset();
     } catch (error) {
+      resetTurnstile();
       setPatientSignup({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível criar o cadastro.' });
     }
   }
@@ -77,6 +79,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
       setPatientLogin({ status: 'success', message: 'Acesso liberado. Abrindo o portal do paciente...' });
       window.location.href = body?.redirectTo ?? '/portal/paciente';
     } catch (error) {
+      resetTurnstile();
       if (error instanceof ApiError && error.code === 'email_not_verified') {
         setResendEmail(String(new FormData(event.currentTarget).get('email') ?? ''));
       }
@@ -96,6 +99,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
         verifyUrl: body?.verifyUrl,
       });
     } catch (error) {
+      resetTurnstile();
       setPatientLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível reenviar o link.' });
     }
   }
@@ -111,6 +115,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
         message: body?.message ?? 'Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.',
       });
     } catch (error) {
+      resetTurnstile();
       setPasswordReset({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível enviar o link.' });
     }
   }
@@ -151,6 +156,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
               helpText="Use pelo menos 6 caracteres. Você pode trocar essa senha depois se precisar."
               minLength={6}
             />
+            <TurnstileWidget action="patient-signup" />
             <SubmitButton loading={patientSignup.status === 'submitting'}>Criar acesso</SubmitButton>
             <FeedbackMessage feedback={patientSignup} />
           </form>
@@ -163,6 +169,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
               </p>
             </div>
             <Field label="E-mail cadastrado" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
+            <TurnstileWidget action="password-reset" />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <SubmitButton loading={passwordReset.status === 'submitting'}>Enviar link de recuperação</SubmitButton>
               <button type="button" onClick={() => setMode('login')} className="w-fit text-sm font-bold text-[#14508B] hover:text-[#0F3760]">
@@ -176,6 +183,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
             <form onSubmit={handlePatientLogin} className="mt-4 grid gap-4">
               <Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com" />
               <Field label="Senha" name="password" type="password" autoComplete="current-password" placeholder="Sua senha" />
+              <TurnstileWidget action="patient-login" />
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <SubmitButton loading={patientLogin.status === 'submitting'}>Entrar no portal do paciente</SubmitButton>
                 <button type="button" onClick={() => setMode('forgot')} className="w-fit text-sm font-bold text-[#14508B] hover:text-[#0F3760]">
@@ -187,6 +195,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
           {resendEmail ? (
             <form onSubmit={handleResendVerification} className="mt-4 rounded-2xl border border-[#14508B]/12 bg-[#F4F9FF] p-4">
               <input type="hidden" name="email" value={resendEmail} />
+              <TurnstileWidget action="resend-verification" />
               <p className="text-sm leading-6 text-slate-600">
                 Precisa de outro link de confirmação para <strong>{resendEmail}</strong>?
               </p>

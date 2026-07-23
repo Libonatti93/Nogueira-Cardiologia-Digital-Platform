@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { resetTurnstile, TurnstileWidget } from '@/components/security/turnstile-widget';
 
 type PatientScheduleCheckoutProps = {
   user: {
@@ -65,6 +66,7 @@ export function PatientScheduleCheckout({ user, amountCents }: PatientScheduleCh
 
     if (!response.ok || !result?.ok || !result.data?.paymentId) {
       setError(result?.message ?? 'Não foi possível concluir o pagamento. Confira os dados e tente novamente.');
+      resetTurnstile();
       setSubmitting(false);
       return;
     }
@@ -136,6 +138,8 @@ export function PatientScheduleCheckout({ user, amountCents }: PatientScheduleCh
         <input name="lgpdConsent" type="checkbox" value="true" required className="mt-1 h-4 w-4 accent-[#14508B]" />
         <span>Autorizo o uso dos meus dados para cadastro, agendamento, contato da clínica, processamento de pagamento e organização do atendimento, conforme a política de privacidade.</span>
       </label>
+
+      <TurnstileWidget action="appointment-checkout" />
 
       {error ? (
         <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" role="alert">
