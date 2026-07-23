@@ -1,17 +1,43 @@
+import Image from 'next/image';
+
 type TrustBadgeVariant = 'footer' | 'floating';
 
-const trustItems = [
+const footerBadges = [
   {
-    title: 'SSL/TLS ativo',
-    description: 'Conexão protegida por HTTPS',
+    title: 'Asaas API',
+    description: 'Gateway de pagamento',
+    image: '/security-logos/asaas-logo.svg',
+    imageClassName: 'h-5 w-auto',
+    width: 100,
+    height: 17,
+    href: 'https://www.asaas.com/',
+  },
+  {
+    title: 'PCI-DSS',
+    description: 'Certificação do gateway',
+    image: '/security-logos/pci-dss-logo.svg',
+    imageClassName: 'h-8 w-auto',
+    width: 90,
+    height: 42,
+    href: 'https://docs.asaas.com/docs/pci-dss-1',
   },
   {
     title: 'LGPD',
-    description: 'Dados tratados com política de privacidade',
+    description: 'Privacidade e dados pessoais',
+    image: '/security-logos/lgpd-govbr.png',
+    imageClassName: 'h-10 w-auto',
+    width: 453,
+    height: 190,
+    href: '/privacidade',
   },
   {
-    title: 'Asaas API',
-    description: 'Pagamentos processados por gateway certificado',
+    title: 'SSL/TLS',
+    description: 'Certificado Let\'s Encrypt',
+    image: '/security-logos/lets-encrypt-wide-white.svg',
+    imageClassName: 'h-8 w-auto',
+    width: 367,
+    height: 108,
+    href: 'https://letsencrypt.org/pt-br/about/',
   },
 ] as const;
 
@@ -46,22 +72,40 @@ export function SecurityTrustBadges({ variant = 'footer' }: { variant?: TrustBad
 
   return (
     <section aria-label="Segurança e proteção de dados" className="mx-auto mt-8 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="grid gap-3 rounded-2xl border border-white/14 bg-white/8 p-4 sm:grid-cols-3">
-        {trustItems.map((item) => (
-          <div key={item.title} className="flex items-start gap-3 rounded-xl border border-white/12 bg-white/7 p-3">
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#14508B]">
-              <ShieldIcon />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-white">{item.title}</p>
-              <p className="mt-1 text-xs leading-5 text-white/72">{item.description}</p>
-            </div>
-          </div>
-        ))}
+      <div className="flex flex-col items-center gap-4 border-y border-white/10 py-5">
+        <p className="text-center text-xs font-semibold uppercase text-white/58">
+          Ambiente protegido para cadastro, agendamento e pagamento
+        </p>
+        <div className="flex w-full flex-wrap items-center justify-center gap-3">
+          {footerBadges.map((item) => {
+            const isInternal = item.href.startsWith('/');
+
+            return (
+              <a
+                key={item.title}
+                href={item.href}
+                target={isInternal ? undefined : '_blank'}
+                rel={isInternal ? undefined : 'noreferrer'}
+                aria-label={`${item.title}: ${item.description}`}
+                title={`${item.title}: ${item.description}`}
+                className="inline-flex h-14 min-w-[8.5rem] items-center justify-center rounded-md border border-white/12 bg-white/10 px-4 transition-colors hover:border-white/28 hover:bg-white/14"
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  width={item.width}
+                  height={item.height}
+                  className={`max-w-[118px] object-contain ${item.imageClassName}`}
+                  unoptimized
+                />
+              </a>
+            );
+          })}
+        </div>
+        <p className="max-w-3xl text-center text-xs leading-5 text-white/52">
+          Conexão HTTPS com certificado ativo, política de privacidade/LGPD e pagamentos integrados ao Asaas.
+        </p>
       </div>
-      <p className="mt-3 text-center text-xs leading-5 text-white/58">
-        O ambiente digital utiliza conexão criptografada, controles de privacidade e integração de pagamento com o Asaas.
-      </p>
     </section>
   );
 }
