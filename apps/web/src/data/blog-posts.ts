@@ -86,7 +86,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Check-up cardiológico em São José do Rio Preto | Nogueira Cardiologia',
     seoDescription:
       'Saiba quando fazer check-up cardiológico, quais fatores de risco avaliar e como a Nogueira Cardiologia orienta prevenção cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/check-up-cardiologico-em-sao-jose-do-rio-preto.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png',
     featured: true,
     sections: [
       {
@@ -127,7 +127,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Pressão alta e hipertensão arterial | Nogueira Cardiologia',
     seoDescription:
       'Entenda os riscos da pressão alta, quando procurar cardiologista e como controlar hipertensão arterial com acompanhamento médico.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/pressao-alta-hipertensao-risco-para-o-coracao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo3.png',
     featured: true,
     sections: [
       {
@@ -168,7 +168,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Dor no peito e palpitações: quando procurar cardiologista | Nogueira',
     seoDescription:
       'Saiba quando dor no peito, falta de ar, tontura e palpitações precisam de avaliação com cardiologista.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/dor-no-peito-falta-de-ar-palpitacoes-quando-procurar-cardiologista.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris3.png',
     featured: false,
     sections: [
       {
@@ -209,7 +209,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Colesterol, diabetes e tabagismo: risco cardiovascular | Nogueira',
     seoDescription:
       'Entenda como colesterol alto, diabetes e tabagismo aumentam risco de infarto e AVC e quando procurar avaliação cardiológica.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/colesterol-diabetes-tabagismo-fatores-de-risco-cardiovascular.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris3.png',
     featured: false,
     sections: [
       {
@@ -250,7 +250,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Coronariopatias e cardiomiopatias | Dr. Paulo Roberto Nogueira',
     seoDescription:
       'Entenda coronariopatias, cardiomiopatias e a importância do acompanhamento com cardiologista clínico em São José do Rio Preto.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/coronariopatias-cardiomiopatias-entenda-o-acompanhamento.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
     featured: true,
     sections: [
       {
@@ -298,7 +298,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Atividade física e coração: avaliação cardiológica | Nogueira',
     seoDescription:
       'Veja quando fazer avaliação cardiológica antes de iniciar atividade física e como proteger a saúde cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/atividade-fisica-segura-para-o-coracao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris1.png',
     featured: false,
     sections: [
       {
@@ -339,7 +339,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Arritmia cardíaca e palpitações: quando investigar | Nogueira Cardiologia',
     seoDescription:
       'Entenda quando palpitações, coração acelerado e falhas no ritmo precisam de avaliação com cardiologista, eletrocardiograma ou Holter.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/arritmia-cardiaca-palpitacoes-holter-quando-investigar.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp4.jpeg',
     featured: true,
     sections: [
       {
@@ -380,7 +380,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Ecocardiograma: quando fazer e o que avalia | Nogueira Cardiologia',
     seoDescription:
       'Saiba quando o ecocardiograma é indicado, o que ele mostra sobre válvulas, músculo cardíaco e função do coração.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/ecocardiograma-quando-o-cardiologista-solicita.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp13.jpeg',
     featured: false,
     sections: [
       {
@@ -421,7 +421,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Teste ergométrico: preparo e quando fazer | Nogueira Cardiologia',
     seoDescription:
       'Entenda para que serve o teste ergométrico, como se preparar e quando o cardiologista pode indicar avaliação de esforço.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/teste-ergometrico-preparo-indicacoes-e-cuidados.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp21.jpeg',
     featured: false,
     sections: [
       {
@@ -462,7 +462,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Holter e MAPA: diferenças e indicações | Nogueira Cardiologia',
     seoDescription:
       'Veja a diferença entre Holter 24 horas e MAPA, exames usados para investigar arritmias e pressão arterial fora do consultório.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/holter-24-horas-e-mapa-diferencas-entre-os-exames.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp27.jpeg',
     featured: false,
     sections: [
       {
@@ -503,7 +503,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Insuficiência cardíaca: sintomas e acompanhamento | Nogueira',
     seoDescription:
       'Conheça sinais de insuficiência cardíaca, como falta de ar, inchaço e cansaço, e entenda a importância do seguimento cardiológico.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/insuficiencia-cardiaca-sinais-que-merecem-avaliacao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo2.png',
     featured: true,
     sections: [
       {
@@ -544,7 +544,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Sopro no coração em adultos: quando investigar | Nogueira',
     seoDescription:
       'Entenda o que pode significar sopro no coração em adultos e quando o cardiologista pode solicitar ecocardiograma.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/sopro-no-coracao-em-adultos-o-que-pode-significar.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris2.png',
     featured: false,
     sections: [
       {
@@ -585,7 +585,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Histórico familiar de infarto e risco cardiovascular | Nogueira',
     seoDescription:
       'Saiba como histórico familiar de infarto influencia prevenção cardiovascular, check-up cardiológico e metas de controle.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/historico-familiar-de-infarto-como-avaliar-risco.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp33.jpeg',
     featured: false,
     sections: [
       {
@@ -626,7 +626,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Menopausa e coração: prevenção cardiovascular | Nogueira',
     seoDescription:
       'Entenda por que mulheres após a menopausa devem acompanhar pressão, colesterol, sintomas e risco cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/menopausa-e-coracao-cuidados-cardiovasculares-para-mulheres.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris1.png',
     featured: false,
     sections: [
       {
@@ -667,7 +667,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Cardiologia do idoso: acompanhamento e prevenção | Nogueira',
     seoDescription:
       'Veja cuidados cardiovasculares importantes para idosos, incluindo pressão arterial, sintomas, medicações e acompanhamento cardiológico.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/saude-cardiovascular-do-idoso-acompanhamento-com-cardiologista.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris1.png',
     featured: false,
     sections: [
       {
@@ -708,7 +708,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Obesidade e coração: riscos cardiovasculares | Nogueira',
     seoDescription:
       'Entenda a relação entre obesidade, hipertensão, diabetes, apneia do sono e risco cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/obesidade-e-coracao-risco-cardiovascular-e-prevencao.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp36.jpeg',
     featured: false,
     sections: [
       {
@@ -749,7 +749,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Apneia do sono e coração: riscos cardiovasculares | Nogueira',
     seoDescription:
       'Saiba como ronco, apneia do sono e pausas respiratórias podem influenciar pressão alta, arritmias e saúde do coração.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/sono-apneia-e-coracao-por-que-ronco-importa.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp39.jpeg',
     featured: false,
     sections: [
       {
@@ -790,7 +790,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Ansiedade e palpitações: quando avaliar o coração | Nogueira',
     seoDescription:
       'Entenda quando palpitações podem estar ligadas à ansiedade e quando sintomas pedem avaliação cardiológica.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/ansiedade-palpitacoes-e-coracao-como-diferenciar.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
     featured: false,
     sections: [
       {
@@ -831,7 +831,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Pós-infarto: acompanhamento e prevenção secundária | Nogueira',
     seoDescription:
       'Entenda a importância do seguimento cardiológico após infarto, com controle de medicações, exames e fatores de risco.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/pos-infarto-acompanhamento-cardiologico-e-prevencao-secundaria.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp24.jpeg',
     featured: true,
     sections: [
       {
@@ -872,7 +872,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Valvulopatias: doenças das válvulas cardíacas | Nogueira',
     seoDescription:
       'Saiba o que são valvulopatias, sintomas de alerta e como o cardiologista acompanha alterações nas válvulas do coração.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/valvulopatias-doencas-das-valvulas-cardiacas.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp32.jpeg',
     featured: false,
     sections: [
       {
@@ -913,7 +913,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Anticoagulantes: cuidados e acompanhamento | Nogueira',
     seoDescription:
       'Entenda cuidados com anticoagulantes, risco de sangramento, interações e importância do acompanhamento médico.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/anticoagulantes-cuidados-seguranca-e-acompanhamento.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris4.png',
     featured: false,
     sections: [
       {
@@ -954,7 +954,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Telemedicina com cardiologista: quando usar | Nogueira',
     seoDescription:
       'Veja quando a telemedicina cardiológica pode ajudar em retornos, orientação de exames e acompanhamento cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/telemedicina-com-cardiologista-quando-o-atendimento-virtual-ajuda.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris3.png',
     featured: true,
     sections: [
       {
@@ -995,7 +995,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Retorno cardiológico: o que levar para consulta | Nogueira',
     seoDescription:
       'Veja como organizar exames, medicamentos, sintomas e dúvidas para aproveitar melhor o retorno com cardiologista.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/retorno-cardiologico-o-que-levar-para-a-consulta.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp18.jpeg',
     featured: false,
     sections: [
       {
@@ -1036,7 +1036,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Como medir pressão em casa corretamente | Nogueira',
     seoDescription:
       'Aprenda cuidados básicos para medir pressão arterial em casa e levar registros úteis para o cardiologista.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/como-medir-pressao-em-casa-do-jeito-certo.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris3.png',
     featured: false,
     sections: [
       {
@@ -1077,7 +1077,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Colesterol LDL, HDL e triglicérides: entenda | Nogueira',
     seoDescription:
       'Entenda LDL, HDL, triglicérides e por que metas de colesterol dependem do risco cardiovascular de cada paciente.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/colesterol-ldl-hdl-triglicerides-entenda-os-exames.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp20.jpeg',
     featured: false,
     sections: [
       {
@@ -1118,7 +1118,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Diabetes e coração: risco cardiovascular | Nogueira',
     seoDescription:
       'Saiba por que diabetes aumenta risco cardiovascular e quais cuidados ajudam a prevenir infarto, AVC e complicações.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/diabetes-e-coracao-por-que-o-risco-cardiovascular-aumenta.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp25.jpeg',
     featured: false,
     sections: [
       {
@@ -1156,7 +1156,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Check-up cardiológico para executivos | Nogueira Cardiologia',
     seoDescription:
       'Entenda como o check-up cardiológico ajuda profissionais com rotina intensa a mapear pressão, colesterol, estresse e risco cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/check-up-cardiologico-para-executivos-e-profissionais-com-rotina-intensa.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png',
     featured: false,
     sections: [
       {
@@ -1194,7 +1194,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Hipertensão e estresse: relação com a pressão | Nogueira',
     seoDescription:
       'Saiba como estresse, sono, alimentação e rotina influenciam a hipertensão arterial e quando procurar avaliação cardiológica.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/hipertensao-e-estresse-como-a-rotina-afeta-a-pressao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo3.png',
     featured: false,
     sections: [
       {
@@ -1232,7 +1232,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Dor no peito em mulheres: quando avaliar | Nogueira',
     seoDescription:
       'Conheça sinais de alerta de dor no peito em mulheres e a importância da avaliação cardiológica individualizada.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/dor-no-peito-em-mulheres-sinais-que-merecem-atencao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-cris3.png',
     featured: false,
     sections: [
       {
@@ -1270,7 +1270,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Arritmia cardíaca e palpitações | Nogueira Cardiologia',
     seoDescription:
       'Entenda quando palpitações podem indicar arritmia cardíaca e quais exames o cardiologista pode solicitar.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/arritmia-cardiaca-quando-palpitacoes-precisam-de-avaliacao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris3.png',
     featured: false,
     sections: [
       {
@@ -1308,7 +1308,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Ecocardiograma: quando fazer | Nogueira Cardiologia',
     seoDescription:
       'Saiba para que serve o ecocardiograma e quando o cardiologista pode solicitar esse exame na avaliação do coração.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/ecocardiograma-quando-o-cardiologista-pode-solicitar.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp20.jpeg',
     featured: false,
     sections: [
       {
@@ -1341,7 +1341,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Teste ergométrico: indicação e preparo | Nogueira',
     seoDescription:
       'Entenda para que serve o teste ergométrico, quando ele pode ser indicado e quais cuidados observar antes do exame.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/teste-ergometrico-para-que-serve-e-quando-fazer.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp21.jpeg',
     featured: false,
     sections: [
       {
@@ -1374,7 +1374,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Holter 24 horas para palpitações | Nogueira Cardiologia',
     seoDescription:
       'Veja como o Holter 24 horas auxilia na investigação de palpitações, arritmias, tonturas e alterações do ritmo cardíaco.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/holter-24-horas-investigacao-de-palpitacoes-e-arritmias.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp22.jpeg',
     featured: false,
     sections: [
       {
@@ -1407,7 +1407,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'MAPA 24 horas e pressão arterial | Nogueira',
     seoDescription:
       'Entenda para que serve o MAPA 24 horas e como ele ajuda no diagnóstico e controle da hipertensão arterial.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/mapa-24-horas-monitorizacao-da-pressao-arterial.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp23.jpeg',
     featured: false,
     sections: [
       {
@@ -1440,7 +1440,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Cardiologista para idosos | Nogueira Cardiologia',
     seoDescription:
       'Veja por que idosos precisam de acompanhamento cardiológico individualizado para pressão, ritmo, medicamentos e sintomas.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/cardiologista-para-idosos-cuidados-com-pressao-e-coracao.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
     featured: false,
     sections: [
       {
@@ -1473,7 +1473,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Telemedicina em cardiologia | Nogueira Cardiologia',
     seoDescription:
       'Entenda quando a telemedicina em cardiologia pode ser útil para acompanhamento, retorno de exames e orientação cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/telemedicina-em-cardiologia-quando-a-consulta-online-ajuda.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png',
     featured: false,
     sections: [
       {
@@ -1511,7 +1511,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Retorno cardiológico: importância | Nogueira',
     seoDescription:
       'Saiba por que o retorno cardiológico é importante para revisar exames, sintomas, medicamentos e metas de prevenção.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/retorno-cardiologico-por-que-acompanhar-exames-e-sintomas.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo3.png',
     featured: false,
     sections: [
       {
@@ -1544,7 +1544,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Histórico familiar e risco cardiovascular | Nogueira',
     seoDescription:
       'Entenda como histórico familiar de infarto, AVC e colesterol alto influencia a prevenção cardiovascular.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/risco-cardiovascular-familiar-quando-historico-pesa.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris3.png',
     featured: false,
     sections: [
       {
@@ -1577,7 +1577,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Colesterol LDL alto e prevenção | Nogueira',
     seoDescription:
       'Saiba por que metas de LDL dependem do risco cardiovascular e como o cardiologista orienta prevenção de infarto e AVC.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/colesterol-ldl-alto-entenda-metas-e-prevencao.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp24.jpeg',
     featured: false,
     sections: [
       {
@@ -1610,7 +1610,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Falta de ar aos esforços: coração ou pulmão? | Nogueira',
     seoDescription:
       'Entenda quando falta de ar aos esforços pode indicar necessidade de avaliação cardiológica e quais sinais pedem atenção.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/falta-de-ar-aos-esforcos-quando-investigar-o-coracao.svg',
+    coverImage: '/uploads-imagens-nogueira/paulo-socesp25.jpeg',
     featured: false,
     sections: [
       {
@@ -1643,7 +1643,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Consulta cardiológica em São José do Rio Preto | Nogueira',
     seoDescription:
       'Veja como se preparar para uma consulta cardiológica em São José do Rio Preto e quais informações levar ao cardiologista.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/consulta-cardiologica-em-sao-jose-do-rio-preto-como-se-preparar.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png',
     featured: false,
     sections: [
       {
@@ -1681,7 +1681,7 @@ export const blogPosts: BlogPost[] = [
     seoTitle: 'Pós-consulta cardiológica: próximos passos | Nogueira',
     seoDescription:
       'Entenda como organizar medicamentos, exames, retorno e sinais de alerta depois da consulta cardiológica.',
-    coverImage: '/uploads-imagens-nogueira/educativo-covers/pos-consulta-cardiologica-como-seguir-o-plano-com-seguranca.svg',
+    coverImage: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
     featured: false,
     sections: [
       {
