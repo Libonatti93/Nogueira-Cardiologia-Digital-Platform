@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { SecurityTrustBadges } from '@/components/security/trust-badges';
 
 const whatsappLink = 'https://wa.me/5517997440223';
 const developerLink = 'https://github.com/Libonatti93';
@@ -103,6 +104,7 @@ export function PublicFooter() {
           </div>
         </div>
       </div>
+      <SecurityTrustBadges />
       <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col items-center gap-2 px-4 text-center text-xs leading-5 text-white/55 sm:px-6 lg:px-8">
         <p>CNPJ 12.388.371/0001-71 - Nogueira Cardiologia LTDA. © 2026 Todos os direitos reservados.</p>
         <p>

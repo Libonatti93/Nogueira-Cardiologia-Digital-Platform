@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BackToTopButton } from "@/components/back-to-top-button";
 import { FloatingWhatsappButton } from "@/components/floating-whatsapp-button";
+import { SecurityTrustBadges } from "@/components/security/trust-badges";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <BackToTopButton />
+        <SecurityTrustBadges variant="floating" />
         <FloatingWhatsappButton />
       </body>
     </html>
