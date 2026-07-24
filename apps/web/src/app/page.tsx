@@ -309,10 +309,9 @@ export default function Home() {
 
           <Link
             href={portalLink}
-            className="cta-pulse inline-flex shrink-0 rounded-full bg-[#14508B] px-3.5 py-2.5 text-[11px] font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-colors hover:bg-[#0F3760] sm:px-6 sm:text-sm"
+            className="cta-pulse inline-flex shrink-0 whitespace-nowrap rounded-full bg-[#14508B] px-3 py-2.5 text-[10px] font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-colors hover:bg-[#0F3760] sm:px-6 sm:text-sm"
           >
-            <span className="sm:hidden">Agendar</span>
-            <span className="hidden sm:inline">Marcar consulta</span>
+            Marcar consulta
           </Link>
 
           <HomeMobileMenu />
