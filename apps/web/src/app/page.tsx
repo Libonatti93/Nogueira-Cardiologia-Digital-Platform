@@ -287,14 +287,14 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full overflow-x-clip bg-white text-slate-950">
       <header className="sticky top-8 z-50 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
-          <a href="#inicio" className="flex min-w-0 items-center gap-3" aria-label="Ir para o início">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="mr-auto flex min-w-0 items-center" aria-label="Ir para o início">
             <Image
               src={`${assetPath}/nogueira-cardio4-transparent.png`}
               alt="Nogueira Cardiologia"
               width={360}
               height={90}
-              className="h-8 w-auto object-contain sm:h-11"
+              className="h-8 w-auto max-w-[104px] object-contain sm:h-11 sm:max-w-none"
               priority
             />
           </a>
@@ -307,16 +307,15 @@ export default function Home() {
             ))}
           </nav>
 
-          <div className="ml-auto xl:hidden">
-            <HomeMobileMenu />
-          </div>
-
           <Link
             href={portalLink}
             className="cta-pulse inline-flex shrink-0 rounded-full bg-[#14508B] px-3.5 py-2.5 text-[11px] font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-colors hover:bg-[#0F3760] sm:px-6 sm:text-sm"
           >
-            Marcar consulta
+            <span className="sm:hidden">Agendar</span>
+            <span className="hidden sm:inline">Marcar consulta</span>
           </Link>
+
+          <HomeMobileMenu />
         </div>
       </header>
 

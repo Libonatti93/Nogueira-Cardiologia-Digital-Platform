@@ -13,7 +13,7 @@ const items = [
 
 export function HomeMobileMenu() {
   return (
-    <details className="group relative xl:hidden">
+    <details className="group relative shrink-0 xl:hidden">
       <summary
         className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-[#14508B]/15 bg-white text-[#14508B] transition-colors hover:bg-[#F4F9FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14508B] [&::-webkit-details-marker]:hidden"
         aria-label="Abrir menu de navegação"
@@ -27,7 +27,7 @@ export function HomeMobileMenu() {
       </summary>
 
       <nav
-        className="absolute right-0 top-12 z-50 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#14508B]/12 bg-white p-2 shadow-[0_24px_60px_-24px_rgba(15,55,96,0.48)]"
+        className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#14508B]/12 bg-white p-2 shadow-[0_24px_60px_-24px_rgba(15,55,96,0.48)]"
         aria-label="Navegação mobile"
       >
         {items.map(([label, href]) => (
