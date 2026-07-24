@@ -36,6 +36,7 @@ const sections = [
   },
   {
     title: '5. Cookies, analytics e ferramentas de terceiros',
+    id: 'cookies',
     paragraphs: [
       'O site pode utilizar cookies, tecnologias semelhantes e ferramentas de mensuração para funcionamento, segurança, análise de desempenho, melhoria de navegação e eventual mensuração de campanhas.',
       'Caso sejam ativados recursos como Google Analytics, Google Ads ou tecnologias semelhantes, a Nogueira Cardiologia devera informar o uso dessas ferramentas e disponibilizar opcoes de controle quando aplicavel.',
@@ -96,6 +97,7 @@ export const metadata: Metadata = {
   title: 'Política de Privacidade, LGPD e Termos | Nogueira Cardiologia',
   description:
     'Política de privacidade, LGPD, cookies, dados pessoais, dados de saúde e termos de uso da Nogueira Cardiologia.',
+  alternates: { canonical: '/privacidade' },
 };
 
 export default function PrivacyPage() {
@@ -132,7 +134,7 @@ export default function PrivacyPage() {
           {sections.map((section) => (
             <article
               key={section.title}
-              id={section.title === '12. Contato' ? 'contato-privacidade' : undefined}
+              id={'id' in section ? section.id : section.title === '12. Contato' ? 'contato-privacidade' : undefined}
               className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_22px_50px_-44px_rgba(20,80,139,0.6)] sm:p-6"
             >
               <h2 className="text-xl font-semibold text-[#0F3760]">{section.title}</h2>

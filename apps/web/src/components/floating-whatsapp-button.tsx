@@ -1,6 +1,21 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
+
 const whatsappLink = 'https://wa.me/5517997440223';
 
 export function FloatingWhatsappButton() {
+  const pathname = usePathname();
+  const pagesWithSecretaryHelp = [
+    '/portal/paciente',
+    '/portal/paciente/agendar',
+    '/portal/paciente/exames',
+  ];
+
+  if (pagesWithSecretaryHelp.includes(pathname)) {
+    return null;
+  }
+
   return (
     <a
       href={whatsappLink}

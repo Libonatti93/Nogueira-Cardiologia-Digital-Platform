@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 
 const navigationItems = [
-  ['Clínica', '/#clínica'],
+  ['Clínica', '/#clinica'],
   ['Paciente', '/#portal-paciente'],
   ['Corpo clinico', '/#corpo-clinico'],
   ['Especialidades', '/#especialidades'],
@@ -15,7 +15,7 @@ const navigationItems = [
 export function PublicHeader() {
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
+      <header className="sticky top-8 z-50 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Ir para o início">
             <Image

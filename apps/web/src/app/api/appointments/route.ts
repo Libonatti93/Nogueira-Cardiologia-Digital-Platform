@@ -4,7 +4,9 @@ import {
   AsaasError,
   createAsaasCreditCardPayment,
   createAsaasCustomer,
+  createAsaasPixPayment,
   getAppointmentPaymentAmountCents,
+  getAsaasPixQrCode,
   mapAsaasPaymentStatus,
 } from '@/lib/asaas';
 import { getVerifiedPatientUser } from '@/lib/auth';
@@ -22,6 +24,8 @@ type AppointmentPayload = {
   heightCm?: unknown;
   weightKg?: unknown;
   doctorPreference?: unknown;
+  scheduledFor?: unknown;
+  paymentMethod?: unknown;
   hasHypertension?: unknown;
   hasDiabetes?: unknown;
   hasHighCholesterol?: unknown;
@@ -58,8 +62,8 @@ function getClientIp(headerValue: string | null) {
   return headerValue?.split(',')[0]?.trim() || '127.0.0.1';
 }
 
-function sanitizeAsaasPayload(value: unknown) {
-  if (!value || typeof value !== 'object') return value;
+function sanitizeAsaasPayload(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object') return {};
   const copy = JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
   delete copy.creditCard;
   delete copy.creditCardToken;
@@ -99,6 +103,10 @@ export async function POST(request: Request) {
   const holderPostalCode = clean(payload.holderPostalCode).replace(/\D/g, '');
   const holderAddressNumber = clean(payload.holderAddressNumber);
   const holderAddressComplement = clean(payload.holderAddressComplement);
+  const doctorPreference = clean(payload.doctorPreference);
+  const scheduledFor = clean(payload.scheduledFor);
+  const scheduledDate = new Date(scheduledFor);
+  const paymentMethod = clean(payload.paymentMethod);
 
   const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'appointment-checkout');
   if (!turnstile.ok) {
@@ -129,23 +137,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Informe data de nascimento, altura e peso.' }, { status: 400 });
   }
 
+  if (!['paulo', 'cristiani'].includes(doctorPreference) || !scheduledFor || Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+    return NextResponse.json({ message: 'Escolha um médico, uma data e um horário disponíveis.' }, { status: 400 });
+  }
+
   if (payload.lgpdConsent !== 'true' && payload.lgpdConsent !== true) {
     return NextResponse.json({ message: 'É necessário aceitar o consentimento de uso de dados.' }, { status: 400 });
   }
 
-  if (cardHolderName.length < 3 || cardNumber.length < 13 || cardNumber.length > 19) {
+  if (!['pix', 'credit_card'].includes(paymentMethod)) {
+    return NextResponse.json({ message: 'Escolha pagar por PIX ou cartão de crédito.' }, { status: 400 });
+  }
+
+  if (paymentMethod === 'credit_card' && (cardHolderName.length < 3 || cardNumber.length < 13 || cardNumber.length > 19)) {
     return NextResponse.json({ message: 'Informe os dados do cartão de crédito.' }, { status: 400 });
   }
 
-  if (!/^\d{2}$/.test(cardExpiryMonth) || Number(cardExpiryMonth) < 1 || Number(cardExpiryMonth) > 12 || !/^\d{4}$/.test(cardExpiryYear)) {
+  if (paymentMethod === 'credit_card' && (!/^\d{2}$/.test(cardExpiryMonth) || Number(cardExpiryMonth) < 1 || Number(cardExpiryMonth) > 12 || !/^\d{4}$/.test(cardExpiryYear))) {
     return NextResponse.json({ message: 'Informe uma validade de cartão válida.' }, { status: 400 });
   }
 
-  if (cardCvv.length < 3 || cardCvv.length > 4) {
+  if (paymentMethod === 'credit_card' && (cardCvv.length < 3 || cardCvv.length > 4)) {
     return NextResponse.json({ message: 'Informe o CVV do cartão.' }, { status: 400 });
   }
 
-  if (holderCpf.length !== 11 || holderPostalCode.length !== 8 || !holderAddressNumber) {
+  if (paymentMethod === 'credit_card' && (holderCpf.length !== 11 || holderPostalCode.length !== 8 || !holderAddressNumber)) {
     return NextResponse.json({ message: 'Informe CPF, CEP e número do endereço do titular.' }, { status: 400 });
   }
 
@@ -225,26 +241,45 @@ export async function POST(request: Request) {
         values ($1, $2, $3, 'portal_paciente', 'marcar_consulta', 'awaiting_payment', $4, $5)
         returning id
       `,
-      [fullName, email, phoneWhatsapp, patientId, `Preferência médica: ${clean(payload.doctorPreference) || 'primeiro horário disponível'}`],
+      [fullName, email, phoneWhatsapp, patientId, `Consulta escolhida para ${scheduledFor}`],
     );
     const leadId = leadResult.rows[0].id;
 
-    const doctorPreference = clean(payload.doctorPreference);
     const doctorResult = await client.query<{ id: string }>(
       `
         select id
         from doctors
         where is_active = true
           and (
-            $1 = 'first-available'
-            or ($1 = 'paulo' and full_name ilike '%Paulo%')
+            ($1 = 'paulo' and full_name ilike '%Paulo%')
             or ($1 = 'cristiani' and full_name ilike '%Cristiani%')
           )
         order by full_name
         limit 1
       `,
-      [doctorPreference || 'first-available'],
+      [doctorPreference],
     );
+    const doctorId = doctorResult.rows[0]?.id;
+
+    if (!doctorId) {
+      throw new Error('Médico não encontrado para o horário escolhido.');
+    }
+
+    const occupied = await client.query(
+      `
+        select id
+        from appointments
+        where doctor_id = $1
+          and scheduled_for = $2
+          and status not in ('cancelled', 'no_show')
+        limit 1
+      `,
+      [doctorId, scheduledDate],
+    );
+
+    if (occupied.rowCount) {
+      throw new Error('Este horário acabou de ser reservado. Volte à agenda e escolha outro horário.');
+    }
 
     const appointmentResult = await client.query<{ id: string; status: string }>(
       `
@@ -252,13 +287,14 @@ export async function POST(request: Request) {
           patient_id,
           doctor_id,
           lead_id,
+          scheduled_for,
           status,
           reason
         )
-        values ($1, $2, $3, 'awaiting_payment', 'Solicitação criada pelo portal do paciente')
+        values ($1, $2, $3, $4, 'awaiting_payment', 'Consulta agendada pelo portal do paciente')
         returning id, status
       `,
-      [patientId, doctorResult.rows[0]?.id ?? null, leadId],
+      [patientId, doctorId, leadId, scheduledDate],
     );
 
     await client.query(
@@ -266,7 +302,7 @@ export async function POST(request: Request) {
         insert into lead_events (lead_id, event_type, new_stage, note, metadata)
         values ($1, 'appointment_requested', 'awaiting_payment', 'Paciente solicitou consulta pelo portal e iniciou checkout Asaas.', $2::jsonb)
       `,
-      [leadId, JSON.stringify({ healthIntake, doctorPreference: doctorPreference || 'first-available', amountCents })],
+      [leadId, JSON.stringify({ healthIntake, doctorPreference, scheduledFor, amountCents })],
     );
 
     return {
@@ -306,32 +342,42 @@ export async function POST(request: Request) {
         })
       ).id;
 
-    asaasPayment = await createAsaasCreditCardPayment({
-      customer: asaasCustomerId,
-      billingType: 'CREDIT_CARD',
-      value: amount,
-      dueDate: getTodayDate(),
-      description: 'Consulta cardiológica - Nogueira Cardiologia',
-      externalReference: persisted.appointmentId,
-      creditCard: {
-        holderName: cardHolderName,
-        number: cardNumber,
-        expiryMonth: cardExpiryMonth,
-        expiryYear: cardExpiryYear,
-        ccv: cardCvv,
-      },
-      creditCardHolderInfo: {
-        name: cardHolderName,
-        email,
-        cpfCnpj: holderCpf,
-        postalCode: holderPostalCode,
-        addressNumber: holderAddressNumber,
-        addressComplement: holderAddressComplement || null,
-        phone: phoneWhatsapp,
-        mobilePhone: phoneWhatsapp,
-      },
-      remoteIp,
-    });
+    asaasPayment =
+      paymentMethod === 'pix'
+        ? await createAsaasPixPayment({
+            customer: asaasCustomerId,
+            billingType: 'PIX',
+            value: amount,
+            dueDate: getTodayDate(),
+            description: 'Consulta cardiológica de 60 minutos - Nogueira Cardiologia',
+            externalReference: persisted.appointmentId,
+          })
+        : await createAsaasCreditCardPayment({
+            customer: asaasCustomerId,
+            billingType: 'CREDIT_CARD',
+            value: amount,
+            dueDate: getTodayDate(),
+            description: 'Consulta cardiológica de 60 minutos - Nogueira Cardiologia',
+            externalReference: persisted.appointmentId,
+            creditCard: {
+              holderName: cardHolderName,
+              number: cardNumber,
+              expiryMonth: cardExpiryMonth,
+              expiryYear: cardExpiryYear,
+              ccv: cardCvv,
+            },
+            creditCardHolderInfo: {
+              name: cardHolderName,
+              email,
+              cpfCnpj: holderCpf,
+              postalCode: holderPostalCode,
+              addressNumber: holderAddressNumber,
+              addressComplement: holderAddressComplement || null,
+              phone: phoneWhatsapp,
+              mobilePhone: phoneWhatsapp,
+            },
+            remoteIp,
+          });
   } catch (error) {
     await query(
       `
@@ -358,6 +404,7 @@ export async function POST(request: Request) {
   }
 
   const paymentStatus = mapAsaasPaymentStatus(asaasPayment.status);
+  const pixQrCode = paymentMethod === 'pix' ? await getAsaasPixQrCode(asaasPayment.id).catch(() => null) : null;
   const checkoutUrl = asaasPayment.invoiceUrl ?? asaasPayment.bankSlipUrl ?? asaasPayment.transactionReceiptUrl ?? null;
   const paymentResult = await transaction(async (client) => {
     const result = await client.query<{ id: string }>(
@@ -372,11 +419,12 @@ export async function POST(request: Request) {
           status,
           amount_cents,
           checkout_url,
+          pix_qr_code,
           due_date,
           paid_at,
           raw_payload
         )
-        values ($1, $2, 'asaas', $3, $4, $5, $6::payment_status, $7, $8, $9, case when $6::payment_status = 'paid' then now() else null end, $10::jsonb)
+        values ($1, $2, 'asaas', $3, $4, $5, $6::payment_status, $7, $8, $9, $10, case when $6::payment_status = 'paid' then now() else null end, $11::jsonb)
         returning id
       `,
       [
@@ -388,8 +436,9 @@ export async function POST(request: Request) {
         paymentStatus,
         amountCents,
         checkoutUrl,
+        pixQrCode?.payload ?? null,
         getTodayDate(),
-        JSON.stringify(sanitizeAsaasPayload(asaasPayment)),
+        JSON.stringify({ ...sanitizeAsaasPayload(asaasPayment), pixQrCode }),
       ],
     );
 
@@ -441,14 +490,17 @@ export async function POST(request: Request) {
     status: paymentStatus === 'paid' ? 'payment_confirmed' : 'awaiting_payment',
     message:
       paymentStatus === 'paid'
-        ? 'Pagamento confirmado. A secretaria seguira com a confirmacao do horário.'
-        : 'Solicitação registrada e pagamento criado no Asaas.',
+        ? 'Pagamento confirmado. Sua consulta foi reservada.'
+        : 'Seu horário foi selecionado e o pagamento está em processamento.',
     data: {
       ...persisted,
       paymentId: paymentResult.id,
       providerPaymentId: asaasPayment.id,
       paymentStatus,
       checkoutUrl,
+      paymentMethod,
+      pixCopyPaste: pixQrCode?.payload ?? null,
+      pixQrCodeImage: pixQrCode?.encodedImage ?? null,
       fullName,
       cpf,
       email,
@@ -456,7 +508,8 @@ export async function POST(request: Request) {
       birthDate,
       heightCm,
       weightKg,
-      doctorPreference: clean(payload.doctorPreference),
+      doctorPreference,
+      scheduledFor,
       ...healthIntake,
     },
   });

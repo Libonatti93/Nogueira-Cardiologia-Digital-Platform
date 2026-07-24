@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { PasswordResetForm } from '@/components/portal/password-reset-form';
 import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 import { PublicFooter } from '@/components/site/public-footer';
+import { noIndexRobots } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Redefinir Senha | Portal do Paciente',
   description: 'Crie uma nova senha para acessar o portal do paciente da Nogueira Cardiologia.',
+  robots: noIndexRobots,
 };
 
 export default function ResetPasswordPage() {

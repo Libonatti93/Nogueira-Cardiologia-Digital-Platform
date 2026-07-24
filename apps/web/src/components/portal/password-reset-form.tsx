@@ -65,10 +65,11 @@ export function PasswordResetForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
 
     if (!supabase) return;
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const password = String(formData.get('password') ?? '');
     const confirmPassword = String(formData.get('confirmPassword') ?? '');
 
@@ -96,7 +97,7 @@ export function PasswordResetForm() {
     }
 
     await supabase.auth.signOut();
-    event.currentTarget.reset();
+    form.reset();
     setStatus('success');
     setMessage('Senha atualizada com sucesso. Volte ao portal e entre com sua nova senha.');
   }

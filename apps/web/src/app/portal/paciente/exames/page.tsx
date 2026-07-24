@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { PortalShell } from '@/components/dashboard/portal-shell';
 import { requirePatientUser } from '@/lib/auth';
 import { query } from '@/lib/db';
+import { PatientPageGuide } from '@/components/portal/patient-page-guide';
 
 export const metadata: Metadata = {
   title: 'Meus Exames | Portal do Paciente',
@@ -60,15 +61,15 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
   );
 
   return (
-    <PortalShell>
+    <PortalShell patientName={user.fullName}>
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Central de exames</p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight text-[#0F3760]">
-            Envie seus exames antes da consulta.
+          <p className="text-sm font-semibold text-[#15A7DD]">Meus exames</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#0F3760] sm:text-4xl">
+            Seus documentos médicos em um só lugar.
           </h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
-            Anexe PDFs ou imagens de exames para ajudar a equipe médica a organizar sua documentação. O médico acessa os arquivos pela dashboard interna.
+          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
+            Envie laudos, resultados e imagens antes da consulta para que seu cardiologista possa acessá-los durante o atendimento.
           </p>
         </div>
         <Link href="/portal/paciente/agendar" className="cta-pulse w-fit rounded-full border border-[#14508B]/20 bg-white px-5 py-2.5 text-sm font-bold text-[#14508B] hover:border-[#14508B]/55">
@@ -78,13 +79,14 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
 
       {params.sent === '1' ? (
         <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          Exame recebido com sucesso. A equipe interna já consegue visualizar este arquivo.
+          Exame enviado com sucesso. Ele já está disponível para a equipe responsável pelo seu atendimento.
         </div>
       ) : null}
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <form action="/api/exams" method="post" encType="multipart/form-data" className="rounded-lg border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
-          <h2 className="text-2xl font-semibold text-[#0F3760]">Anexar exame</h2>
+        <form action="/api/exams" method="post" encType="multipart/form-data" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-semibold text-[#0F3760]">Enviar novo exame</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">Selecione o tipo, a data e o arquivo. O envio é protegido.</p>
           <div className="mt-5 grid gap-4">
             <Field label="Nome do paciente" name="patientFullName" defaultValue={user.fullName} />
             <Field label="E-mail" name="patientEmail" type="email" defaultValue={user.email} />
@@ -104,7 +106,7 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
                 name="notes"
                 rows={4}
                 className="rounded-lg border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-                placeholder="Ex: laudo de ecocardiograma realizado em laboratorio externo."
+                placeholder="Ex.: laudo de ecocardiograma realizado em outro laboratório."
               />
             </label>
             <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
@@ -116,7 +118,7 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
                 required
                 className="rounded-lg border border-dashed border-[#14508B]/30 bg-[#F4F9FF] px-4 py-4 text-sm font-normal text-slate-700 outline-none ring-[#15A7DD] file:mr-4 file:rounded-lg file:border-0 file:bg-[#14508B] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white focus:ring-2"
               />
-              <span className="text-xs font-normal leading-5 text-slate-500">Formatos aceitos: PDF, JPG, PNG ou WEBP. Tamanho maximo: 15 MB.</span>
+              <span className="text-xs font-normal leading-5 text-slate-500">PDF, JPG, PNG ou WEBP, com até 15 MB.</span>
             </label>
             <label className="flex items-start gap-3 text-xs leading-5 text-slate-500">
               <input name="lgpdConsent" type="checkbox" value="true" required className="mt-1 h-4 w-4 accent-[#14508B]" />
@@ -128,8 +130,8 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
           </div>
         </form>
 
-        <section className="rounded-lg border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
-          <h2 className="text-2xl font-semibold text-[#0F3760]">Meus arquivos enviados</h2>
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-semibold text-[#0F3760]">Arquivos enviados</h2>
           <div className="mt-5 grid gap-3">
             {examsResult.rows.length ? (
               examsResult.rows.map((exam) => (
@@ -153,12 +155,13 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
               ))
             ) : (
               <p className="rounded-lg bg-[#F4F9FF] p-4 text-sm leading-6 text-slate-600">
-                Nenhum exame enviado ainda. Quando você anexar um arquivo, ele aparecera aqui.
+                Você ainda não enviou nenhum exame. Use o formulário ao lado para adicionar o primeiro arquivo.
               </p>
             )}
           </div>
         </section>
       </section>
+      <PatientPageGuide variant="exams" />
     </PortalShell>
   );
 }

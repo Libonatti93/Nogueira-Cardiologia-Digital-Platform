@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { getAsaasPayment, mapAsaasPaymentStatus } from '@/lib/asaas';
 
 export const runtime = 'nodejs';
 
@@ -12,16 +13,6 @@ type AsaasWebhookPayload = {
     billingType?: string;
     customer?: string;
   };
-};
-
-const statusMap: Record<string, string> = {
-  CONFIRMED: 'paid',
-  RECEIVED: 'paid',
-  RECEIVED_IN_CASH: 'paid',
-  PENDING: 'pending',
-  OVERDUE: 'overdue',
-  REFUNDED: 'refunded',
-  CANCELLED: 'cancelled',
 };
 
 export async function POST(request: Request) {
@@ -38,7 +29,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Payload Asaas inválido.' }, { status: 400 });
   }
 
-  const paymentStatus = payload.payment.status ? statusMap[payload.payment.status] ?? 'pending' : 'pending';
+  const verifiedPayment = await getAsaasPayment(payload.payment.id).catch(() => null);
+
+  if (!verifiedPayment?.id) {
+    return NextResponse.json({ message: 'Não foi possível validar este pagamento diretamente no Asaas.' }, { status: 400 });
+  }
+
+  const paymentStatus = mapAsaasPaymentStatus(verifiedPayment.status);
 
   const paymentUpdate = await query<{ id: string; appointment_id: string | null }>(
     `
@@ -53,7 +50,7 @@ export async function POST(request: Request) {
         and provider_payment_id = $4
       returning id, appointment_id
     `,
-    [paymentStatus, payload.payment.billingType ?? null, JSON.stringify(payload), payload.payment.id],
+    [paymentStatus, verifiedPayment.billingType ?? null, JSON.stringify(payload), verifiedPayment.id],
   );
 
   if (paymentUpdate.rows[0]?.appointment_id && paymentStatus === 'paid') {

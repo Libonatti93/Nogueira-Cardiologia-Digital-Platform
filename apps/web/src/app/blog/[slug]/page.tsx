@@ -6,8 +6,9 @@ import { AuthorityBlock } from '@/components/blog/authority-block';
 import { LeadGate } from '@/components/educativo/lead-gate';
 import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
-import { blogPosts, getBlogPostHashtags, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
+import { blogPosts, getBlogPostHashtags, getCanonicalBlogCategory, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
 import { getPublishedEducativoPostBySlug, getPublishedEducativoPosts } from '@/lib/educativo-posts';
+import { absoluteUrl, siteUrl } from '@/lib/seo';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -31,11 +32,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: post.seoTitle,
     description: post.seoDescription,
     keywords: [...post.tags, ...getBlogPostHashtags(post)],
+    alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       title: post.seoTitle,
       description: post.seoDescription,
       images: [post.coverImage],
       type: 'article',
+      url: `/blog/${post.slug}`,
+      siteName: 'Nogueira Cardiologia',
+      locale: 'pt_BR',
     },
   };
 }
@@ -48,21 +53,50 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   const databasePosts = await getPublishedEducativoPosts();
   const relatedPosts = [
-    ...databasePosts.filter((relatedPost) => relatedPost.slug !== post.slug && relatedPost.category === post.category),
+    ...databasePosts.filter(
+      (relatedPost) =>
+        relatedPost.slug !== post.slug
+        && getCanonicalBlogCategory(relatedPost.category) === getCanonicalBlogCategory(post.category),
+    ),
     ...getRelatedPosts(post.slug, post.category),
   ].slice(0, 3);
   const hashtags = getBlogPostHashtags(post);
   const articleSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': ['Article', 'MedicalWebPage'],
+    url: absoluteUrl(`/blog/${post.slug}`),
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': absoluteUrl(`/blog/${post.slug}`),
+    },
     headline: post.title,
     description: post.seoDescription,
+    image: absoluteUrl(post.coverImage),
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
-    author: { '@type': 'Organization', name: post.author.name },
-    publisher: { '@type': 'MedicalClinic', name: 'Nogueira Cardiologia' },
+    author: { '@type': 'Organization', name: post.author.name, url: siteUrl },
+    reviewedBy: [
+      { '@type': 'Physician', name: 'Dr. Paulo Roberto Nogueira', url: absoluteUrl('/medicos/dr-paulo-roberto-nogueira') },
+      { '@type': 'Physician', name: 'Dra. Cristiani Monteiro de Oliveira Nogueira', url: absoluteUrl('/medicos/dra-cristiani-nogueira') },
+    ],
+    publisher: {
+      '@type': 'MedicalClinic',
+      name: 'Nogueira Cardiologia',
+      url: siteUrl,
+      logo: { '@type': 'ImageObject', url: absoluteUrl('/brand/nogueira-cardiologia-logo.svg') },
+    },
     keywords: hashtags.join(', '),
-    mainEntityOfPage: `/blog/${post.slug}`,
+    inLanguage: 'pt-BR',
+    about: post.tags,
+  };
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Início', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Educativo', item: absoluteUrl('/blog') },
+      { '@type': 'ListItem', position: 3, name: post.title, item: absoluteUrl(`/blog/${post.slug}`) },
+    ],
   };
 
   return (
@@ -70,6 +104,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       <PublicHeader />
       <main className="py-10 sm:py-14">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex flex-wrap items-center gap-2">
@@ -95,6 +130,17 @@ export default async function BlogPostPage({ params }: PageProps) {
             <span>•</span>
             <span>{post.readingTime} de leitura</span>
           </div>
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            Revisão editorial médica:{' '}
+            <Link href="/medicos/dr-paulo-roberto-nogueira" className="font-semibold text-[#14508B]">
+              Dr. Paulo Roberto Nogueira, CRM 53.790/SP
+            </Link>{' '}
+            e{' '}
+            <Link href="/medicos/dra-cristiani-nogueira" className="font-semibold text-[#14508B]">
+              Dra. Cristiani Nogueira, CRM 77.127/SP
+            </Link>
+            .
+          </p>
 
           <div className="relative mt-7 h-[360px] overflow-hidden rounded-2xl bg-[#0F3760]">
             <Image
@@ -116,6 +162,19 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
 
           <LeadGate postSlug={post.slug} postTitle={post.title} sections={post.sections} />
+
+          <aside className="mt-8 border-t border-slate-200 pt-6 text-sm leading-7 text-slate-600">
+            <h2 className="text-lg font-semibold text-[#103E6A]">Referências e transparência editorial</h2>
+            <p className="mt-2">
+              Conteúdo educativo alinhado a recomendações de sociedades médicas e órgãos públicos. A aplicação ao caso individual depende de avaliação profissional.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 font-semibold text-[#14508B]">
+              <a href="https://www.portal.cardiol.br/" target="_blank" rel="noreferrer">Sociedade Brasileira de Cardiologia</a>
+              <a href="https://www.gov.br/saude/pt-br" target="_blank" rel="noreferrer">Ministério da Saúde</a>
+              <a href="https://www.who.int/health-topics/cardiovascular-diseases" target="_blank" rel="noreferrer">World Health Organization</a>
+              <Link href="/editorial">Política editorial</Link>
+            </div>
+          </aside>
         </article>
 
         <div className="mt-8 rounded-3xl bg-gradient-to-br from-[#11457B] to-[#15A7DD] p-6 text-white sm:p-8">

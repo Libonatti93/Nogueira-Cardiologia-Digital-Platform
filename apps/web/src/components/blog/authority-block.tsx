@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export function AuthorityBlock() {
   return (
     <section className="rounded-3xl border border-[#14508B]/15 bg-white p-6 shadow-[0_20px_45px_-35px_rgba(20,80,139,0.5)] sm:p-8">
@@ -9,6 +11,11 @@ export function AuthorityBlock() {
       <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
         Este conteúdo não substitui consulta médica, avaliação individual ou atendimento de urgência. Em caso de sintomas intensos ou súbitos, procure assistência imediatamente.
       </p>
+      <div className="mt-5 flex flex-wrap gap-3 text-sm font-bold text-[#14508B]">
+        <Link href="/medicos/dr-paulo-roberto-nogueira">Dr. Paulo Roberto Nogueira — CRM 53.790/SP</Link>
+        <span aria-hidden="true">•</span>
+        <Link href="/medicos/dra-cristiani-nogueira">Dra. Cristiani Nogueira — CRM 77.127/SP</Link>
+      </div>
     </section>
   );
 }

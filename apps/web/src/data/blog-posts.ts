@@ -32,6 +32,8 @@ export type BlogCategorySummary = {
   count: number;
 };
 
+import { seoBlogPosts } from './seo-blog-posts';
+
 export const getBlogCategorySlug = (category: string) =>
   category
     .normalize('NFD')
@@ -39,6 +41,16 @@ export const getBlogCategorySlug = (category: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+
+export const getCanonicalBlogCategory = (category: string) => {
+  const aliases: Record<string, string> = {
+    'Arritmias cardíacas': 'Arritmias',
+    'Consulta cardiológica': 'Cardiologia clínica',
+    'Check-up cardiológico': 'Prevenção cardiovascular',
+  };
+
+  return aliases[category] ?? category;
+};
 
 export const getBlogPostHashtags = (post: Pick<BlogPost, 'category' | 'tags'>) => {
   const toHashtag = (value: string) => {
@@ -55,20 +67,14 @@ export const getBlogPostHashtags = (post: Pick<BlogPost, 'category' | 'tags'>) =
     return normalized ? `#${normalized}` : '';
   };
 
-  return [
-    '#NogueiraCardiologia',
-    '#Cardiologista',
-    '#SaoJoseDoRioPreto',
-    '#TelemedicinaCardiologica',
-    toHashtag(post.category),
-    ...post.tags.map(toHashtag),
-  ]
+  return [toHashtag(getCanonicalBlogCategory(post.category)), ...post.tags.map(toHashtag)]
     .filter(Boolean)
     .filter((tag, index, tags) => tags.indexOf(tag) === index)
-    .slice(0, 9);
+    .slice(0, 7);
 };
 
 export const blogPosts: BlogPost[] = [
+  ...seoBlogPosts,
   {
     slug: 'check-up-cardiologico-em-sao-jose-do-rio-preto',
     title: 'Check-up cardiológico em São José do Rio Preto: quando fazer e o que avaliar',
@@ -1708,7 +1714,8 @@ export const getRecentPosts = () =>
   [...blogPosts].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 export const getBlogCategorySummaries = () => {
   const categoryCounts = blogPosts.reduce<Map<string, number>>((counts, post) => {
-    counts.set(post.category, (counts.get(post.category) ?? 0) + 1);
+    const category = getCanonicalBlogCategory(post.category);
+    counts.set(category, (counts.get(category) ?? 0) + 1);
     return counts;
   }, new Map());
 
@@ -1723,6 +1730,6 @@ export const getBlogCategorySummaries = () => {
 export const getBlogCategories = () => getBlogCategorySummaries().map((category) => category.name);
 export const getRelatedPosts = (slug: string, category: string) =>
   [
-    ...blogPosts.filter((post) => post.slug !== slug && post.category === category),
-    ...getRecentPosts().filter((post) => post.slug !== slug && post.category !== category),
+    ...blogPosts.filter((post) => post.slug !== slug && getCanonicalBlogCategory(post.category) === getCanonicalBlogCategory(category)),
+    ...getRecentPosts().filter((post) => post.slug !== slug && getCanonicalBlogCategory(post.category) !== getCanonicalBlogCategory(category)),
   ].slice(0, 3);

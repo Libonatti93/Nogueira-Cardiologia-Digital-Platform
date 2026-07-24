@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { resetTurnstile, TurnstileWidget } from '@/components/security/turnstile-widget';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
@@ -50,20 +50,30 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
   const [passwordReset, setPasswordReset] = useState<Feedback>(initialFeedback);
   const [resendEmail, setResendEmail] = useState('');
 
+  useEffect(() => {
+    const authFragment = window.location.hash;
+
+    if (authFragment.includes('access_token=') || authFragment.includes('refresh_token=')) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+  }, []);
+
   async function handlePatientSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
+    const email = String(new FormData(form).get('email') ?? '');
     setPatientSignup({ status: 'submitting', message: 'Criando cadastro...' });
 
     try {
-      const body = await submitJson('/api/auth/signup', event.currentTarget);
-      setResendEmail(String(new FormData(event.currentTarget).get('email') ?? ''));
+      const body = await submitJson('/api/auth/signup', form);
+      setResendEmail(email);
       setPatientSignup({
         status: 'success',
         message: body?.message ?? 'Cadastro criado com sucesso.',
         verifyUrl: body?.verifyUrl,
       });
       setMode('login');
-      event.currentTarget.reset();
+      form.reset();
     } catch (error) {
       resetTurnstile();
       setPatientSignup({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível criar o cadastro.' });
@@ -72,16 +82,18 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
 
   async function handlePatientLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
+    const email = String(new FormData(form).get('email') ?? '');
     setPatientLogin({ status: 'submitting', message: 'Entrando no portal...' });
 
     try {
-      const body = await submitJson('/api/auth/login', event.currentTarget, { portal: 'patient' });
+      const body = await submitJson('/api/auth/login', form, { portal: 'patient' });
       setPatientLogin({ status: 'success', message: 'Acesso liberado. Abrindo o portal do paciente...' });
       window.location.href = body?.redirectTo ?? '/portal/paciente';
     } catch (error) {
       resetTurnstile();
       if (error instanceof ApiError && error.code === 'email_not_verified') {
-        setResendEmail(String(new FormData(event.currentTarget).get('email') ?? ''));
+        setResendEmail(email);
       }
       setPatientLogin({ status: 'error', message: error instanceof Error ? error.message : 'Não foi possível entrar.' });
     }
@@ -89,10 +101,11 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
 
   async function handleResendVerification(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setPatientLogin({ status: 'submitting', message: 'Enviando novo link...' });
 
     try {
-      const body = await submitJson('/api/auth/resend-verification', event.currentTarget);
+      const body = await submitJson('/api/auth/resend-verification', form);
       setPatientLogin({
         status: 'success',
         message: body?.message ?? 'Se houver cadastro pendente, enviaremos um novo link.',
@@ -106,10 +119,11 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
 
   async function handleForgotPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setPasswordReset({ status: 'submitting', message: 'Enviando link de recuperação...' });
 
     try {
-      const body = await submitJson('/api/auth/forgot-password', event.currentTarget);
+      const body = await submitJson('/api/auth/forgot-password', form);
       setPasswordReset({
         status: 'success',
         message: body?.message ?? 'Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.',
@@ -213,7 +227,7 @@ export function PortalAccess({ initialNotice }: { initialNotice?: string }) {
       </section>
 
       <section className="rounded-3xl bg-[#0A2C4D] p-6 text-white shadow-[0_26px_70px_-48px_rgba(20,80,139,0.85)] sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Jornada digital</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Seu cuidado, mais simples</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl">
           Tecnologia para facilitar consulta, exames e cuidado cardiológico.
         </h2>

@@ -4,10 +4,10 @@ import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
 
 const steps = [
-  ['Entre no portal', 'O paciente acessa sua área segura para manter o envio vinculado ao cadastro e ao histórico da jornada.'],
-  ['Anexe o exame', 'Envie PDF, JPG, PNG ou WEBP de laudos, ECG, ecocardiograma, Holter, MAPA e outros documentos cardiológicos.'],
-  ['Equipe acompanha', 'Secretaria e médico visualizam os arquivos na dashboard interna para organizar a documentação antes da consulta.'],
-  ['Evolução PACS', 'A base foi desenhada para evoluir com conceito de PACS, DICOM, automações via n8n e análises assistidas.'],
+  ['Acesse sua conta', 'Entre no Portal do Paciente para que cada arquivo fique associado corretamente ao seu cadastro.'],
+  ['Envie seus exames', 'Anexe laudos e imagens em PDF, JPG, PNG ou WEBP. Você pode enviar mais de um documento.'],
+  ['Confirme o envio', 'Após concluir, os arquivos ficam organizados em sua área para acompanhamento da equipe da clínica.'],
+  ['Prepare sua consulta', 'Com os documentos reunidos antecipadamente, a equipe pode organizar melhor o atendimento e o histórico apresentado ao médico.'],
 ] as const;
 
 const examExamples = [
@@ -25,7 +25,7 @@ const examExamples = [
 export const metadata: Metadata = {
   title: 'Envio Digital de Exames Cardiológicos | Nogueira Cardiologia',
   description:
-    'Envie exames cardiológicos e documentos pelo portal do paciente da Nogueira Cardiologia. Central de exames com arquitetura preparada para evoluir com PACS, DICOM e análises assistidas.',
+    'Envie laudos e exames cardiológicos pelo Portal do Paciente da Nogueira Cardiologia. Entenda como funcionam PACS, DICOM e o apoio responsável da inteligência artificial.',
   keywords: [
     'envio de exames cardiológicos',
     'central de exames cardiológicos',
@@ -39,11 +39,12 @@ export const metadata: Metadata = {
     'cardiologista São José do Rio Preto',
     'upload de exames médicos',
   ],
+  alternates: { canonical: '/exames' },
 };
 
 export default function ExamsPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-950">
+    <div className="min-h-screen w-full overflow-x-clip bg-white text-slate-950">
       <PublicHeader />
 
       <main>
@@ -52,10 +53,10 @@ export default function ExamsPage() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Central de exames</p>
               <h1 className="mt-3 text-4xl font-semibold leading-tight text-[#0F3760] sm:text-5xl">
-                Central de exames cardiológicos com base tecnológica para evoluir em PACS.
+                Seus exames cardiológicos organizados em um só lugar.
               </h1>
               <p className="mt-5 text-base leading-8 text-slate-600">
-                A Nogueira Cardiologia agora conta com uma central para o paciente anexar exames e documentos antes da consulta. O objetivo é organizar melhor a jornada, facilitar o acesso da equipe médica aos arquivos e preparar a plataforma para evoluir com tecnologia, conceito de PACS, padrão DICOM, automações e análises assistidas.
+                Envie laudos, imagens e documentos pelo Portal do Paciente antes da consulta. Assim, suas informações ficam reunidas no seu cadastro e disponíveis para a equipe organizar o atendimento com mais agilidade, segurança e continuidade.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link href="/portal" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
@@ -77,7 +78,7 @@ export default function ExamsPage() {
                 ))}
               </div>
               <p className="mt-5 text-sm leading-7 text-slate-600">
-                Nesta primeira fase, aceitamos arquivos simples como PDF e imagens. A evolução natural da plataforma poderá incluir organização avançada de exames, automações via n8n, visualização especializada e integração com padrões de imagem médica como DICOM.
+                Você pode enviar laudos em PDF e imagens nos formatos JPG, PNG ou WEBP. Caso tenha arquivos em outro formato ou um exame completo fornecido por um laboratório, fale com nossa equipe para receber orientação.
               </p>
             </div>
           </div>
@@ -88,7 +89,7 @@ export default function ExamsPage() {
             <div className="max-w-3xl">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Como funciona</p>
               <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
-                Uma jornada mais organizada antes da consulta.
+                Envie seus documentos em quatro passos simples.
               </h2>
             </div>
             <div className="mt-8 grid gap-4 lg:grid-cols-4">
@@ -115,21 +116,24 @@ export default function ExamsPage() {
         <section className="bg-[#F4F9FF] py-14 sm:py-16">
           <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:px-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#14508B]">PACS, DICOM e futuro da plataforma</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#14508B]">Tecnologia aplicada à saúde</p>
               <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
-                Uma central de exames simples hoje, preparada para evoluir para um fluxo inspirado em PACS.
+                O que são PACS e DICOM — e por que isso importa?
               </h2>
               <p className="mt-4 text-base leading-8 text-slate-600">
-                PACS significa Picture Archiving and Communication System, uma estrutura usada para arquivar, organizar e comunicar imagens médicas. DICOM é o padrão técnico utilizado em muitos exames de imagem. A primeira entrega da Nogueira Cardiologia é o upload seguro de documentos, mas a arquitetura já considera a evolução para uma gestão mais avançada de exames cardiológicos digitais.
+                PACS é a sigla para um sistema que armazena, organiza e permite a visualização de imagens médicas. Em vez de depender apenas de filmes, CDs ou documentos separados, esse tipo de tecnologia ajuda a reunir exames e seus respectivos dados em um ambiente digital.
+              </p>
+              <p className="mt-4 text-base leading-8 text-slate-600">
+                DICOM é o padrão internacional utilizado para estruturar e compartilhar muitas dessas imagens, preservando informações importantes sobre o exame. A plataforma da Nogueira Cardiologia foi planejada para acompanhar essa evolução tecnológica de forma gradual, responsável e integrada ao cuidado médico.
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               {[
-                ['Central de exames', 'Organização de PDFs, imagens, laudos e documentos enviados pelo paciente.'],
-                ['Dashboard médico/admin', 'Secretaria e médico enxergam os arquivos vinculados ao paciente antes da consulta.'],
-                ['Base para PACS', 'Estrutura preparada para futura organização de estudos, séries e imagens médicas.'],
-                ['IA e n8n no roadmap', 'Possibilidade de resumo auxiliar, classificação e alerta operacional com revisão médica.'],
+                ['Tudo associado ao paciente', 'Laudos e imagens enviados pelo portal permanecem vinculados ao cadastro correto.'],
+                ['Informação mais organizada', 'A central reduz documentos dispersos e facilita a localização dos arquivos recebidos.'],
+                ['Evolução para imagens médicas', 'A arquitetura considera a futura organização de estudos e séries no padrão DICOM.'],
+                ['Inteligência artificial responsável', 'A IA poderá apoiar classificação, resumo e conferência de informações, sempre com supervisão humana e médica.'],
               ].map(([title, text]) => (
                 <article key={title} className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_22px_50px_-42px_rgba(20,80,139,0.75)]">
                   <h3 className="text-lg font-semibold text-[#0F3760]">{title}</h3>
@@ -146,7 +150,7 @@ export default function ExamsPage() {
               Tecnologia a favor da cardiologia, com revisão médica no centro da decisão.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-white/82 sm:text-base">
-              A plataforma está em constante evolução para apoiar a equipe com dados mais organizados, automações e futuras análises assistidas. A tecnologia entra como apoio para melhorar fluxo, documentação, gestão de exames cardiológicos e preparo da consulta, sempre preservando a avaliação médica responsável.
+              Tecnologia e inteligência artificial podem ajudar a organizar documentos, destacar informações e tornar o fluxo mais eficiente. Elas não substituem consulta, diagnóstico ou decisão médica. Na Nogueira Cardiologia, qualquer recurso digital é pensado como apoio ao cuidado, mantendo o cardiologista responsável pela interpretação clínica.
             </p>
             <Link href="/portal" className="mt-7 inline-flex rounded-full bg-white px-6 py-3 text-sm font-bold text-[#14508B] hover:bg-[#EAF6FF]">
               Acessar portal do paciente

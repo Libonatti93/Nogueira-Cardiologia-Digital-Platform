@@ -8,6 +8,12 @@ export function hashVerificationToken(token: string) {
 }
 
 export function getPublicBaseUrl(request?: Request) {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL;
+
+  if (configured && !configured.includes('localhost') && !configured.includes('127.0.0.1')) {
+    return configured.replace(/\/$/, '');
+  }
+
   if (request) {
     const forwardedHost = request.headers.get('x-forwarded-host');
     const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https';
@@ -15,12 +21,6 @@ export function getPublicBaseUrl(request?: Request) {
     if (forwardedHost && !forwardedHost.includes('localhost') && !forwardedHost.includes('127.0.0.1')) {
       return `${forwardedProto.split(',')[0]}://${forwardedHost.split(',')[0]}`;
     }
-  }
-
-  const configured = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL;
-
-  if (configured && !configured.includes('localhost') && !configured.includes('127.0.0.1')) {
-    return configured.replace(/\/$/, '');
   }
 
   if (request) {

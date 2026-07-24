@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SecurityTrustBadges } from '@/components/security/trust-badges';
+import { HomeMobileMenu } from '@/components/site/home-mobile-menu';
 import { getRecentPosts } from '@/data/blog-posts';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 const navigationItems = [
   ['Clínica', '#clinica'],
@@ -66,12 +72,6 @@ const portalBenefits = [
   'Acesso ao conteúdo do Prof. Dr. Paulo Roberto Nogueira, com materiais didáticos e orientações em linguagem clara.',
   'Telemedicina em cardiologia para retornos, acompanhamento, orientação de exames e avaliação clínica quando o atendimento virtual for adequado.',
   'Portal gratuito para acompanhar novidades, receber conteúdos educativos e manter o cuidado do coração mais próximo.',
-] as const;
-
-const academicHighlights = [
-  'Cardiologista e intensivista com forte atuação em São José do Rio Preto.',
-  'Professor Adjunto e Chefe do Departamento de Cardiologia e Cirurgia Cardiovascular da FAMERP.',
-  'Coordenador da unidade coronária no Hospital Beneficência Portuguesa.',
 ] as const;
 
 const socespHighlights = [
@@ -285,16 +285,16 @@ export default function Home() {
   const educationalPosts = getRecentPosts().slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-white text-slate-950">
-      <header className="sticky top-0 z-50 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full overflow-x-clip bg-white text-slate-950">
+      <header className="sticky top-8 z-50 border-b border-[#14508B]/10 bg-white/95 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
           <a href="#inicio" className="flex min-w-0 items-center gap-3" aria-label="Ir para o início">
             <Image
               src={`${assetPath}/nogueira-cardio4-transparent.png`}
               alt="Nogueira Cardiologia"
               width={360}
               height={90}
-              className="h-9 w-auto object-contain sm:h-11"
+              className="h-8 w-auto object-contain sm:h-11"
               priority
             />
           </a>
@@ -307,9 +307,13 @@ export default function Home() {
             ))}
           </nav>
 
+          <div className="ml-auto xl:hidden">
+            <HomeMobileMenu />
+          </div>
+
           <Link
             href={portalLink}
-            className="cta-pulse inline-flex rounded-full bg-[#14508B] px-5 py-2.5 text-xs font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-colors hover:bg-[#0F3760] sm:px-6 sm:text-sm"
+            className="cta-pulse inline-flex shrink-0 rounded-full bg-[#14508B] px-3.5 py-2.5 text-[11px] font-bold text-white shadow-[0_16px_34px_-18px_rgba(20,80,139,0.95)] transition-colors hover:bg-[#0F3760] sm:px-6 sm:text-sm"
           >
             Marcar consulta
           </Link>
@@ -319,11 +323,28 @@ export default function Home() {
       <main>
         <section id="inicio" className="relative min-h-[760px] overflow-hidden bg-[#0A2C4D]">
           <Image
+            src={`${assetPath}/nogueira-cardiologia-pauloecris1.png`}
+            alt=""
+            fill
+            sizes="100vw"
+            className="scale-110 object-cover object-center opacity-55 blur-xl sm:hidden"
+            aria-hidden="true"
+            priority
+          />
+          <Image
+            src={`${assetPath}/nogueira-cardiologia-pauloecris1.png`}
+            alt="Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira na Nogueira Cardiologia"
+            fill
+            sizes="100vw"
+            className="object-contain object-top sm:hidden"
+            priority
+          />
+          <Image
             src={`${assetPath}/nogueira-cardiologia-pauloecris3.png`}
             alt="Dr. Paulo Roberto Nogueira e Dra. Cristiani Nogueira na Nogueira Cardiologia"
             fill
             sizes="100vw"
-            className="object-cover object-[64%_center]"
+            className="hidden object-cover object-[64%_center] sm:block"
             priority
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,44,77,0.98)_0%,rgba(10,44,77,0.88)_34%,rgba(20,80,139,0.32)_68%,rgba(10,44,77,0.06)_100%)]" />
@@ -469,15 +490,6 @@ export default function Home() {
                 ))}
               </div>
 
-              <article className="rounded-2xl bg-[#0F3760] p-5 text-white">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9FE6FF]">Conteúdo do Prof. Dr. Paulo</p>
-                <h3 className="mt-2 text-2xl font-semibold">Professor e educador também dentro do portal</h3>
-                <div className="mt-4 grid gap-3">
-                  {academicHighlights.map((item) => (
-                    <p key={item} className="border-l-2 border-[#9FE6FF] pl-3 text-sm leading-6 text-white/85">{item}</p>
-                  ))}
-                </div>
-              </article>
             </div>
           </div>
         </section>
@@ -522,14 +534,14 @@ export default function Home() {
         </section>
 
         <section id="exames" className="bg-[#F4F9FF] py-14 sm:py-16">
-          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:px-8">
-            <div>
+          <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_0.92fr] lg:items-stretch lg:px-8">
+            <div className="flex min-w-0 flex-col justify-center">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#14508B]">Envio digital de exames</p>
               <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">
                 Anexe exames cardiológicos antes da consulta e ajude a equipe a preparar seu atendimento.
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                O portal do paciente permite enviar PDFs e imagens de exames como eletrocardiograma, ecocardiograma, Holter, MAPA, teste ergométrico, laudos e relatórios médicos. A secretaria e o médico acompanham os arquivos pela dashboard interna, inclusive para preparar retornos e atendimentos virtuais quando a telemedicina for indicada.
+                Pelo Portal do Paciente, você envia PDFs e imagens de eletrocardiograma, ecocardiograma, Holter, MAPA, teste ergométrico, laudos e relatórios. Os documentos ficam associados ao seu cadastro e ajudam a equipe a organizar melhor sua consulta.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link href="/exames" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
@@ -541,21 +553,34 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
-              <h3 className="text-2xl font-semibold text-[#0F3760]">Plataforma em evolução contínua</h3>
+            <div className="flex min-w-0 flex-col rounded-2xl border border-[#14508B]/12 bg-white p-6 shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)] sm:p-7">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Simples e organizado</p>
+              <h3 className="mt-2 text-2xl font-semibold text-[#0F3760]">Prepare sua consulta em poucos minutos</h3>
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                A Central de Exames nasce como upload seguro e organizado. A arquitetura foi pensada para evoluir com automações, n8n, análise assistida por IA, histórico por paciente e apoio à rotina médica.
+                Não precisa separar papéis no dia do atendimento. Envie seus documentos antecipadamente e mantenha tudo reunido no portal.
               </p>
-              <div className="mt-5 grid gap-3">
+
+              <ol className="mt-6 grid gap-3">
                 {[
-                  'Documentos centralizados antes da consulta.',
-                  'Visualização pela secretaria e pelo médico no painel interno.',
-                  'Base preparada para futuras análises assistidas por tecnologia.',
-                ].map((item) => (
-                  <p key={item} className="border-l-2 border-[#15A7DD] bg-[#F8FBFF] px-4 py-3 text-sm font-semibold text-[#0F3760]">
-                    {item}
-                  </p>
+                  ['1', 'Acesse ou crie seu cadastro gratuito.'],
+                  ['2', 'Anexe seus exames em PDF ou imagem.'],
+                  ['3', 'Marque a consulta com o médico escolhido.'],
+                ].map(([number, item]) => (
+                  <li key={number} className="flex min-w-0 items-center gap-3 rounded-xl bg-[#F4F9FF] px-4 py-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#14508B] text-xs font-bold text-white">{number}</span>
+                    <span className="text-sm font-semibold leading-6 text-[#0F3760]">{item}</span>
+                  </li>
                 ))}
+              </ol>
+
+              <div className="mt-6 rounded-xl bg-[#0F3760] p-5 text-white">
+                <p className="text-sm font-bold">Ainda não marcou sua consulta?</p>
+                <p className="mt-2 text-sm leading-6 text-white/82">
+                  Escolha o médico e veja os horários disponíveis. Seus exames poderão ser enviados pelo mesmo portal.
+                </p>
+                <Link href={portalLink} className="cta-pulse mt-4 inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#14508B] hover:bg-[#EAF6FF]">
+                  Ver agenda e marcar consulta
+                </Link>
               </div>
             </div>
           </div>
@@ -726,7 +751,11 @@ export default function Home() {
                     </div>
                     <div className="p-6">
                       <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Cardiologia</p>
-                      <h3 className="mt-2 text-2xl font-semibold text-[#0F3760]">{doctor.name}</h3>
+                      <h3 className="mt-2 text-2xl font-semibold text-[#0F3760]">
+                        <Link href={doctor.name.startsWith('Dr. Paulo') ? '/medicos/dr-paulo-roberto-nogueira' : '/medicos/dra-cristiani-nogueira'}>
+                          {doctor.name}
+                        </Link>
+                      </h3>
                       <p className="mt-1 text-sm font-bold text-[#14508B]">{doctor.crm}</p>
                       <p className="mt-4 text-sm leading-7 text-slate-600">{doctor.bio}</p>
                     </div>

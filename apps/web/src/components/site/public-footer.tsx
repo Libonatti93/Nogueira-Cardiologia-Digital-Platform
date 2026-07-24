@@ -101,6 +101,7 @@ export function PublicFooter() {
             <Link href="/blog" className="hover:text-white">Educativo de cardiologia</Link>
             <a href={whatsappLink} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp da clínica</a>
             <Link href="/privacidade" className="hover:text-white">Privacidade, LGPD e termos</Link>
+            <Link href="/editorial" className="hover:text-white">Política editorial médica</Link>
           </div>
         </div>
       </div>

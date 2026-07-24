@@ -3,10 +3,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { InternalLogin } from '@/components/internal/internal-login';
 import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
+import { noIndexRobots } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Acesso Interno | Nogueira Cardiologia',
   description: 'Entrada restrita da equipe interna da Nogueira Cardiologia.',
+  robots: noIndexRobots,
 };
 
 export default function InternalPage() {

@@ -4,18 +4,25 @@ import Link from 'next/link';
 import { AuthorityBlock } from '@/components/blog/authority-block';
 import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
-import { getBlogCategorySlug, getBlogPostHashtags, getFeaturedPosts, getRecentPosts } from '@/data/blog-posts';
+import { getBlogCategorySlug, getBlogPostHashtags, getCanonicalBlogCategory, getFeaturedPosts, getRecentPosts } from '@/data/blog-posts';
 import { getPublishedEducativoPosts } from '@/lib/educativo-posts';
 
-export const metadata: Metadata = {
-  title: 'Educativo de Cardiologia | Nogueira Cardiologia',
-  description:
-    'Conteúdo educativo sobre check-up cardiológico, hipertensão, sintomas cardíacos, coronariopatias e cardiomiopatias em São José do Rio Preto.',
+type BlogPageProps = {
+  searchParams: Promise<{ tema?: string; pagina?: string }>;
 };
 
-type BlogPageProps = {
-  searchParams: Promise<{ tema?: string }>;
-};
+export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const hasQueryVariant = Boolean(params.tema || (params.pagina && params.pagina !== '1'));
+
+  return {
+    title: 'Educativo de Cardiologia | Nogueira Cardiologia',
+    description:
+      'Conteúdo educativo sobre check-up cardiológico, hipertensão, sintomas cardíacos, coronariopatias e cardiomiopatias em São José do Rio Preto.',
+    alternates: { canonical: '/blog' },
+    robots: hasQueryVariant ? { index: false, follow: true } : undefined,
+  };
+}
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const params = await searchParams;
@@ -24,8 +31,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     secondPost.publishedAt.localeCompare(firstPost.publishedAt),
   );
   const categoryMap = recentPosts.reduce((map, post) => {
-    const current = map.get(post.category) ?? 0;
-    map.set(post.category, current + 1);
+    const category = getCanonicalBlogCategory(post.category);
+    const current = map.get(category) ?? 0;
+    map.set(category, current + 1);
     return map;
   }, new Map<string, number>());
   const categories = [...categoryMap.entries()]
@@ -33,8 +41,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     .sort((firstCategory, secondCategory) => firstCategory.name.localeCompare(secondCategory.name, 'pt-BR'));
   const selectedCategory = categories.find((category) => category.slug === params.tema);
   const filteredPosts = selectedCategory
-    ? recentPosts.filter((post) => post.category === selectedCategory.name)
+    ? recentPosts.filter((post) => getCanonicalBlogCategory(post.category) === selectedCategory.name)
     : recentPosts;
+  const postsPerPage = 12;
+  const requestedPage = Number.parseInt(params.pagina ?? '1', 10);
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
+  const currentPage = Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), totalPages) : 1;
+  const visiblePosts = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
   const featuredPosts = selectedCategory ? filteredPosts.slice(0, 2) : [...databasePosts.slice(0, 2), ...getFeaturedPosts()].slice(0, 6);
   const totalPosts = recentPosts.length;
 
@@ -165,7 +178,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          {filteredPosts.map((post) => (
+          {visiblePosts.map((post) => (
             <article key={post.slug} className="overflow-hidden border border-[#14508B]/10 bg-white transition-colors hover:border-[#14508B]/30">
               <div className="grid sm:grid-cols-[180px_1fr]">
                 <div className="relative min-h-[170px] bg-[#0F3760]">
@@ -202,6 +215,32 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             </article>
           ))}
         </div>
+
+        {totalPages > 1 ? (
+          <nav aria-label="Paginação dos conteúdos" className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => {
+              const query = new URLSearchParams();
+              if (selectedCategory) query.set('tema', selectedCategory.slug);
+              if (page > 1) query.set('pagina', String(page));
+              const href = query.size ? `/blog?${query.toString()}#conteudos` : '/blog#conteudos';
+
+              return (
+                <Link
+                  key={page}
+                  href={href}
+                  aria-current={page === currentPage ? 'page' : undefined}
+                  className={`inline-flex h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold ${
+                    page === currentPage
+                      ? 'border-[#14508B] bg-[#14508B] text-white'
+                      : 'border-[#14508B]/20 bg-white text-[#14508B] hover:border-[#14508B]/50'
+                  }`}
+                >
+                  {page}
+                </Link>
+              );
+            })}
+          </nav>
+        ) : null}
 
         <div className="mt-10 border border-[#14508B]/12 bg-[#EAF6FF] p-6 sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>

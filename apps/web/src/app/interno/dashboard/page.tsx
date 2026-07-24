@@ -12,10 +12,12 @@ import {
   estimateReadingTime,
   getDashboardEducativoPosts,
 } from '@/lib/educativo-posts';
+import { noIndexRobots } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Dashboard Interna | Nogueira Cardiologia',
   description: 'Dashboard operacional da equipe interna da Nogueira Cardiologia.',
+  robots: noIndexRobots,
 };
 
 export const dynamic = 'force-dynamic';
@@ -852,7 +854,7 @@ export default async function InternalDashboardPage() {
         </div>
       </section>
 
-      <nav className="sticky top-0 z-20 mt-4 overflow-x-auto border border-slate-200 bg-white/96 px-3 py-3 shadow-[0_16px_40px_-34px_rgba(20,80,139,0.7)] backdrop-blur">
+      <nav className="sticky top-8 z-20 mt-4 overflow-x-auto border border-slate-200 bg-white/96 px-3 py-3 shadow-[0_16px_40px_-34px_rgba(20,80,139,0.7)] backdrop-blur">
         <div className="flex min-w-max gap-2">
           {[
             ['Visão geral', '#visão-geral'],

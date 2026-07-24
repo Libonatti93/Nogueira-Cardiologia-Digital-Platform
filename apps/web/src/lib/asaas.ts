@@ -39,6 +39,15 @@ type AsaasPaymentPayload = {
   remoteIp: string;
 };
 
+type AsaasPixPaymentPayload = {
+  customer: string;
+  billingType: 'PIX';
+  value: number;
+  dueDate: string;
+  description: string;
+  externalReference: string;
+};
+
 export type AsaasCustomer = {
   id: string;
 };
@@ -131,7 +140,7 @@ export function mapAsaasPaymentStatus(status: string | undefined) {
 
 export function getAppointmentPaymentAmountCents() {
   const configured = Number(process.env.ASAAS_APPOINTMENT_AMOUNT_CENTS);
-  return Number.isFinite(configured) && configured > 0 ? Math.round(configured) : 45000;
+  return Number.isFinite(configured) && configured > 0 ? Math.round(configured) : 74900;
 }
 
 export async function createAsaasCustomer(payload: AsaasCustomerPayload) {
@@ -149,5 +158,25 @@ export async function createAsaasCreditCardPayment(payload: AsaasPaymentPayload)
   return asaasRequest<AsaasPayment>('/payments', {
     method: 'POST',
     body: JSON.stringify(payload),
+  });
+}
+
+export async function createAsaasPixPayment(payload: AsaasPixPaymentPayload) {
+  return asaasRequest<AsaasPayment>('/payments', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAsaasPixQrCode(paymentId: string) {
+  return asaasRequest<{ encodedImage?: string; payload?: string; expirationDate?: string }>(
+    `/payments/${encodeURIComponent(paymentId)}/pixQrCode`,
+    { method: 'GET' },
+  );
+}
+
+export async function getAsaasPayment(paymentId: string) {
+  return asaasRequest<AsaasPayment>(`/payments/${encodeURIComponent(paymentId)}`, {
+    method: 'GET',
   });
 }

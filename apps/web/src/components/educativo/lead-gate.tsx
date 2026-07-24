@@ -129,18 +129,41 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
     }
   }
 
-  if (!unlocked) {
-    return (
-      <section className="mt-8 rounded-3xl border border-[#14508B]/14 bg-[#F4F9FF] p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#15A7DD]">Acesso ao conteúdo educativo</p>
+  return (
+    <>
+      <div className="prose prose-slate mt-8 max-w-none">
+        {sections.map((section) => (
+          <section key={section.heading} className="mt-8 first:mt-0">
+            <h2 className="text-2xl font-semibold text-[#103E6A]">{section.heading}</h2>
+            {section.paragraphs.map((paragraph) => (
+              <p key={paragraph} className="mt-3 text-base leading-relaxed text-slate-700">
+                {paragraph}
+              </p>
+            ))}
+            {section.bullets ? (
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700">
+                {section.bullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+        ))}
+      </div>
+
+      <section className="mt-10 rounded-3xl border border-[#14508B]/14 bg-[#F4F9FF] p-6 sm:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#15A7DD]">Conteúdo educativo da clínica</p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">
-          Informe seus dados para continuar a leitura
+          {unlocked ? 'Seu acesso educativo está ativo' : 'Receba novos conteúdos sobre saúde cardiovascular'}
         </h2>
         <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">
-          A Nogueira Cardiologia usa esses dados para organizar o acesso aos materiais educativos e enviar orientações relacionadas à saúde cardiovascular.
+          {unlocked
+            ? 'Você já pode continuar acompanhando os materiais da Nogueira Cardiologia sem preencher seus dados novamente.'
+            : 'O artigo permanece aberto para todos. Se desejar, cadastre-se para receber orientações educativas e novidades da Nogueira Cardiologia.'}
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 grid gap-4">
+        {!unlocked ? (
+          <form onSubmit={handleSubmit} className="mt-6 grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
               Nome completo
@@ -180,7 +203,7 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
           </label>
 
           <p className="text-xs leading-5 text-slate-500">
-            Ao continuar, você autoriza o contato da Nogueira Cardiologia por e-mail ou WhatsApp com conteúdos educativos e informações relacionadas à clínica.
+            Ao se cadastrar, você autoriza o contato da Nogueira Cardiologia por e-mail ou WhatsApp com conteúdos educativos e informações relacionadas à clínica.
           </p>
 
           <TurnstileWidget action="educativo-lead" />
@@ -192,32 +215,11 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
             disabled={status === 'submitting'}
             className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {status === 'submitting' ? 'Liberando conteúdo...' : 'Liberar conteúdo educativo'}
+            {status === 'submitting' ? 'Enviando cadastro...' : 'Quero receber conteúdos educativos'}
           </button>
-        </form>
+          </form>
+        ) : null}
       </section>
-    );
-  }
-
-  return (
-    <div className="prose prose-slate mt-8 max-w-none">
-      {sections.map((section) => (
-        <section key={section.heading} className="mt-8 first:mt-0">
-          <h2 className="text-2xl font-semibold text-[#103E6A]">{section.heading}</h2>
-          {section.paragraphs.map((paragraph) => (
-            <p key={paragraph} className="mt-3 text-base leading-relaxed text-slate-700">
-              {paragraph}
-            </p>
-          ))}
-          {section.bullets ? (
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700">
-              {section.bullets.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-      ))}
-    </div>
+    </>
   );
 }

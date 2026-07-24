@@ -13,9 +13,9 @@ const navItems = [
 
 export function InternalShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-[#F6F8FB] text-slate-950">
+    <main className="min-h-screen w-full overflow-x-clip bg-[#F6F8FB] text-slate-950">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <Link href="/acesso/dashboard" className="flex items-center gap-3" aria-label="Dashboard interna Nogueira Cardiologia">
             <Image
               src="/uploads-imagens-nogueira/nogueira-cardio4-transparent.png"
@@ -29,7 +29,7 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
               Equipe interna
             </span>
           </Link>
-          <nav className="flex flex-wrap gap-2 text-sm font-bold text-[#14508B]">
+          <nav className="flex min-w-0 max-w-full flex-wrap gap-2 text-sm font-bold text-[#14508B]">
             {navItems.map(([label, href]) => (
               <Link key={href} href={href} className="rounded-lg border border-[#14508B]/18 px-3 py-2 hover:border-[#14508B]/55">
                 {label}
@@ -43,7 +43,7 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
         title="Visão interna da operação digital, pacientes, consultas, pagamentos e exames enviados."
         description="A equipe acompanha a jornada com dados reais, central de exames e estrutura preparada para evoluir com automações, PACS, DICOM e análises assistidas."
       />
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
+      <div className="mx-auto w-full max-w-7xl min-w-0 px-4 py-8 sm:px-6 lg:px-8">{children}</div>
     </main>
   );
 }
