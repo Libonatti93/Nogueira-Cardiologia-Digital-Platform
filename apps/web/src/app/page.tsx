@@ -379,7 +379,7 @@ export default function Home() {
 
             <div className="mt-12 grid max-w-6xl gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
               {curriculumHighlights.map((item) => (
-                <article key={item.title} className="min-h-[172px] border-l-2 border-[#9FE6FF] bg-white/14 p-4 text-center text-white shadow-[0_18px_45px_-34px_rgba(0,0,0,0.55)] backdrop-blur">
+                <article key={item.title} className="min-h-[172px] rounded-2xl border-l-2 border-[#9FE6FF] bg-white/14 p-4 text-center text-white shadow-[0_18px_45px_-34px_rgba(0,0,0,0.55)] backdrop-blur">
                   <div className="flex h-12 w-full items-center justify-center">
                     <span className="inline-flex h-12 w-28 items-center justify-center rounded-xl border border-white/25 bg-white/92 px-3 py-2 shadow-[0_10px_24px_-18px_rgba(255,255,255,0.75)] ring-1 ring-[#14508B]/8">
                       <Image
@@ -420,7 +420,7 @@ export default function Home() {
               </p>
               <div className="mt-7 grid gap-3">
                 {patientSteps.map((step, index) => (
-                  <div key={step} className="flex items-center gap-4 border-l-2 border-[#14508B] bg-[#F4F9FF] px-4 py-3">
+                  <div key={step} className="flex items-center gap-4 rounded-2xl border-l-2 border-[#14508B] bg-[#F4F9FF] px-4 py-3">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#14508B] text-sm font-bold text-white">
                       {index + 1}
                     </span>
@@ -522,7 +522,7 @@ export default function Home() {
                 ['Acesso para outras cidades', 'Atendimento online para pacientes que buscam cardiologista da Nogueira sem deslocamento inicial.'],
                 ['Segurança assistencial', 'Dados, exames e pagamento organizados pelo portal, com triagem para indicar presencial quando necessário.'],
               ].map(([title, description]) => (
-                <article key={title} className="border-l-2 border-[#9FE6FF] bg-white/8 p-5 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.65)]">
+                <article key={title} className="rounded-2xl border-l-2 border-[#9FE6FF] bg-white/8 p-5 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.65)]">
                   <h3 className="text-lg font-semibold">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-white/78">{description}</p>
                 </article>
@@ -601,7 +601,7 @@ export default function Home() {
                     ['Banca médica', 'Condução e discussão de casos com especialistas.'],
                     ['Atualização contínua', 'Presença em ambiente de evidência e educação médica.'],
                   ].map(([title, description]) => (
-                    <article key={title} className="border-l-2 border-[#9FE6FF] bg-white/8 p-4">
+                    <article key={title} className="rounded-2xl border-l-2 border-[#9FE6FF] bg-white/8 p-4">
                       <h3 className="text-sm font-bold">{title}</h3>
                       <p className="mt-2 text-xs leading-5 text-white/75">{description}</p>
                     </article>
@@ -674,11 +674,11 @@ export default function Home() {
                 A Nogueira Cardiologia reúne o Prof. Dr. Paulo Roberto Nogueira e a Dra. Cristiani Nogueira em uma rotina de cuidado voltada à saúde do coração, check-up cardiológico, prevenção cardiovascular, investigação de sintomas, telemedicina e seguimento clínico contínuo.
               </p>
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                <div className="border-l-2 border-[#14508B] bg-[#F4F9FF] p-4">
+                <div className="rounded-2xl border-l-2 border-[#14508B] bg-[#F4F9FF] p-4">
                   <h3 className="font-semibold text-[#0F3760]">Professor, cardiologista e educador</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">Conteúdo médico, aulas e experiência clínica do Prof. Dr. Paulo aproximam o paciente de informação cardiovascular confiável.</p>
                 </div>
-                <div className="border-l-2 border-[#15A7DD] bg-[#F4F9FF] p-4">
+                <div className="rounded-2xl border-l-2 border-[#15A7DD] bg-[#F4F9FF] p-4">
                   <h3 className="font-semibold text-[#0F3760]">Cuidado próximo com a Dra. Cristiani</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">Escuta qualificada, orientação clara e acompanhamento para hipertensão, sintomas cardíacos e prevenção de risco cardiovascular.</p>
                 </div>

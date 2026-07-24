@@ -44,6 +44,15 @@ video {
   }
 }
 
+/* Padrão visual: superfícies suaves e consistentes em toda a plataforma. */
+:where(.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-\[2rem\]) {
+  border-radius: 1rem;
+}
+
+:where(article, aside, fieldset) {
+  border-radius: 1rem;
+}
+
 .cta-pulse {
   position: relative;
   isolation: isolate;

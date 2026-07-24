@@ -829,7 +829,7 @@ export default async function InternalDashboardPage() {
 
   return (
     <InternalShell>
-      <section className="border border-[#14508B]/12 bg-white p-5 shadow-[0_24px_54px_-46px_rgba(20,80,139,0.72)]">
+      <section className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_24px_54px_-46px_rgba(20,80,139,0.72)]">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Centro de comando médico</p>
@@ -854,7 +854,7 @@ export default async function InternalDashboardPage() {
         </div>
       </section>
 
-      <nav className="sticky top-8 z-20 mt-4 overflow-x-auto border border-slate-200 bg-white/96 px-3 py-3 shadow-[0_16px_40px_-34px_rgba(20,80,139,0.7)] backdrop-blur">
+      <nav className="sticky top-8 z-20 mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white/96 px-3 py-3 shadow-[0_16px_40px_-34px_rgba(20,80,139,0.7)] backdrop-blur">
         <div className="flex min-w-max gap-2">
           {[
             ['Visão geral', '#visão-geral'],
@@ -1508,7 +1508,7 @@ function BarList({ title, rows }: { title: string; rows: { label: string; value:
 
 function WeatherCard({ weather }: { weather: WeatherSummary[] }) {
   return (
-    <section className="border border-[#14508B]/12 bg-white p-5 shadow-[0_24px_54px_-46px_rgba(20,80,139,0.72)]">
+    <section className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_24px_54px_-46px_rgba(20,80,139,0.72)]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Clima dos municipios</p>

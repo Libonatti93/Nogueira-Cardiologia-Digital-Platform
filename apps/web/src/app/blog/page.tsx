@@ -76,7 +76,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       </section>
 
       <section className="mx-auto -mt-8 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="border border-[#14508B]/12 bg-white p-4 shadow-[0_24px_70px_-54px_rgba(20,80,139,0.75)] sm:p-5">
+        <div className="rounded-2xl border border-[#14508B]/12 bg-white p-4 shadow-[0_24px_70px_-54px_rgba(20,80,139,0.75)] sm:p-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Escolha por tema</p>
@@ -179,7 +179,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           {visiblePosts.map((post) => (
-            <article key={post.slug} className="overflow-hidden border border-[#14508B]/10 bg-white transition-colors hover:border-[#14508B]/30">
+            <article key={post.slug} className="overflow-hidden rounded-2xl border border-[#14508B]/10 bg-white transition-colors hover:border-[#14508B]/30">
               <div className="grid sm:grid-cols-[180px_1fr]">
                 <div className="relative min-h-[170px] bg-[#0F3760]">
                   <Image
@@ -242,7 +242,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           </nav>
         ) : null}
 
-        <div className="mt-10 border border-[#14508B]/12 bg-[#EAF6FF] p-6 sm:flex sm:items-center sm:justify-between sm:gap-8">
+        <div className="mt-10 rounded-2xl border border-[#14508B]/12 bg-[#EAF6FF] p-6 sm:flex sm:items-center sm:justify-between sm:gap-8">
           <div>
             <h2 className="text-xl font-semibold text-[#103E6A]">Quer orientação para o seu caso?</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">

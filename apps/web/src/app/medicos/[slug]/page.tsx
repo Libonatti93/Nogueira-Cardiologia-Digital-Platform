@@ -80,7 +80,7 @@ export default async function DoctorPage({ params }: PageProps) {
             <h2 className="text-2xl font-semibold text-[#0F3760]">Áreas de atuação</h2>
             <ul className="mt-5 grid gap-3">
               {doctor.specialties.map((specialty) => (
-                <li key={specialty} className="border-l-2 border-[#15A7DD] bg-[#F4F9FF] px-4 py-3 text-sm font-semibold text-[#103E6A]">
+                <li key={specialty} className="rounded-2xl border-l-2 border-[#15A7DD] bg-[#F4F9FF] px-4 py-3 text-sm font-semibold text-[#103E6A]">
                   {specialty}
                 </li>
               ))}
