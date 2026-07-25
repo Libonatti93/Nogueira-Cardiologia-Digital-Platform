@@ -68,24 +68,62 @@ export default async function PatientDashboardPage() {
         </section>
 
         <div className="mt-7 grid gap-4 md:grid-cols-2">
-          <Link href="/portal/paciente/agendar" className="group flex min-h-44 flex-col justify-between rounded-2xl border border-[#14508B] bg-[#EAF4FF] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <span className="flex items-start justify-between gap-4">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-[#14508B] text-2xl text-white" aria-hidden>＋</span>
-              <span className="text-xl font-bold text-[#14508B]" aria-hidden>→</span>
+          <Link href="/portal/paciente/agendar" className="group relative min-h-56 overflow-hidden rounded-2xl border border-[#14508B] bg-[#EAF4FF] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <span className="relative z-10 flex h-full max-w-[58%] flex-col justify-between">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#14508B] text-white shadow-md shadow-[#14508B]/20" aria-hidden>
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+                  <path d="M8 3.5v3M16 3.5v3M3.5 9.5h17" />
+                  <path d="m9.2 15 1.8 1.8 4-4.1" />
+                </svg>
+              </span>
+              <span className="mt-8">
+                <h2 className="text-xl font-semibold text-[#0F3760]">Agendar consulta</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Escolha o médico, veja a agenda e marque o melhor horário.</p>
+                <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#14508B]">
+                  Ver agenda <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                </span>
+              </span>
             </span>
-            <span>
-              <h2 className="text-xl font-semibold text-[#0F3760]">Agendar consulta</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Veja os médicos, escolha o melhor dia e reserve seu horário.</p>
+
+            <span className="absolute -bottom-5 -right-3 w-[47%] rotate-[-4deg] rounded-2xl border border-[#14508B]/15 bg-white p-3 shadow-[0_20px_45px_-20px_rgba(15,55,96,0.35)] transition-transform group-hover:-translate-y-1 group-hover:rotate-0" aria-hidden>
+              <span className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#14508B]">Agenda</span>
+                <span className="rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-bold text-emerald-700">Disponível</span>
+              </span>
+              <span className="mt-3 grid grid-cols-4 gap-1.5">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((day) => (
+                  <span key={day} className={`grid aspect-square place-items-center rounded-md text-[9px] font-bold ${day === 7 ? 'bg-[#14508B] text-white' : 'bg-[#F4F9FF] text-slate-500'}`}>
+                    {day}
+                  </span>
+                ))}
+              </span>
             </span>
           </Link>
-          <Link href="/portal/paciente/exames" className="group flex min-h-44 flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#14508B]/40 hover:shadow-md">
-            <span className="flex items-start justify-between gap-4">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-[#EAF4FF] text-2xl text-[#14508B]" aria-hidden>⌁</span>
-              <span className="text-xl font-bold text-[#14508B]" aria-hidden>→</span>
+          <Link href="/portal/paciente/exames" className="group relative min-h-56 overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#14508B]/40 hover:shadow-md">
+            <span className="relative z-10 flex h-full max-w-[58%] flex-col justify-between">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#EAF4FF] text-[#14508B]" aria-hidden>
+                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9.5 12.8 5.8-5.8a3.2 3.2 0 0 1 4.5 4.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8-8" />
+                </svg>
+              </span>
+              <span className="mt-8">
+                <h2 className="text-xl font-semibold text-[#0F3760]">Meus exames</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Anexe laudos e imagens com segurança ou consulte seus arquivos.</p>
+                <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#14508B]">
+                  Enviar arquivo <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                </span>
+              </span>
             </span>
-            <span>
-              <h2 className="text-xl font-semibold text-[#0F3760]">Meus exames</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Envie laudos e imagens ou consulte os arquivos que você já enviou.</p>
+
+            <span className="absolute -bottom-4 -right-2 w-[45%] rotate-3 rounded-2xl border-2 border-dashed border-[#15A7DD]/35 bg-[#F4F9FF] p-4 text-center shadow-[0_18px_40px_-24px_rgba(15,55,96,0.28)] transition-transform group-hover:-translate-y-1 group-hover:rotate-0" aria-hidden>
+              <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-white text-[#14508B] shadow-sm">
+                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9.5 12.8 5.8-5.8a3.2 3.2 0 0 1 4.5 4.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8-8" />
+                </svg>
+              </span>
+              <span className="mt-3 block text-[10px] font-bold uppercase tracking-[0.12em] text-[#14508B]">Solte seu exame aqui</span>
+              <span className="mt-1 block text-[9px] text-slate-500">PDF ou imagem</span>
             </span>
           </Link>
         </div>
