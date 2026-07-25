@@ -151,12 +151,16 @@ const doctors = [
     crm: 'CRM 53.790/SP',
     image: '/uploads-imagens-nogueira/nogueira-cardiologia-paulo1.png',
     bio: 'Cardiologista intensivista, referência em cardiologia clínica, com foco de atuação em coronariopatias e cardiomiopatias.',
+    profilePath: '/medicos/dr-paulo-roberto-nogueira',
+    profileLabel: 'Conhecer o Dr. Paulo',
   },
   {
     name: 'Dra. Cristiani Monteiro de Oliveira Nogueira',
     crm: 'CRM 77.127/SP',
     image: '/uploads-imagens-nogueira/nogueira-cardiologia-cris1.png',
     bio: 'Médica cardiologista clínica, com atendimento humanizado de alto padrão voltado para o cuidado da saúde global.',
+    profilePath: '/medicos/dra-cristiani-nogueira',
+    profileLabel: 'Conhecer a Dra. Cristiani',
   },
 ] as const;
 
@@ -737,25 +741,38 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Corpo clínico</p>
                 <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] sm:text-4xl">Corpo clínico para consulta cardiológica, prevenção e seguimento do coração.</h2>
+                <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
+                  Conheça a trajetória, a experiência e a forma de cuidar de cada médico antes de escolher com quem deseja marcar sua consulta.
+                </p>
               </div>
             </div>
 
             <div className="mt-8 grid gap-5 lg:grid-cols-2">
               {doctors.map((doctor) => (
-                <article key={doctor.name} className="overflow-hidden rounded-2xl border border-[#14508B]/12 bg-white shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)]">
-                  <div className="grid sm:grid-cols-[260px_1fr]">
-                    <div className="relative min-h-[360px] bg-[#F4F9FF] sm:min-h-full">
-                      <Image src={doctor.image} alt={`Foto oficial de ${doctor.name}`} fill sizes="(max-width: 639px) 100vw, 260px" className="object-cover object-[50%_16%]" />
-                    </div>
-                    <div className="p-6">
+                <article key={doctor.name} className="group overflow-hidden rounded-3xl border border-[#14508B]/12 bg-white shadow-[0_24px_54px_-42px_rgba(20,80,139,0.72)] transition-all duration-300 hover:-translate-y-1 hover:border-[#14508B]/30 hover:shadow-[0_30px_65px_-40px_rgba(20,80,139,0.85)]">
+                  <div className="grid h-full sm:grid-cols-[260px_1fr]">
+                    <Link href={doctor.profilePath} aria-label={doctor.profileLabel} className="relative block min-h-[360px] overflow-hidden bg-[#F4F9FF] sm:min-h-full">
+                      <Image src={doctor.image} alt={`Foto oficial de ${doctor.name}`} fill sizes="(max-width: 639px) 100vw, 260px" className="object-cover object-[50%_16%] transition-transform duration-500 group-hover:scale-[1.025]" />
+                      <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-bold text-[#14508B] shadow-md backdrop-blur">
+                        Ver perfil médico <span aria-hidden="true">→</span>
+                      </span>
+                    </Link>
+                    <div className="flex flex-col p-6">
                       <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Cardiologia</p>
                       <h3 className="mt-2 text-2xl font-semibold text-[#0F3760]">
-                        <Link href={doctor.name.startsWith('Dr. Paulo') ? '/medicos/dr-paulo-roberto-nogueira' : '/medicos/dra-cristiani-nogueira'}>
+                        <Link href={doctor.profilePath} className="transition-colors hover:text-[#14508B]">
                           {doctor.name}
                         </Link>
                       </h3>
                       <p className="mt-1 text-sm font-bold text-[#14508B]">{doctor.crm}</p>
                       <p className="mt-4 text-sm leading-7 text-slate-600">{doctor.bio}</p>
+                      <Link
+                        href={doctor.profilePath}
+                        className="mt-6 inline-flex min-h-12 w-full items-center justify-between rounded-full bg-[#14508B] px-5 text-sm font-bold text-white transition-colors hover:bg-[#0F3760] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14508B] sm:mt-auto"
+                      >
+                        {doctor.profileLabel}
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-lg" aria-hidden="true">→</span>
+                      </Link>
                     </div>
                   </div>
                 </article>
