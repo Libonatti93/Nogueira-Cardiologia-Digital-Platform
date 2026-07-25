@@ -4,6 +4,7 @@ import { PortalShell } from '@/components/dashboard/portal-shell';
 import { requirePatientUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { PatientPageGuide } from '@/components/portal/patient-page-guide';
+import { PatientExamUploadForm } from '@/components/portal/patient-exam-upload-form';
 
 export const metadata: Metadata = {
   title: 'Meus Exames | Portal do Paciente',
@@ -23,19 +24,6 @@ type PatientExam = {
   created_at: Date;
 };
 
-const examTypes = [
-  'Eletrocardiograma',
-  'Ecocardiograma',
-  'Holter',
-  'MAPA',
-  'Teste ergométrico',
-  'Tomografia',
-  'Ressonância',
-  'Exames laboratoriais',
-  'Relatório médico',
-  'Outro exame',
-] as const;
-
 function formatDate(value: Date | null) {
   if (!value) return 'Não informado';
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(value);
@@ -45,7 +33,7 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-export default async function PatientExamsPage({ searchParams }: { searchParams: Promise<{ sent?: string }> }) {
+export default async function PatientExamsPage({ searchParams }: { searchParams: Promise<{ sent?: string; error?: string }> }) {
   const user = await requirePatientUser();
   const params = await searchParams;
   const examsResult = await query<PatientExam>(
@@ -78,57 +66,21 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
       </div>
 
       {params.sent === '1' ? (
-        <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          Exame enviado com sucesso. Ele já está disponível para a equipe responsável pelo seu atendimento.
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900" role="status">
+          <strong className="block">Tudo certo: arquivo salvo com segurança.</strong>
+          <span className="mt-1 block leading-6">O exame já aparece abaixo e também no painel da secretaria e do médico para acompanhamento.</span>
+        </div>
+      ) : null}
+
+      {params.error ? (
+        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800" role="alert">
+          <strong className="block">Não foi possível concluir o envio.</strong>
+          <span className="mt-1 block leading-6">{params.error}</span>
         </div>
       ) : null}
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <form action="/api/exams" method="post" encType="multipart/form-data" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold text-[#0F3760]">Enviar novo exame</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">Selecione o tipo, a data e o arquivo. O envio é protegido.</p>
-          <div className="mt-5 grid gap-4">
-            <Field label="Nome do paciente" name="patientFullName" defaultValue={user.fullName} />
-            <Field label="E-mail" name="patientEmail" type="email" defaultValue={user.email} />
-            <Field label="WhatsApp" name="patientPhoneWhatsapp" type="tel" placeholder="(17) 99999-9999" required={false} />
-            <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-              Tipo de exame
-              <select name="examType" className="rounded-lg border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2">
-                {examTypes.map((type) => (
-                  <option key={type}>{type}</option>
-                ))}
-              </select>
-            </label>
-            <Field label="Data do exame" name="examDate" type="date" required={false} />
-            <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-              Observações
-              <textarea
-                name="notes"
-                rows={4}
-                className="rounded-lg border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-                placeholder="Ex.: laudo de ecocardiograma realizado em outro laboratório."
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-              Arquivo do exame
-              <input
-                name="examFile"
-                type="file"
-                accept="application/pdf,image/jpeg,image/png,image/webp"
-                required
-                className="rounded-lg border border-dashed border-[#14508B]/30 bg-[#F4F9FF] px-4 py-4 text-sm font-normal text-slate-700 outline-none ring-[#15A7DD] file:mr-4 file:rounded-lg file:border-0 file:bg-[#14508B] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white focus:ring-2"
-              />
-              <span className="text-xs font-normal leading-5 text-slate-500">PDF, JPG, PNG ou WEBP, com até 15 MB.</span>
-            </label>
-            <label className="flex items-start gap-3 text-xs leading-5 text-slate-500">
-              <input name="lgpdConsent" type="checkbox" value="true" required className="mt-1 h-4 w-4 accent-[#14508B]" />
-              <span>Autorizo a Nogueira Cardiologia a armazenar e disponibilizar este exame para equipe autorizada com finalidade de organização do atendimento e apoio a avaliação médica.</span>
-            </label>
-            <button type="submit" className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white hover:bg-[#0F3760]">
-              Enviar exame
-            </button>
-          </div>
-        </form>
+        <PatientExamUploadForm fullName={user.fullName} email={user.email} />
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-semibold text-[#0F3760]">Arquivos enviados</h2>
@@ -163,35 +115,5 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
       </section>
       <PatientPageGuide variant="exams" />
     </PortalShell>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = 'text',
-  defaultValue,
-  placeholder,
-  required = true,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  defaultValue?: string;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-      {label}
-      <input
-        name={name}
-        type={type}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        required={required}
-        className="rounded-lg border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-      />
-    </label>
   );
 }

@@ -90,6 +90,10 @@ type RecentExam = {
   file_size_bytes: number;
   status: string;
   notes: string | null;
+  upload_ip: string | null;
+  device_platform: string | null;
+  location_consent_at: Date | null;
+  reviewed_at: Date | null;
   created_at: Date;
 };
 
@@ -351,6 +355,10 @@ async function getDashboardData() {
         file_size_bytes,
         status,
         notes,
+        upload_ip::text,
+        device_platform,
+        location_consent_at,
+        reviewed_at,
         created_at
       from patient_exam_uploads
       order by created_at desc
@@ -1096,6 +1104,15 @@ export default async function InternalDashboardPage() {
 
       <section className="mt-8" id="exames">
         <Panel title="Exames enviados pelos pacientes" subtitle="Arquivos anexados no portal do paciente para adiantar a documentação médica.">
+          {data.exams.some((exam) => !exam.reviewed_at) ? (
+            <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950" role="status">
+              <span className="mt-0.5 h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-amber-500" />
+              <div>
+                <strong className="block">Há documentos novos aguardando conferência.</strong>
+                <span className="mt-1 block leading-6">A secretaria e o médico já podem abrir os arquivos enviados pelos pacientes abaixo.</span>
+              </div>
+            </div>
+          ) : null}
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-[0.12em] text-slate-500">
@@ -1125,7 +1142,12 @@ export default async function InternalDashboardPage() {
                         <span className="text-xs text-slate-500">{formatFileSize(exam.file_size_bytes)}</span>
                       </td>
                       <td className="py-3 pr-4">
-                        <StatusBadge>{exam.status === 'received' ? 'Recebido' : exam.status}</StatusBadge>
+                        <StatusBadge>{!exam.reviewed_at ? 'Novo • recebido' : exam.status === 'received' ? 'Recebido' : exam.status}</StatusBadge>
+                        <span className="mt-1 block text-[11px] text-slate-500">
+                          {exam.device_platform ? `Dispositivo: ${exam.device_platform.replaceAll('"', '')}` : 'Dispositivo registrado'}
+                          {exam.upload_ip ? ` • IP ${exam.upload_ip}` : ''}
+                        </span>
+                        {exam.location_consent_at ? <span className="mt-1 block text-[11px] font-semibold text-emerald-700">Localização autorizada</span> : null}
                       </td>
                       <td className="py-3 pr-4 text-slate-600">{formatDate(exam.created_at)}</td>
                       <td className="py-3 pr-4">
