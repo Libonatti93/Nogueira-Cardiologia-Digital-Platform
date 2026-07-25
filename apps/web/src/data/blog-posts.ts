@@ -33,6 +33,7 @@ export type BlogCategorySummary = {
 };
 
 import { seoBlogPosts } from './seo-blog-posts';
+import { todayBlogPosts } from './today-blog-posts';
 
 export const getBlogCategorySlug = (category: string) =>
   category
@@ -74,6 +75,7 @@ export const getBlogPostHashtags = (post: Pick<BlogPost, 'category' | 'tags'>) =
 };
 
 export const blogPosts: BlogPost[] = [
+  ...todayBlogPosts,
   ...seoBlogPosts,
   {
     slug: 'check-up-cardiologico-em-sao-jose-do-rio-preto',

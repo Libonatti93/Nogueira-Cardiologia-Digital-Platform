@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { AuthorityBlock } from '@/components/blog/authority-block';
 import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
-import { getBlogCategorySlug, getBlogPostHashtags, getCanonicalBlogCategory, getFeaturedPosts, getRecentPosts } from '@/data/blog-posts';
+import { getBlogCategorySlug, getBlogPostHashtags, getCanonicalBlogCategory, getRecentPosts } from '@/data/blog-posts';
 import { getPublishedEducativoPosts } from '@/lib/educativo-posts';
 
 type BlogPageProps = {
-  searchParams: Promise<{ tema?: string; pagina?: string }>;
+  searchParams: Promise<{ tema?: string; pagina?: string; busca?: string }>;
 };
 
 export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
   const params = await searchParams;
-  const hasQueryVariant = Boolean(params.tema || (params.pagina && params.pagina !== '1'));
+  const hasQueryVariant = Boolean(params.tema || params.busca || (params.pagina && params.pagina !== '1'));
 
   return {
     title: 'Educativo de Cardiologia | Nogueira Cardiologia',
@@ -40,16 +40,34 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     .map(([name, count]) => ({ name, slug: getBlogCategorySlug(name), count }))
     .sort((firstCategory, secondCategory) => firstCategory.name.localeCompare(secondCategory.name, 'pt-BR'));
   const selectedCategory = categories.find((category) => category.slug === params.tema);
-  const filteredPosts = selectedCategory
+  const categoryPosts = selectedCategory
     ? recentPosts.filter((post) => getCanonicalBlogCategory(post.category) === selectedCategory.name)
     : recentPosts;
-  const postsPerPage = 12;
+  const searchTerm = params.busca?.trim() ?? '';
+  const normalizedSearch = searchTerm.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const filteredPosts = normalizedSearch
+    ? categoryPosts.filter((post) =>
+        [post.title, post.excerpt, post.category, ...post.tags]
+          .join(' ')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .includes(normalizedSearch),
+      )
+    : categoryPosts;
+  const postsPerPage = 5;
   const requestedPage = Number.parseInt(params.pagina ?? '1', 10);
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
   const currentPage = Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), totalPages) : 1;
   const visiblePosts = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
-  const featuredPosts = selectedCategory ? filteredPosts.slice(0, 2) : [...databasePosts.slice(0, 2), ...getFeaturedPosts()].slice(0, 6);
   const totalPosts = recentPosts.length;
+  const pageHref = (page: number) => {
+    const query = new URLSearchParams();
+    if (selectedCategory) query.set('tema', selectedCategory.slug);
+    if (searchTerm) query.set('busca', searchTerm);
+    if (page > 1) query.set('pagina', String(page));
+    return query.size ? `/blog?${query.toString()}#conteudos` : '/blog#conteudos';
+  };
 
   return (
     <div className="min-h-screen bg-[#F8F8F9] text-slate-900">
@@ -89,6 +107,32 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             </p>
           </div>
 
+          <form action="/blog" method="get" className="mt-5 flex flex-col gap-3 sm:flex-row">
+            {selectedCategory ? <input type="hidden" name="tema" value={selectedCategory.slug} /> : null}
+            <label className="relative flex-1">
+              <span className="sr-only">Buscar conteúdo educativo</span>
+              <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m16 16 4 4" />
+              </svg>
+              <input
+                type="search"
+                name="busca"
+                defaultValue={searchTerm}
+                placeholder="Busque: pressão alta, dor no peito, colesterol..."
+                className="min-h-12 w-full rounded-2xl border border-[#14508B]/18 bg-[#F8FBFF] py-3 pl-12 pr-4 text-sm text-slate-800 outline-none focus:border-[#14508B] focus:ring-2 focus:ring-[#15A7DD]/20"
+              />
+            </label>
+            <button type="submit" className="min-h-12 rounded-full bg-[#14508B] px-6 text-sm font-bold text-white hover:bg-[#0F3760]">
+              Buscar conteúdo
+            </button>
+            {searchTerm ? (
+              <Link href={selectedCategory ? `/blog?tema=${selectedCategory.slug}` : '/blog'} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#14508B]/20 px-5 text-sm font-bold text-[#14508B]">
+                Limpar busca
+              </Link>
+            ) : null}
+          </form>
+
           <div className="mt-5 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0">
             <Link
               href="/blog#conteudos"
@@ -127,47 +171,12 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         <AuthorityBlock />
       </section>
 
-      <section className="mx-auto mt-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-semibold text-[#103E6A] sm:text-3xl">
-            {selectedCategory ? `Destaques em ${selectedCategory.name}` : 'Conteúdos em destaque'}
-          </h2>
-          <Link href="/#corpo-clinico" className="text-sm font-semibold text-[#14508B]">
-            Ver corpo clínico
-          </Link>
-        </div>
-        <div className="mt-6 grid gap-5 lg:grid-cols-2">
-          {featuredPosts.map((post) => (
-            <article key={post.slug} className="overflow-hidden rounded-3xl border border-[#14508B]/15 bg-white">
-              <div className="relative h-64 bg-[#0F3760]">
-                <Image
-                  src={post.coverImage}
-                  alt={`Imagem oficial para ${post.title}`}
-                  fill
-                  sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover object-[50%_20%]"
-                />
-              </div>
-              <div className="p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15A7DD]">{post.category}</p>
-                <h3 className="mt-2 text-2xl font-semibold text-[#103E6A]">
-                  <Link href={`/blog/${post.slug}`} className="hover:text-[#14508B]">
-                    {post.title}
-                  </Link>
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">{post.excerpt}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section id="conteudos" className="mx-auto mt-12 w-full max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 border-b border-[#14508B]/12 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Biblioteca educativa</p>
             <h2 className="mt-1 text-2xl font-semibold text-[#103E6A] sm:text-3xl">
-              {selectedCategory ? selectedCategory.name : 'Todos os conteúdos'}
+              {searchTerm ? `Resultados para “${searchTerm}”` : selectedCategory ? selectedCategory.name : 'Todos os conteúdos'}
             </h2>
           </div>
           {selectedCategory ? (
@@ -216,29 +225,24 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           ))}
         </div>
 
-        {totalPages > 1 ? (
-          <nav aria-label="Paginação dos conteúdos" className="mt-8 flex flex-wrap items-center justify-center gap-2">
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => {
-              const query = new URLSearchParams();
-              if (selectedCategory) query.set('tema', selectedCategory.slug);
-              if (page > 1) query.set('pagina', String(page));
-              const href = query.size ? `/blog?${query.toString()}#conteudos` : '/blog#conteudos';
+        {!visiblePosts.length ? (
+          <div className="mt-6 rounded-2xl border border-[#14508B]/12 bg-white p-8 text-center">
+            <h3 className="text-xl font-semibold text-[#103E6A]">Nenhum conteúdo encontrado</h3>
+            <p className="mt-2 text-sm text-slate-600">Tente outra palavra, como “pressão”, “palpitação”, “colesterol” ou “check-up”.</p>
+          </div>
+        ) : null}
 
-              return (
-                <Link
-                  key={page}
-                  href={href}
-                  aria-current={page === currentPage ? 'page' : undefined}
-                  className={`inline-flex h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold ${
-                    page === currentPage
-                      ? 'border-[#14508B] bg-[#14508B] text-white'
-                      : 'border-[#14508B]/20 bg-white text-[#14508B] hover:border-[#14508B]/50'
-                  }`}
-                >
-                  {page}
-                </Link>
-              );
-            })}
+        {totalPages > 1 ? (
+          <nav aria-label="Paginação dos conteúdos" className="mt-8 flex items-center justify-center gap-4">
+            {currentPage > 1 ? (
+              <Link href={pageHref(currentPage - 1)} aria-label="Página anterior" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#14508B]/20 bg-white text-2xl font-bold text-[#14508B] hover:border-[#14508B] hover:bg-[#EAF4FF]">←</Link>
+            ) : <span className="h-12 w-12" aria-hidden="true" />}
+            <span className="min-w-24 text-center text-sm font-bold text-[#103E6A]">
+              {currentPage} de {totalPages}
+            </span>
+            {currentPage < totalPages ? (
+              <Link href={pageHref(currentPage + 1)} aria-label="Próxima página" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#14508B]/20 bg-white text-2xl font-bold text-[#14508B] hover:border-[#14508B] hover:bg-[#EAF4FF]">→</Link>
+            ) : <span className="h-12 w-12" aria-hidden="true" />}
           </nav>
         ) : null}
 
