@@ -163,17 +163,51 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           <LeadGate postSlug={post.slug} postTitle={post.title} sections={post.sections} />
 
-          <aside className="mt-8 border-t border-slate-200 pt-6 text-sm leading-7 text-slate-600">
-            <h2 className="text-lg font-semibold text-[#103E6A]">Referências e transparência editorial</h2>
-            <p className="mt-2">
-              Conteúdo educativo alinhado a recomendações de sociedades médicas e órgãos públicos. A aplicação ao caso individual depende de avaliação profissional.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 font-semibold text-[#14508B]">
-              <a href="https://www.portal.cardiol.br/" target="_blank" rel="noreferrer">Sociedade Brasileira de Cardiologia</a>
-              <a href="https://www.gov.br/saude/pt-br" target="_blank" rel="noreferrer">Ministério da Saúde</a>
-              <a href="https://www.who.int/health-topics/cardiovascular-diseases" target="_blank" rel="noreferrer">World Health Organization</a>
-              <Link href="/editorial">Política editorial</Link>
+          <aside className="mt-10 overflow-hidden rounded-3xl border border-[#14508B]/12 bg-gradient-to-br from-[#F4F9FF] to-white p-5 text-sm text-slate-600 sm:p-7">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Informação em que você pode confiar</p>
+              <h2 className="mt-2 text-xl font-semibold text-[#103E6A] sm:text-2xl">De onde vêm nossas orientações?</h2>
+              <p className="mt-3 leading-7">
+                Antes de chegar até você, o conteúdo é preparado com base em fontes médicas reconhecidas e passa por revisão da nossa equipe. Veja as principais referências:
+              </p>
             </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <a href="https://www.portal.cardiol.br/" target="_blank" rel="noreferrer" className="group flex min-h-28 items-center gap-4 rounded-2xl border border-[#14508B]/10 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-[#14508B]/30 hover:shadow-sm">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EAF6FF] text-sm font-black text-[#14508B]" aria-hidden="true">SBC</span>
+                <span>
+                  <strong className="block leading-5 text-[#103E6A] group-hover:text-[#14508B]">Sociedade Brasileira de Cardiologia</strong>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">Diretrizes brasileiras de cuidado cardiovascular</span>
+                </span>
+                <span className="ml-auto text-lg font-bold text-[#15A7DD]" aria-hidden="true">↗</span>
+              </a>
+              <a href="https://www.gov.br/saude/pt-br" target="_blank" rel="noreferrer" className="group flex min-h-28 items-center gap-4 rounded-2xl border border-[#14508B]/10 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-[#14508B]/30 hover:shadow-sm">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E9F8EE] text-xl" aria-hidden="true">🇧🇷</span>
+                <span>
+                  <strong className="block leading-5 text-[#103E6A] group-hover:text-[#14508B]">Ministério da Saúde</strong>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">Orientações oficiais de saúde pública no Brasil</span>
+                </span>
+                <span className="ml-auto text-lg font-bold text-[#15A7DD]" aria-hidden="true">↗</span>
+              </a>
+              <a href="https://www.who.int/health-topics/cardiovascular-diseases" target="_blank" rel="noreferrer" className="group flex min-h-28 items-center gap-4 rounded-2xl border border-[#14508B]/10 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-[#14508B]/30 hover:shadow-sm">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EAF6FF] text-2xl" aria-hidden="true">◎</span>
+                <span>
+                  <strong className="block leading-5 text-[#103E6A] group-hover:text-[#14508B]">Organização Mundial da Saúde</strong>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">Evidências e recomendações internacionais</span>
+                </span>
+                <span className="ml-auto text-lg font-bold text-[#15A7DD]" aria-hidden="true">↗</span>
+              </a>
+              <Link href="/editorial" className="group flex min-h-28 items-center gap-4 rounded-2xl border border-[#14508B]/10 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-[#14508B]/30 hover:shadow-sm">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFF5DF] text-xl" aria-hidden="true">✓</span>
+                <span>
+                  <strong className="block leading-5 text-[#103E6A] group-hover:text-[#14508B]">Revisão médica da Nogueira</strong>
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">Conheça como produzimos e revisamos cada artigo</span>
+                </span>
+                <span className="ml-auto text-lg font-bold text-[#15A7DD]" aria-hidden="true">→</span>
+              </Link>
+            </div>
+            <p className="mt-5 rounded-2xl bg-[#103E6A] px-4 py-3 text-xs leading-5 text-white/85">
+              Importante: este material ajuda você a entender melhor o assunto, mas não substitui uma consulta nem uma avaliação individual.
+            </p>
           </aside>
         </article>
 
