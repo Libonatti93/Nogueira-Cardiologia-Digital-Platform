@@ -1109,7 +1109,7 @@ export default async function InternalDashboardPage() {
               <span className="mt-0.5 h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-amber-500" />
               <div>
                 <strong className="block">Há documentos novos aguardando conferência.</strong>
-                <span className="mt-1 block leading-6">A secretaria e o médico já podem abrir os arquivos enviados pelos pacientes abaixo.</span>
+                <span className="mt-1 block leading-6">Os médicos autorizados já podem abrir os arquivos enviados pelos pacientes abaixo.</span>
               </div>
             </div>
           ) : null}

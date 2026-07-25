@@ -41,7 +41,7 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
       <AuthorityBackdrop
         eyebrow="Dashboard médico/admin"
         title="Visão interna da operação digital, pacientes, consultas, pagamentos e exames enviados."
-        description="A equipe acompanha a jornada com dados reais, central de exames e estrutura preparada para evoluir com automações, PACS, DICOM e análises assistidas."
+        description="Os médicos autorizados acompanham a jornada clínica, os exames recebidos e a documentação necessária ao atendimento em ambiente protegido."
       />
       <div className="mx-auto w-full max-w-7xl min-w-0 px-4 py-8 sm:px-6 lg:px-8">{children}</div>
     </main>

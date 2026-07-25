@@ -68,7 +68,7 @@ export default async function PatientExamsPage({ searchParams }: { searchParams:
       {params.sent === '1' ? (
         <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900" role="status">
           <strong className="block">Tudo certo: arquivo salvo com segurança.</strong>
-          <span className="mt-1 block leading-6">O exame já aparece abaixo e também no painel da secretaria e do médico para acompanhamento.</span>
+          <span className="mt-1 block leading-6">O exame já aparece abaixo e também no painel médico protegido para acompanhamento do cardiologista.</span>
         </div>
       ) : null}
 

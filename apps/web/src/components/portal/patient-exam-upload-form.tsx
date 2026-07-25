@@ -108,7 +108,7 @@ export function PatientExamUploadForm({ fullName, email }: { fullName: string; e
         <label className="flex items-start gap-3 text-xs leading-5 text-slate-600">
           <input name="lgpdConsent" type="checkbox" value="true" required className="mt-1 h-4 w-4 shrink-0 accent-[#14508B]" />
           <span>
-            Confirmo que este exame é meu ou que tenho autorização para enviá-lo e autorizo seu tratamento pela equipe da Nogueira Cardiologia para organização do atendimento e assistência em saúde.
+            Confirmo que este exame é meu ou que tenho autorização para enviá-lo e autorizo seu tratamento pelo médico responsável para organização do atendimento e assistência em saúde.
           </span>
         </label>
         <label className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-950">

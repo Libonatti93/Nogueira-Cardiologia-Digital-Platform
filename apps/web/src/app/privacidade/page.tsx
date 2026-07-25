@@ -54,6 +54,7 @@ const sections = [
     paragraphs: [
       'Dados podem ser compartilhados com profissionais autorizados da clínica, prestadores de tecnologia, hospedagem, banco de dados, automação, meios de pagamento, ferramentas de comunicação, contabilidade, assessoria jurídica ou autoridades competentes quando necessário.',
       'O compartilhamento deve ocorrer apenas na medida necessaria para funcionamento do serviço, atendimento ao paciente, segurança, cumprimento legal ou operação administrativa.',
+      'No painel clínico, a visualização do conteúdo dos exames enviados pelo paciente é restrita aos médicos autorizados. Prestadores de infraestrutura apenas processam ou armazenam os dados na medida tecnicamente necessária, sob deveres contratuais de proteção e confidencialidade.',
     ],
   },
   {
