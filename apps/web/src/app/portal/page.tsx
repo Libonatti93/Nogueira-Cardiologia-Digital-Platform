@@ -14,11 +14,13 @@ export const metadata: Metadata = {
 export default async function PortalPage({
   searchParams,
 }: {
-  searchParams: Promise<{ verified?: string; confirm?: string }>;
+  searchParams: Promise<{ verified?: string; confirm?: string; logout?: string }>;
 }) {
   const params = await searchParams;
   const initialNotice =
-    params.verified === '1'
+    params.logout === '1'
+      ? 'Você saiu do portal com segurança. Entre novamente quando precisar.'
+      : params.verified === '1'
       ? 'E-mail confirmado com sucesso. Você já pode entrar no portal do paciente.'
       : params.verified === 'invalid'
         ? 'Este link de confirmação expirou ou já foi usado. Solicite um novo link.'
