@@ -55,7 +55,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           .includes(normalizedSearch),
       )
     : categoryPosts;
-  const postsPerPage = 5;
+  const postsPerPage = 6;
   const requestedPage = Number.parseInt(params.pagina ?? '1', 10);
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
   const currentPage = Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), totalPages) : 1;
@@ -133,13 +133,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             ) : null}
           </form>
 
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0">
+          <div className="mt-5 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible sm:pb-0">
             <Link
               href="/blog#conteudos"
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border px-4 py-2.5 text-sm font-semibold transition-colors ${
+              className={`inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all ${
                 selectedCategory
-                  ? 'border-[#14508B]/14 bg-[#F4F8FD] text-[#14508B] hover:border-[#14508B]/35'
-                  : 'border-[#14508B] bg-[#14508B] text-white'
+                  ? 'border-[#14508B]/14 bg-[#F4F8FD] text-[#14508B] hover:-translate-y-0.5 hover:border-[#14508B]/35 hover:bg-white'
+                  : 'border-[#14508B] bg-[#14508B] text-white shadow-sm'
               }`}
             >
               Todos
@@ -152,10 +152,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 <Link
                   key={category.slug}
                   href={`/blog?tema=${category.slug}#conteudos`}
-                  className={`inline-flex min-h-11 shrink-0 items-center gap-2 border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                  className={`inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all ${
                     isActive
-                      ? 'border-[#14508B] bg-[#14508B] text-white'
-                      : 'border-[#14508B]/14 bg-[#F4F8FD] text-[#14508B] hover:border-[#14508B]/35 hover:bg-white'
+                      ? 'border-[#14508B] bg-[#14508B] text-white shadow-sm'
+                      : 'border-[#14508B]/14 bg-[#F4F8FD] text-[#14508B] hover:-translate-y-0.5 hover:border-[#14508B]/35 hover:bg-white'
                   }`}
                 >
                   {category.name}
@@ -164,6 +164,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               );
             })}
           </div>
+          <p className="mt-1 text-xs text-slate-500 sm:hidden">Deslize para o lado para ver mais temas →</p>
         </div>
       </section>
 
@@ -172,34 +173,44 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       </section>
 
       <section id="conteudos" className="mx-auto mt-12 w-full max-w-7xl scroll-mt-24 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-3 border-b border-[#14508B]/12 pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
+        <div className="flex flex-col gap-4 rounded-2xl border border-[#14508B]/10 bg-white px-5 py-5 shadow-[0_18px_50px_-42px_rgba(20,80,139,0.7)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Biblioteca educativa</p>
-            <h2 className="mt-1 text-2xl font-semibold text-[#103E6A] sm:text-3xl">
+            <h2 className="mt-1 break-words text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">
               {searchTerm ? `Resultados para “${searchTerm}”` : selectedCategory ? selectedCategory.name : 'Todos os conteúdos'}
             </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              {filteredPosts.length} artigo{filteredPosts.length === 1 ? '' : 's'} para você explorar
+            </p>
           </div>
-          {selectedCategory ? (
-            <Link href="/blog#conteudos" className="text-sm font-semibold text-[#14508B]">
-              Limpar filtro
-            </Link>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="rounded-full bg-[#EAF6FF] px-4 py-2 text-sm font-bold text-[#14508B]">
+              Página {currentPage} de {totalPages}
+            </span>
+            {selectedCategory ? (
+              <Link href="/blog#conteudos" className="rounded-full border border-[#14508B]/20 px-4 py-2 text-sm font-semibold text-[#14508B] hover:bg-[#F4F8FD]">
+                Limpar filtro
+              </Link>
+            ) : null}
+          </div>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {visiblePosts.map((post) => (
-            <article key={post.slug} className="overflow-hidden rounded-2xl border border-[#14508B]/10 bg-white transition-colors hover:border-[#14508B]/30">
-              <div className="grid sm:grid-cols-[180px_1fr]">
-                <div className="relative min-h-[170px] bg-[#0F3760]">
+            <article key={post.slug} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#14508B]/10 bg-white shadow-[0_18px_45px_-38px_rgba(15,55,96,0.65)] transition-all duration-300 hover:-translate-y-1 hover:border-[#14508B]/30 hover:shadow-[0_24px_55px_-36px_rgba(15,55,96,0.8)]">
+              <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/9] overflow-hidden bg-[#0F3760]">
                   <Image
                     src={post.coverImage}
                     alt={`Imagem oficial para ${post.title}`}
                     fill
-                    sizes="(max-width: 639px) 100vw, 180px"
-                    className="object-cover object-[50%_20%]"
+                    sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
+                    className="object-cover object-[50%_20%] transition-transform duration-500 group-hover:scale-[1.04]"
                   />
-                </div>
-                <div className="p-5">
+                  <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#14508B] shadow-sm">
+                    {post.category}
+                  </span>
+                </Link>
+                <div className="flex flex-1 flex-col p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#15A7DD]">{post.category}</p>
                   <h3 className="mt-2 text-xl font-semibold leading-snug text-[#103E6A]">
                     <Link href={`/blog/${post.slug}`} className="hover:text-[#14508B]">
@@ -219,8 +230,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     <span>•</span>
                     <span>{post.publishedAt}</span>
                   </div>
+                  <Link href={`/blog/${post.slug}`} className="mt-5 inline-flex min-h-11 items-center justify-between rounded-full bg-[#F4F8FD] px-4 text-sm font-bold text-[#14508B] transition-colors group-hover:bg-[#14508B] group-hover:text-white">
+                    Ler artigo
+                    <span aria-hidden="true">→</span>
+                  </Link>
                 </div>
-              </div>
             </article>
           ))}
         </div>
@@ -233,15 +247,15 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         ) : null}
 
         {totalPages > 1 ? (
-          <nav aria-label="Paginação dos conteúdos" className="mt-8 flex items-center justify-center gap-4">
+          <nav aria-label="Paginação dos conteúdos" className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-[#14508B]/10 bg-white p-3 sm:mx-auto sm:w-fit">
             {currentPage > 1 ? (
-              <Link href={pageHref(currentPage - 1)} aria-label="Página anterior" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#14508B]/20 bg-white text-2xl font-bold text-[#14508B] hover:border-[#14508B] hover:bg-[#EAF4FF]">←</Link>
+              <Link href={pageHref(currentPage - 1)} aria-label="Página anterior" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#14508B]/20 bg-white px-4 text-sm font-bold text-[#14508B] hover:border-[#14508B] hover:bg-[#EAF4FF]"><span aria-hidden="true">←</span><span className="hidden sm:inline">Anterior</span></Link>
             ) : <span className="h-12 w-12" aria-hidden="true" />}
             <span className="min-w-24 text-center text-sm font-bold text-[#103E6A]">
-              {currentPage} de {totalPages}
+              {currentPage} / {totalPages}
             </span>
             {currentPage < totalPages ? (
-              <Link href={pageHref(currentPage + 1)} aria-label="Próxima página" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#14508B]/20 bg-white text-2xl font-bold text-[#14508B] hover:border-[#14508B] hover:bg-[#EAF4FF]">→</Link>
+              <Link href={pageHref(currentPage + 1)} aria-label="Próxima página" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#14508B] px-4 text-sm font-bold text-white hover:bg-[#0F3760]"><span className="hidden sm:inline">Próxima</span><span aria-hidden="true">→</span></Link>
             ) : <span className="h-12 w-12" aria-hidden="true" />}
           </nav>
         ) : null}
