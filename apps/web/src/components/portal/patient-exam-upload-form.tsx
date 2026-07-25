@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 const examTypes = [
@@ -16,19 +16,12 @@ const examTypes = [
   'Outro exame',
 ] as const;
 
-type LocationState = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable';
-
 export function PatientExamUploadForm({ fullName, email }: { fullName: string; email: string }) {
-  const [locationState, setLocationState] = useState<LocationState>('idle');
   const [coordinates, setCoordinates] = useState({ latitude: '', longitude: '', accuracy: '' });
 
-  function requestLocation() {
-    if (!navigator.geolocation) {
-      setLocationState('unavailable');
-      return;
-    }
+  useEffect(() => {
+    if (!navigator.geolocation) return;
 
-    setLocationState('requesting');
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setCoordinates({
@@ -36,12 +29,11 @@ export function PatientExamUploadForm({ fullName, email }: { fullName: string; e
           longitude: String(position.coords.longitude),
           accuracy: String(Math.round(position.coords.accuracy)),
         });
-        setLocationState('granted');
       },
-      () => setLocationState('denied'),
+      () => undefined,
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
     );
-  }
+  }, []);
 
   return (
     <form action="/api/exams" method="post" encType="multipart/form-data" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -86,24 +78,6 @@ export function PatientExamUploadForm({ fullName, email }: { fullName: string; e
           />
           <span className="text-xs font-normal leading-5 text-slate-500">PDF, JPG, PNG ou WEBP, com até 15 MB.</span>
         </label>
-
-        <section className="rounded-2xl border border-[#14508B]/12 bg-[#F8FBFF] p-4">
-          <h3 className="text-sm font-bold text-[#0F3760]">Segurança e registro do envio</h3>
-          <p className="mt-2 text-xs leading-5 text-slate-600">
-            Para prevenir fraude e comprovar o envio, registramos data, hora, IP, navegador e tipo de dispositivo. A localização precisa é opcional e só é obtida se você autorizar no navegador.
-          </p>
-          <button
-            type="button"
-            onClick={requestLocation}
-            disabled={locationState === 'requesting' || locationState === 'granted'}
-            className="mt-3 inline-flex rounded-full border border-[#14508B]/20 bg-white px-4 py-2 text-xs font-bold text-[#14508B] disabled:cursor-not-allowed disabled:opacity-65"
-          >
-            {locationState === 'requesting' ? 'Aguardando autorização…' : locationState === 'granted' ? 'Localização autorizada' : 'Autorizar localização (opcional)'}
-          </button>
-          {locationState === 'granted' ? <p className="mt-2 text-xs font-semibold text-emerald-700">Permissão registrada para este envio.</p> : null}
-          {locationState === 'denied' ? <p className="mt-2 text-xs text-slate-600">Permissão não concedida. Você pode enviar o exame normalmente.</p> : null}
-          {locationState === 'unavailable' ? <p className="mt-2 text-xs text-slate-600">Este navegador não oferece geolocalização. O envio continua disponível.</p> : null}
-        </section>
 
         <label className="flex items-start gap-3 text-xs leading-5 text-slate-600">
           <input name="lgpdConsent" type="checkbox" value="true" required className="mt-1 h-4 w-4 shrink-0 accent-[#14508B]" />

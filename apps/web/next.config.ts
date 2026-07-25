@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'geolocation=(), payment=(), usb=()',
+            value: 'geolocation=(self), payment=(), usb=()',
           },
         ],
       },
