@@ -886,6 +886,23 @@ export default function Home() {
                 contato@nogueiracardiologia.com.br
               </a>
             </p>
+            <div className="mt-5 overflow-hidden rounded-2xl border border-white/15 bg-white/10 p-1">
+              <iframe
+                title="Mapa da Nogueira Cardiologia em São José do Rio Preto"
+                src="https://www.google.com/maps?q=Av.%20Jos%C3%A9%20Munia%2C%207301%2C%20S%C3%A3o%20Jos%C3%A9%20do%20Rio%20Preto%20SP&output=embed"
+                className="h-48 w-full rounded-xl border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=Av.%20Jos%C3%A9%20Munia%2C%207301%2C%20S%C3%A3o%20Jos%C3%A9%20do%20Rio%20Preto%20SP"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex text-sm font-bold text-[#9FE6FF] hover:text-white"
+            >
+              Como chegar à clínica →
+            </a>
           </div>
           <div>
             <h2 className="font-semibold">Acessos rápidos</h2>

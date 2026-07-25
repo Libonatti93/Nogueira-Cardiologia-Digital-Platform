@@ -3,6 +3,7 @@ import { PortalShell } from '@/components/dashboard/portal-shell';
 import { requirePatientUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { PixPaymentDetails } from '@/components/portal/pix-payment-details';
+import { PaymentStatusRefresh } from '@/components/portal/payment-status-refresh';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,6 +90,7 @@ export default async function PatientScheduleConfirmationPage({
               : 'Seu horário foi selecionado e o pagamento ainda está em processamento. Você pode acompanhar ou concluir pela opção abaixo.'
             : 'Não encontramos essa consulta na sua conta. Volte à agenda e tente novamente.'}
         </p>
+        <PaymentStatusRefresh active={Boolean(payment && !isPaid && ['pending', 'authorized'].includes(payment.status))} />
 
         {payment ? (
           <dl className="mt-6 grid gap-4 rounded-2xl bg-[#F4F9FF] p-5 sm:grid-cols-2">
@@ -113,6 +115,35 @@ export default async function PatientScheduleConfirmationPage({
 
         {payment?.billing_type === 'PIX' && payment.pix_qr_code && !isPaid ? (
           <PixPaymentDetails code={payment.pix_qr_code} checkoutUrl={payment.checkout_url} />
+        ) : null}
+
+        {isPaid ? (
+          <section className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-950">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-600 text-xl font-bold text-white" aria-hidden="true">✓</span>
+              <div>
+                <h2 className="text-lg font-semibold">Pagamento confirmado pelo Asaas</h2>
+                <p className="mt-1 text-sm leading-6 text-emerald-800">Seu horário foi registrado. Agora é só se preparar para a consulta.</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#14508B]">Endereço da clínica</p>
+              <address className="mt-2 text-sm not-italic leading-6 text-slate-700">
+                Nogueira Cardiologia<br />
+                Av. José Munia, 7301 — Jardim Redentor<br />
+                São José do Rio Preto — SP, CEP 15085-895
+              </address>
+              <p className="mt-3 text-sm font-bold text-[#0F3760]">Chegue com 20 minutos de antecedência.</p>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Av.%20Jos%C3%A9%20Munia%2C%207301%2C%20S%C3%A3o%20Jos%C3%A9%20do%20Rio%20Preto%20SP"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex rounded-full bg-[#14508B] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0F3760]"
+              >
+                Abrir rota no Google Maps
+              </a>
+            </div>
+          </section>
         ) : null}
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

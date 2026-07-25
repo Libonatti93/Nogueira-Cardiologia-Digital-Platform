@@ -271,10 +271,15 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
               sizes="80px"
               className="rounded-full border-[3px] border-white object-cover object-top shadow-lg"
             />
+            <span className="absolute bottom-1 right-0 z-10 h-5 w-5 rounded-full border-[3px] border-white bg-emerald-500 shadow-sm" aria-label={`${selectedDoctor.name} está online`} />
           </span>
           <div className="relative rounded-2xl bg-white p-4 text-[#0F3760] shadow-sm">
             <span className="absolute -left-2 top-6 hidden h-4 w-4 rotate-45 bg-white sm:block" aria-hidden="true" />
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#15A7DD]">{selectedDoctor.name}</p>
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" aria-hidden="true" />
+              Online • perguntando para você
+            </p>
             <h3 className="mt-1 font-semibold">Antes da consulta, preciso conhecer um pouco melhor sua saúde.</h3>
             <p className="mt-1 text-sm leading-6 text-slate-600">São apenas quatro perguntas rápidas. Marque “Sim” ou “Não” em todas elas.</p>
           </div>
