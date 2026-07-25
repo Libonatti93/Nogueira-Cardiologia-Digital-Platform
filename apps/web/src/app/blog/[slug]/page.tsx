@@ -196,15 +196,43 @@ export default async function BlogPostPage({ params }: PageProps) {
           <AuthorityBlock />
         </div>
 
-        <section className="mt-8">
-          <h2 className="text-2xl font-semibold text-[#103E6A]">Leituras relacionadas</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mt-10 overflow-hidden rounded-3xl border border-[#14508B]/12 bg-white p-5 shadow-[0_24px_65px_-52px_rgba(15,55,96,0.75)] sm:p-7">
+          <div className="flex flex-col gap-2 border-b border-[#14508B]/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Continue se informando</p>
+              <h2 className="mt-1 text-2xl font-semibold text-[#103E6A]">Leituras relacionadas</h2>
+            </div>
+            <Link href="/blog#conteudos" className="inline-flex items-center gap-2 text-sm font-bold text-[#14508B] hover:text-[#0F3760]">
+              Ver toda a biblioteca <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+          <div className="mt-5 grid gap-5 md:grid-cols-3">
             {relatedPosts.map((related) => (
-              <article key={related.slug} className="rounded-2xl border border-[#14508B]/12 bg-white p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15A7DD]">{related.category}</p>
-                <h3 className="mt-2 text-lg font-semibold text-[#103E6A]">
-                  <Link href={`/blog/${related.slug}`}>{related.title}</Link>
-                </h3>
+              <article key={related.slug} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#14508B]/10 bg-[#FBFDFF] transition-all duration-300 hover:-translate-y-1 hover:border-[#14508B]/30 hover:shadow-[0_20px_45px_-34px_rgba(15,55,96,0.7)]">
+                <Link href={`/blog/${related.slug}`} className="relative block aspect-[16/10] overflow-hidden bg-[#0F3760]">
+                  <Image
+                    src={related.coverImage}
+                    alt={`Imagem do artigo ${related.title}`}
+                    fill
+                    sizes="(max-width: 767px) 100vw, 33vw"
+                    className="object-cover object-[50%_20%] transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#14508B] shadow-sm">
+                    {related.category}
+                  </span>
+                </Link>
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="text-lg font-semibold leading-snug text-[#103E6A]">
+                    <Link href={`/blog/${related.slug}`} className="hover:text-[#14508B]">{related.title}</Link>
+                  </h3>
+                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{related.excerpt}</p>
+                  <div className="mt-auto flex items-center justify-between border-t border-[#14508B]/8 pt-4 text-xs text-slate-500">
+                    <span>{related.readingTime} de leitura</span>
+                    <Link href={`/blog/${related.slug}`} aria-label={`Ler ${related.title}`} className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF6FF] text-lg font-bold text-[#14508B] transition-colors group-hover:bg-[#14508B] group-hover:text-white">
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
