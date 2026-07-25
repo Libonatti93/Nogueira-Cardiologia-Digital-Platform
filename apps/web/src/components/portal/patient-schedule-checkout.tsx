@@ -260,15 +260,35 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
         <Field label="7. Qual é o seu peso?" name="weightKg" type="number" placeholder="Em quilos. Ex.: 82" />
       </div>
 
-      <section className="rounded-2xl bg-[#F4F9FF] p-5">
-        <h3 className="font-semibold text-[#0F3760]">Agora responda quatro perguntas rápidas sobre sua saúde</h3>
-        <p className="mt-1 text-sm text-slate-500">Escolha “Sim” ou “Não” em todas as perguntas.</p>
+      <section className="overflow-hidden rounded-2xl border border-[#14508B]/10 bg-[#F4F9FF]">
+        <div className="flex flex-col gap-4 bg-[#0F3760] p-5 text-white sm:flex-row sm:items-center">
+          <span className="relative h-20 w-20 shrink-0">
+            <span className="absolute -inset-1 rounded-full bg-[#9FE6FF]/35" aria-hidden="true" />
+            <Image
+              src={selectedDoctor.image}
+              alt={`Foto de ${selectedDoctor.name}`}
+              fill
+              sizes="80px"
+              className="rounded-full border-[3px] border-white object-cover object-top shadow-lg"
+            />
+          </span>
+          <div className="relative rounded-2xl bg-white p-4 text-[#0F3760] shadow-sm">
+            <span className="absolute -left-2 top-6 hidden h-4 w-4 rotate-45 bg-white sm:block" aria-hidden="true" />
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#15A7DD]">{selectedDoctor.name}</p>
+            <h3 className="mt-1 font-semibold">Antes da consulta, preciso conhecer um pouco melhor sua saúde.</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-600">São apenas quatro perguntas rápidas. Marque “Sim” ou “Não” em todas elas.</p>
+          </div>
+        </div>
         <div className="mt-5 grid gap-4">
           {healthQuestions.map(([name, label], index) => (
-            <fieldset key={name} className="rounded-xl border border-[#14508B]/10 bg-white p-4">
-              <legend className="px-1 text-sm font-semibold leading-6 text-slate-700">
-                {index + 1}. {label}
-              </legend>
+            <fieldset key={name} className="mx-5 rounded-2xl border border-[#14508B]/10 bg-white p-4 shadow-sm last:mb-5 sm:p-5">
+              <legend className="sr-only">{label}</legend>
+              <div className="flex items-start gap-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#EAF4FF] text-xs font-bold text-[#14508B]" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <p className="pt-1 text-sm font-semibold leading-6 text-slate-700">{label}</p>
+              </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 {[
                   ['true', 'Sim'],
@@ -276,7 +296,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
                 ].map(([value, text]) => (
                   <label key={value} className="cursor-pointer">
                     <input className="peer sr-only" type="radio" name={name} value={value} required />
-                    <span className="flex min-h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition peer-checked:border-[#14508B] peer-checked:bg-[#14508B] peer-checked:text-white">
+                    <span className="flex min-h-12 items-center justify-center rounded-xl border border-slate-200 bg-[#F8FBFF] px-4 text-sm font-bold text-slate-600 transition hover:border-[#14508B]/40 peer-checked:border-[#14508B] peer-checked:bg-[#14508B] peer-checked:text-white">
                       {text}
                     </span>
                   </label>
