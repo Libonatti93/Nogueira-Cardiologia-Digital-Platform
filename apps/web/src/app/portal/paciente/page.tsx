@@ -15,9 +15,10 @@ export default async function PatientDashboardPage() {
     scheduled_for: Date | null;
     status: string;
     doctor_name: string | null;
+    modality: string;
     }>(
       `
-        select appointments.id, appointments.scheduled_for, appointments.status::text, doctors.full_name as doctor_name
+        select appointments.id, appointments.scheduled_for, appointments.status::text, appointments.modality, doctors.full_name as doctor_name
         from appointments
         join patient_profiles on patient_profiles.id = appointments.patient_id
         left join doctors on doctors.id = appointments.doctor_id
@@ -138,6 +139,7 @@ export default async function PatientDashboardPage() {
               {nextAppointment ? (
                 <p className="mt-2 text-sm text-slate-600">
                   {nextAppointment.doctor_name ?? 'Cardiologista disponível'} · {appointmentStatus(nextAppointment.status)}
+                  {' · '}{nextAppointment.modality === 'telemedicine' ? 'Telemedicina' : 'Presencial'}
                 </p>
               ) : (
                 <p className="mt-2 text-sm text-slate-600">Escolha um médico e encontre um horário que funcione para você.</p>

@@ -24,6 +24,7 @@ type AppointmentPayload = {
   heightCm?: unknown;
   weightKg?: unknown;
   doctorPreference?: unknown;
+  modality?: unknown;
   scheduledFor?: unknown;
   paymentMethod?: unknown;
   hasHypertension?: unknown;
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
   const holderAddressNumber = clean(payload.holderAddressNumber);
   const holderAddressComplement = clean(payload.holderAddressComplement);
   const doctorPreference = clean(payload.doctorPreference);
+  const modality = clean(payload.modality);
   const scheduledFor = clean(payload.scheduledFor);
   const scheduledDate = new Date(scheduledFor);
   const paymentMethod = clean(payload.paymentMethod);
@@ -139,6 +141,10 @@ export async function POST(request: Request) {
 
   if (!['paulo', 'cristiani'].includes(doctorPreference) || !scheduledFor || Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
     return NextResponse.json({ message: 'Escolha um médico, uma data e um horário disponíveis.' }, { status: 400 });
+  }
+
+  if (!['in_person', 'telemedicine'].includes(modality)) {
+    return NextResponse.json({ message: 'Escolha consulta presencial ou telemedicina.' }, { status: 400 });
   }
 
   if (payload.lgpdConsent !== 'true' && payload.lgpdConsent !== true) {
@@ -241,7 +247,7 @@ export async function POST(request: Request) {
         values ($1, $2, $3, 'portal_paciente', 'marcar_consulta', 'awaiting_payment', $4, $5)
         returning id
       `,
-      [fullName, email, phoneWhatsapp, patientId, `Consulta escolhida para ${scheduledFor}`],
+      [fullName, email, phoneWhatsapp, patientId, `${modality === 'telemedicine' ? 'Telemedicina' : 'Consulta presencial'} escolhida para ${scheduledFor}`],
     );
     const leadId = leadResult.rows[0].id;
 
@@ -288,13 +294,14 @@ export async function POST(request: Request) {
           doctor_id,
           lead_id,
           scheduled_for,
+          modality,
           status,
           reason
         )
-        values ($1, $2, $3, $4, 'awaiting_payment', 'Consulta agendada pelo portal do paciente')
+        values ($1, $2, $3, $4, $5, 'awaiting_payment', 'Consulta agendada pelo portal do paciente')
         returning id, status
       `,
-      [patientId, doctorId, leadId, scheduledDate],
+      [patientId, doctorId, leadId, scheduledDate, modality],
     );
 
     await client.query(
@@ -302,7 +309,7 @@ export async function POST(request: Request) {
         insert into lead_events (lead_id, event_type, new_stage, note, metadata)
         values ($1, 'appointment_requested', 'awaiting_payment', 'Paciente solicitou consulta pelo portal e iniciou checkout Asaas.', $2::jsonb)
       `,
-      [leadId, JSON.stringify({ healthIntake, doctorPreference, scheduledFor, amountCents })],
+      [leadId, JSON.stringify({ healthIntake, doctorPreference, modality, scheduledFor, amountCents })],
     );
 
     return {
@@ -509,6 +516,7 @@ export async function POST(request: Request) {
       heightCm,
       weightKg,
       doctorPreference,
+      modality,
       scheduledFor,
       ...healthIntake,
     },

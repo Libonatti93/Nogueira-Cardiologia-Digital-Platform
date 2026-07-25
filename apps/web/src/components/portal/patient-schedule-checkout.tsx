@@ -64,6 +64,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
   const router = useRouter();
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [modality, setModality] = useState<'in_person' | 'telemedicine'>('in_person');
   const [doctor, setDoctor] = useState<'paulo' | 'cristiani'>('paulo');
   const availableDays = useMemo(() => getAvailableDays(), []);
   const [selectedDate, setSelectedDate] = useState(availableDays[0]?.value ?? '');
@@ -94,6 +95,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
       },
       body: JSON.stringify({
         ...payload,
+        modality,
         doctorPreference: doctor,
         scheduledFor: `${selectedDate}T${selectedTime}:00-03:00`,
         paymentMethod,
@@ -125,6 +127,43 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         <div className="flex items-center gap-3">
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">1</span>
+          <div>
+            <h2 className="text-xl font-semibold text-[#0F3760]">Como você prefere ser atendido?</h2>
+            <p className="mt-1 text-sm text-slate-500">As duas modalidades têm consulta de 60 minutos e o mesmo valor.</p>
+          </div>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setModality('in_person')}
+            className={`rounded-2xl border p-5 text-left transition ${modality === 'in_person' ? 'border-[#14508B] bg-[#EAF4FF] ring-2 ring-[#14508B]/10' : 'border-slate-200 hover:border-[#14508B]/35'}`}
+          >
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-2xl shadow-sm" aria-hidden="true">🏥</span>
+            <strong className="mt-4 block text-lg text-[#0F3760]">Consulta presencial</strong>
+            <span className="mt-2 block text-sm leading-6 text-slate-600">Atendimento na Nogueira Cardiologia em São José do Rio Preto.</span>
+            <span className="mt-3 block text-xs font-bold text-[#14508B]">{modality === 'in_person' ? '✓ Opção selecionada' : 'Escolher presencial'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setModality('telemedicine')}
+            className={`rounded-2xl border p-5 text-left transition ${modality === 'telemedicine' ? 'border-[#14508B] bg-[#EAF4FF] ring-2 ring-[#14508B]/10' : 'border-slate-200 hover:border-[#14508B]/35'}`}
+          >
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-[#14508B] shadow-sm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="5" width="14" height="14" rx="3" />
+                <path d="m17 10 4-2v8l-4-2z" />
+              </svg>
+            </span>
+            <strong className="mt-4 block text-lg text-[#0F3760]">Telemedicina</strong>
+            <span className="mt-2 block text-sm leading-6 text-slate-600">Consulta online. Após a confirmação, a secretaria enviará o link do Google Meet e dará sequência ao atendimento.</span>
+            <span className="mt-3 block text-xs font-bold text-[#14508B]">{modality === 'telemedicine' ? '✓ Opção selecionada' : 'Escolher telemedicina'}</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <div className="flex items-center gap-3">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">2</span>
           <h2 className="text-xl font-semibold text-[#0F3760]">Escolha o cardiologista</h2>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -181,7 +220,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 p-5 sm:p-7">
           <div className="flex items-center gap-3">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">2</span>
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">3</span>
             <div>
               <h2 className="text-xl font-semibold text-[#0F3760]">Escolha o dia e o horário</h2>
               <p className="mt-1 text-sm text-slate-500">Agenda de {selectedDoctor.name}</p>
@@ -244,7 +283,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
 
       <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         <div className="flex items-center gap-3">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">3</span>
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">4</span>
           <div>
             <h2 className="text-xl font-semibold text-[#0F3760]">Confirme seus dados</h2>
             <p className="mt-1 text-sm text-slate-500">Usaremos essas informações somente para o seu atendimento.</p>
@@ -318,7 +357,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">4</span>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#14508B] text-sm font-bold text-white">5</span>
               <h2 className="text-xl font-semibold text-[#0F3760]">Pagamento seguro</h2>
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-600">Seus dados são enviados de forma protegida ao processador de pagamentos.</p>

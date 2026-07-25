@@ -53,6 +53,7 @@ type RecentAppointment = {
   patient_name: string;
   patient_email: string;
   doctor_name: string | null;
+  modality: string;
   status: string;
   scheduled_for: Date | null;
   created_at: Date;
@@ -314,6 +315,7 @@ async function getDashboardData() {
         patient_profiles.full_name as patient_name,
         patient_profiles.email as patient_email,
         doctors.full_name as doctor_name,
+        appointments.modality,
         appointments.status::text,
         appointments.scheduled_for,
         appointments.created_at
@@ -389,6 +391,7 @@ async function getDashboardData() {
         patient_profiles.full_name as patient_name,
         patient_profiles.email as patient_email,
         doctors.full_name as doctor_name,
+        appointments.modality,
         appointments.status::text,
         appointments.scheduled_for,
         appointments.created_at
@@ -1186,7 +1189,12 @@ export default async function InternalDashboardPage() {
                         <strong className="block text-[#0F3760]">{appointment.patient_name}</strong>
                         <span className="text-xs text-slate-500">{appointment.patient_email}</span>
                       </td>
-                      <td className="py-3 pr-4 text-slate-600">{appointment.doctor_name ?? 'A definir'}</td>
+                      <td className="py-3 pr-4 text-slate-600">
+                        {appointment.doctor_name ?? 'A definir'}
+                        <span className={`mt-1 block text-xs font-bold ${appointment.modality === 'telemedicine' ? 'text-violet-700' : 'text-[#14508B]'}`}>
+                          {appointment.modality === 'telemedicine' ? 'Telemedicina • enviar Google Meet' : 'Presencial'}
+                        </span>
+                      </td>
                       <td className="py-3 pr-4">
                         <StatusBadge>{appointmentStatusLabel[appointment.status] ?? appointment.status}</StatusBadge>
                       </td>

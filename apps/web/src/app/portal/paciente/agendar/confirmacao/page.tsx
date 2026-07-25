@@ -19,6 +19,7 @@ type PaymentDetails = {
   doctor_name: string | null;
   billing_type: string | null;
   pix_qr_code: string | null;
+  modality: string;
 };
 
 const paymentStatusLabel: Record<string, string> = {
@@ -60,6 +61,7 @@ export default async function PatientScheduleConfirmationPage({
             payments.created_at,
             appointments.scheduled_for,
             doctors.full_name as doctor_name
+            , appointments.modality
             , payments.billing_type
             , payments.pix_qr_code
           from payments
@@ -110,6 +112,10 @@ export default async function PatientScheduleConfirmationPage({
               <dt className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Cardiologista</dt>
               <dd className="mt-1 text-base font-semibold text-[#0F3760]">{payment.doctor_name ?? 'A confirmar'}</dd>
             </div>
+            <div>
+              <dt className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Modalidade</dt>
+              <dd className="mt-1 text-base font-semibold text-[#0F3760]">{payment.modality === 'telemedicine' ? 'Telemedicina • atendimento online' : 'Consulta presencial'}</dd>
+            </div>
           </dl>
         ) : null}
 
@@ -126,6 +132,15 @@ export default async function PatientScheduleConfirmationPage({
                 <p className="mt-1 text-sm leading-6 text-emerald-800">Seu horário foi registrado. Agora é só se preparar para a consulta.</p>
               </div>
             </div>
+            {payment.modality === 'telemedicine' ? (
+              <div className="mt-4 rounded-2xl bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#14508B]">Sua consulta será online</p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  A secretaria dará sequência ao atendimento e enviará o link do Google Meet pelos seus canais cadastrados. No horário marcado, abra o link em um celular ou computador com câmera, microfone e internet.
+                </p>
+                <p className="mt-3 text-sm font-bold text-[#0F3760]">Entre no Google Meet 10 minutos antes para testar áudio e vídeo.</p>
+              </div>
+            ) : (
             <div className="mt-4 rounded-2xl bg-white p-4">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#14508B]">Endereço da clínica</p>
               <address className="mt-2 text-sm not-italic leading-6 text-slate-700">
@@ -143,6 +158,7 @@ export default async function PatientScheduleConfirmationPage({
                 Abrir rota no Google Maps
               </a>
             </div>
+            )}
           </section>
         ) : null}
 
