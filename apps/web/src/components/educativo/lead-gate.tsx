@@ -152,14 +152,16 @@ export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
       </div>
 
       <section className="mt-10 rounded-3xl border border-[#14508B]/14 bg-[#F4F9FF] p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#15A7DD]">Conteúdo educativo da clínica</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#15A7DD]">
+          Informação para cuidar melhor de você
+        </p>
         <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">
-          {unlocked ? 'Seu acesso educativo está ativo' : 'Receba novos conteúdos sobre saúde cardiovascular'}
+          {unlocked ? 'Tudo certo — pode seguir tranquilo 💙' : 'Vamos cuidar do seu coração juntos?'}
         </h2>
         <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">
           {unlocked
-            ? 'Você já pode continuar acompanhando os materiais da Nogueira Cardiologia sem preencher seus dados novamente.'
-            : 'O artigo permanece aberto para todos. Se desejar, cadastre-se para receber orientações educativas e novidades da Nogueira Cardiologia.'}
+            ? 'Quando quiser entender melhor a saúde do seu coração, é só voltar. Seus próximos conteúdos já estarão disponíveis, sem precisar preencher tudo outra vez.'
+            : 'Este artigo é aberto para você. Se quiser, deixe seu contato uma única vez e acompanhe nossas próximas orientações de um jeito simples e sem complicação.'}
         </p>
 
         {!unlocked ? (
