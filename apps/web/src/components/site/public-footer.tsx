@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { SecurityTrustBadges } from '@/components/security/trust-badges';
 
 const whatsappLink = 'https://wa.me/5517997440223';
-const developerLink = 'https://github.com/Libonatti93';
+const developerLink = 'https://matheuslibonatti.tech';
 const socialLinks = [
   ['Instagram', 'https://www.instagram.com/drpaulonogueiracardiologista/', 'instagram'],
   ['LinkedIn', 'https://www.linkedin.com/in/paulo-roberto-nogueira-b704282a/', 'linkedin'],

@@ -171,7 +171,7 @@ const socialLinks = [
   ['Instagram', 'https://www.instagram.com/drpaulonogueiracardiologista/', 'instagram'],
   ['LinkedIn', 'https://www.linkedin.com/in/paulo-roberto-nogueira-b704282a/', 'linkedin'],
 ] as const;
-const developerLink = 'https://github.com/Libonatti93';
+const developerLink = 'https://matheuslibonatti.tech';
 
 type SpecialtyIconName = (typeof specialties)[number]['icon'];
 type SocialIconName = (typeof socialLinks)[number][2];
