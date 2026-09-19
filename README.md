@@ -165,6 +165,8 @@ Suggested options:
 - **React Native (Expo)** for faster cross-platform development
 - Native approach in the future if needed
 
+
+
 ---
 
 ## Suggested Project Structure
