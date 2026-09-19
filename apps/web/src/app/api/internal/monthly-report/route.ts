@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import { canAccessInternalArea, getSessionUser } from '@/lib/auth';
+import { authorize } from '@/lib/api-access';
+import { audit } from '@/lib/audit';
 import { query } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
-  const user = await getSessionUser();
+export async function GET(request: Request) {
+  const access = await authorize(request, 'reports.export');
+  if (access.response) return access.response;
+  await audit({ actor: access.user!.id, action: 'reports.read', entity: 'reports' }, request);
 
-  if (!user || !canAccessInternalArea(user)) {
-    return NextResponse.json({ message: 'Acesso não autorizado.' }, { status: 401 });
-  }
 
   const [summary, leadStages, appointmentStatus, paymentStatus] = await Promise.all([
     query<{

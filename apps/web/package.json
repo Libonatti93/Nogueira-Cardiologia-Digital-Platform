@@ -7,11 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seo:indexnow": "node scripts/submit-indexnow.mjs"
+    "seo:indexnow": "node scripts/submit-indexnow.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
-    "next": "16.2.4",
+    "next": "^16.3.5",
     "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -23,8 +26,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
+    "eslint-config-next": "^16.3.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

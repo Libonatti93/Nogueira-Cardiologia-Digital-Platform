@@ -53,3 +53,7 @@ vps-pastas-maxdepth2.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.next-*/
+.runtime.env
+.runtime.env.previous

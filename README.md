@@ -186,3 +186,8 @@ nogueira-cardiologia/
     scripts/
   docs/
 
+
+
+## Contexto operacional para agentes
+
+Leia [docs/agent-context/AGENT_HANDOFF.md](docs/agent-context/AGENT_HANDOFF.md) antes de alterar a produção. A documentação descreve LIOS, governança, banco, testes e deploy.

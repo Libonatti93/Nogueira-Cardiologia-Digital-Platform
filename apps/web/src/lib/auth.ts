@@ -2,16 +2,18 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
+import { hasPermission } from '@/lib/access-policy';
 
 export type SessionUser = {
   id: string;
   email: string;
   fullName: string;
   role: string;
+  sessionVersion?: number;
+  roles?: string[];
+  permissions?: string[];
 };
 
-const internalAccessEmails = new Set(['drpaulo@nogueiracardiologia.com.br', 'dracris@nogueiracardiologia.com.br']);
-const internalAccessRoles = new Set(['admin', 'doctor', 'medico', 'médico']);
 const sessionCookieName = 'nogueira_session';
 const sessionMaxAgeSeconds = 60 * 60 * 8;
 
@@ -44,9 +46,9 @@ export function createSessionToken(user: SessionUser) {
 export function verifySessionToken(token: string | undefined): SessionUser | null {
   if (!token) return null;
 
-  const [payload, signature] = token.split('.');
+  const [payload, signature, extra] = token.split('.');
 
-  if (!payload || !signature) return null;
+  if (!payload || !signature || extra) return null;
 
   const expectedSignature = signPayload(payload);
   const received = Buffer.from(signature);
@@ -61,7 +63,8 @@ export function verifySessionToken(token: string | undefined): SessionUser | nul
       expiresAt?: number;
     };
 
-    if (!parsed.expiresAt || parsed.expiresAt < Date.now()) {
+    if (typeof parsed.expiresAt !== 'number' || parsed.expiresAt <= Date.now()
+      || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(parsed.id)) {
       return null;
     }
 
@@ -70,17 +73,17 @@ export function verifySessionToken(token: string | undefined): SessionUser | nul
       email: parsed.email,
       fullName: parsed.fullName,
       role: parsed.role,
+      sessionVersion: parsed.sessionVersion ?? 0,
     };
   } catch {
     return null;
   }
 }
 
-export async function requireInternalUser() {
-  const cookieStore = await cookies();
-  const user = verifySessionToken(cookieStore.get(sessionCookieName)?.value);
+export async function requireInternalUser(permission = 'internal.access') {
+  const user = await getSessionUser();
 
-  if (!user || !canAccessInternalArea(user)) {
+  if (!user || !hasPermission(user, permission)) {
     redirect('/acesso');
   }
 
@@ -89,11 +92,28 @@ export async function requireInternalUser() {
 
 export async function getSessionUser() {
   const cookieStore = await cookies();
-  return verifySessionToken(cookieStore.get(sessionCookieName)?.value);
+  const token = verifySessionToken(cookieStore.get(sessionCookieName)?.value);
+  if (!token) return null;
+  const user = await loadSessionUser(token.id);
+  return user && user.sessionVersion === token.sessionVersion ? user : null;
 }
 
-export function canAccessInternalArea(user: Pick<SessionUser, 'email' | 'role'>) {
-  return internalAccessRoles.has(user.role) && internalAccessEmails.has(user.email.toLowerCase());
+export async function loadSessionUser(id: string): Promise<SessionUser | null> {
+  const result = await query<{ id: string; email: string; full_name: string; role: string;
+    session_version: number; roles: string[]; permissions: string[] }>(`
+    select u.id, u.email, u.full_name, u.role, u.session_version,
+      coalesce(array_agg(distinct ur.role_id) filter (where ur.role_id is not null), '{}') roles,
+      coalesce(array_agg(distinct rp.permission_id) filter (where rp.permission_id is not null), '{}') permissions
+    from app_users u left join user_roles ur on ur.user_id = u.id
+    left join role_permissions rp on rp.role_id = ur.role_id
+    where u.id = $1 and u.is_active = true group by u.id`, [id]);
+  const row = result.rows[0];
+  return row ? { id: row.id, email: row.email, fullName: row.full_name, role: row.role,
+    sessionVersion: row.session_version, roles: row.roles, permissions: row.permissions } : null;
+}
+
+export function canAccessInternalArea(user: Pick<SessionUser, 'permissions'>) {
+  return hasPermission(user, 'internal.access');
 }
 
 export async function requirePatientUser() {

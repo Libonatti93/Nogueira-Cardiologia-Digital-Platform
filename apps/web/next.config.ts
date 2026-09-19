@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+  env: { RELEASE_SHA: process.env.RELEASE_SHA || 'development' },
+  generateBuildId: async () => process.env.RELEASE_SHA || 'development',
   async headers() {
     return [
       {

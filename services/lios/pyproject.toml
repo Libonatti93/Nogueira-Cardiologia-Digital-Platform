@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lios-platform"
+version = "1.0.0"
+description = "LIOS — inteligência editorial multiaplicação, criada por Matheus Libonatti."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [{ name = "Matheus Libonatti" }]
+dependencies = [
+  "psycopg[binary]>=3.2,<4",
+  "fastapi>=0.116,<0.117",
+  "uvicorn[standard]>=0.35,<0.36",
+  "pydantic>=2.11,<3",
+  "pydantic-settings>=2.10,<3",
+  "httpx>=0.28,<1",
+  "python-multipart>=0.0.20,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.4,<9", "pytest-asyncio>=1.1,<2", "ruff>=0.12,<1"]
+
+[project.scripts]
+lios = "lios.main:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]

@@ -1,0 +1,32 @@
+services:
+  lios:
+    build:
+      context: .
+      args:
+        GIT_SHA: ${GIT_SHA:-unknown}
+    image: nogueira-lios:${GIT_SHA:-local}
+    container_name: nogueira-lios
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8081:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - nogueira
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 0.75
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+networks:
+  nogueira:
+    external: true
+    name: ${LIOS_DOCKER_NETWORK:-easypanel}

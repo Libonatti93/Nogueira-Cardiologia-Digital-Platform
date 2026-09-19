@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
-import { sessionCookie } from '@/lib/auth';
+import { getSessionUser, sessionCookie } from '@/lib/auth';
+import { isSameOrigin } from '@/lib/access-policy';
+import { audit } from '@/lib/audit';
+import { query } from '@/lib/db';
 import { getPublicBaseUrl } from '@/lib/email-verification';
 
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return NextResponse.json({ message: 'Origem inválida.' }, { status: 403 });
+  const user = await getSessionUser();
+  if (user) {
+    await query('update app_users set session_version=session_version+1 where id=$1', [user.id]);
+    await audit({ actor: user.id, action: 'auth.logout' }, request);
+  }
   const response = NextResponse.redirect(new URL('/portal?logout=1', getPublicBaseUrl(request)), 303);
   response.cookies.set({
     name: sessionCookie.name,

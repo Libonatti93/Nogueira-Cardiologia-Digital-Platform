@@ -1,7 +1,9 @@
 import { readFile } from 'fs/promises';
 import { NextResponse, type NextRequest } from 'next/server';
-import { canAccessInternalArea, getSessionUser } from '@/lib/auth';
+import { getSessionUser } from '@/lib/auth';
 import { query } from '@/lib/db';
+import { hasPermission } from '@/lib/access-policy';
+import { audit } from '@/lib/audit';
 
 export const runtime = 'nodejs';
 
@@ -37,7 +39,7 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
     return NextResponse.json({ message: 'Exame não encontrado.' }, { status: 404 });
   }
 
-  const isInternal = canAccessInternalArea(user);
+  const isInternal = hasPermission(user, 'exams.read');
   const isOwner = exam.uploaded_by_user_id === user.id || exam.patient_email.toLowerCase() === user.email.toLowerCase();
 
   if (!isInternal && !isOwner) {
@@ -62,6 +64,7 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
     return NextResponse.json({ message: 'Arquivo indisponivel.' }, { status: 404 });
   }
 
+  await audit({ actor: user.id, action: 'exams.read', entity: 'patient_exam_uploads', id: exam.id }, _request);
   return new NextResponse(file, {
     headers: {
       'Content-Type': exam.mime_type,

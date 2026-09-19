@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
+import { getSessionUser } from '@/lib/auth';
 
 const navItems = [
   ['Dashboard', '/acesso/dashboard'],
@@ -11,7 +12,9 @@ const navItems = [
   ['Financeiro', '#financeiro'],
 ] as const;
 
-export function InternalShell({ children }: { children: React.ReactNode }) {
+export async function InternalShell({ children }: { children: React.ReactNode }) {
+  const user = await getSessionUser();
+  const visibleItems = user?.permissions?.includes('internal.access') ? navItems : [];
   return (
     <main className="min-h-screen w-full overflow-x-clip bg-[#F6F8FB] text-slate-950">
       <header className="border-b border-slate-200 bg-white">
@@ -30,11 +33,14 @@ export function InternalShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <nav className="flex min-w-0 max-w-full flex-wrap gap-2 text-sm font-bold text-[#14508B]">
-            {navItems.map(([label, href]) => (
-              <Link key={href} href={href} className="rounded-lg border border-[#14508B]/18 px-3 py-2 hover:border-[#14508B]/55">
+            {visibleItems.map(([label, href]) => (
+              <Link key={href} href={href.startsWith('#') ? `/acesso/dashboard${href}` : href} className="rounded-lg border border-[#14508B]/18 px-3 py-2 hover:border-[#14508B]/55">
                 {label}
               </Link>
             ))}
+            {user?.permissions?.includes('governance.read') && <Link href="/acesso/governanca" className="rounded-lg border border-[#14508B]/18 px-3 py-2">Governança</Link>}
+            {user?.permissions?.includes('lios.read') && <Link href="/acesso/lios" className="rounded-lg border border-[#14508B]/18 px-3 py-2">LIOS</Link>}
+            <form action="/api/auth/logout" method="post"><button className="rounded-lg border border-slate-200 px-3 py-2">Sair</button></form>
           </nav>
         </div>
       </header>

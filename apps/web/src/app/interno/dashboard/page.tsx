@@ -4,6 +4,7 @@ import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { InternalShell } from '@/components/internal/internal-shell';
 import { requireInternalUser } from '@/lib/auth';
+import { audit } from '@/lib/audit';
 import { getBlogCategories } from '@/data/blog-posts';
 import { query } from '@/lib/db';
 import {
@@ -482,7 +483,7 @@ async function getExternalSignals(): Promise<ExternalSignals> {
 async function createEducativoPostAction(formData: FormData) {
   'use server';
 
-  const user = await requireInternalUser();
+  const user = await requireInternalUser('content.manage');
   const title = cleanFormValue(formData.get('title'));
   const category = cleanFormValue(formData.get('category')) || 'Cardiologia educativa';
   const excerpt = cleanFormValue(formData.get('excerpt'));
@@ -507,7 +508,7 @@ async function createEducativoPostAction(formData: FormData) {
   const sections = buildSectionsFromBody(body);
   const readingTime = estimateReadingTime(body);
 
-  await query(
+  const created = await query<{id:string}>(
     `
       insert into educativo_posts (
         author_id,
@@ -524,7 +525,7 @@ async function createEducativoPostAction(formData: FormData) {
         published_at,
         sections
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $4, $9, $10::post_status, case when $10 = 'published' then now() else null end, $11::jsonb)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $4, $9, $10::post_status, case when $10 = 'published' then now() else null end, $11::jsonb) returning id
     `,
     [
       user.id,
@@ -541,6 +542,7 @@ async function createEducativoPostAction(formData: FormData) {
     ],
   );
 
+  await audit({ actor: user.id, action: 'content.create', entity: 'educativo_posts', id: created.rows[0].id, after: { status: publishNow ? 'published' : 'draft' } });
   revalidatePath('/blog');
   revalidatePath(`/blog/${slug}`);
   revalidatePath('/acesso/dashboard');
@@ -549,7 +551,7 @@ async function createEducativoPostAction(formData: FormData) {
 async function updateEducativoPostAction(formData: FormData) {
   'use server';
 
-  await requireInternalUser();
+  const user = await requireInternalUser('content.manage');
   const id = cleanFormValue(formData.get('id'));
   const title = cleanFormValue(formData.get('title'));
   const category = cleanFormValue(formData.get('category')) || 'Cardiologia educativa';
@@ -560,6 +562,7 @@ async function updateEducativoPostAction(formData: FormData) {
     throw new Error('Dados inválidos para atualizar o post.');
   }
 
+  const before = await query('select id,status from educativo_posts where id=$1',[id]);
   await query(
     `
       update educativo_posts
@@ -580,6 +583,7 @@ async function updateEducativoPostAction(formData: FormData) {
     [id, title, category, excerpt, `${title} | Nogueira Cardiologia`, status],
   );
 
+  await audit({ actor: user.id, action: 'content.update', entity: 'educativo_posts', id, before: before.rows[0], after: { status } });
   revalidatePath('/blog');
   revalidatePath('/acesso/dashboard');
 }
@@ -587,12 +591,14 @@ async function updateEducativoPostAction(formData: FormData) {
 async function deleteEducativoPostAction(formData: FormData) {
   'use server';
 
-  await requireInternalUser();
+  const user = await requireInternalUser('content.manage');
   const id = cleanFormValue(formData.get('id'));
 
   if (!id) throw new Error('Post inválido.');
 
+  const before = await query('select id,status from educativo_posts where id=$1',[id]);
   await query('delete from educativo_posts where id = $1', [id]);
+  await audit({ actor: user.id, action: 'content.delete', entity: 'educativo_posts', id, before: before.rows[0] });
   revalidatePath('/blog');
   revalidatePath('/acesso/dashboard');
 }
