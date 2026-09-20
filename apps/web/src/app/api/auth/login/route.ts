@@ -7,6 +7,7 @@ import { query } from '@/lib/db';
 import { createSupabaseAuthClient, normalizeSupabaseAuthError } from '@/lib/supabase-auth';
 import { cleanString, emailRegex } from '@/lib/supabase-rest';
 import { verifyTurnstileToken } from '@/lib/turnstile';
+import { panelLanding } from '@/lib/panel-policy';
 
 export const runtime = 'nodejs';
 type Identity = { id: string; email: string; role: string; is_active: boolean;
@@ -46,8 +47,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'E-mail ou senha inválidos, ou acesso indisponível.' }, { status: 401 });
   };
   if (identity && !identity.is_active) return deny();
-  const supabase = createSupabaseAuthClient();
-  const useSupabase = Boolean(supabase && (!internal || !identity?.local_password));
+  // Internal login never contacts the patient identity provider.
+  if (internal && (!identity?.local_password || !(await loadSessionUser(identity.id))?.permissions?.includes('panel.access'))) return deny();
+  const supabase = internal ? null : createSupabaseAuthClient();
+  const useSupabase = Boolean(supabase);
   if (useSupabase && supabase) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error && (error.name === 'AuthRetryableFetchError' || error.status === 0 || (error.status ?? 0) >= 500)) {
@@ -88,16 +91,15 @@ export async function POST(request: Request) {
     }
   }
   const user = await loadSessionUser(identity.id);
-  if (!user || (internal && !user.permissions?.length)) return deny();
+  if (!user || (internal && !user.permissions?.includes('panel.access'))) return deny();
   if (!internal && user.role !== 'patient') return deny();
   await query('update app_users set last_login_at=now() where id=$1', [user.id]);
   await audit({ actor: user.id, action: 'auth.login', metadata: { provider: useSupabase ? 'supabase' : 'local' } }, request);
-  const internalLanding = user.permissions?.includes('internal.access') ? '/acesso/dashboard'
-    : user.permissions?.includes('lios.read') ? '/acesso/lios' : '/acesso/governanca';
+  const internalLanding = panelLanding(user);
   const response = NextResponse.json({ ok: true, portal: internal ? 'admin' : 'patient',
     redirectTo: internal ? internalLanding : '/portal/paciente', user });
   response.cookies.set({ name: sessionCookie.name,
-    value: createSessionToken({ id: user.id, email: user.email, fullName: user.fullName, role: user.role, sessionVersion: user.sessionVersion }),
+    value: createSessionToken({ id: user.id, email: user.email, fullName: user.fullName, role: user.role, sessionVersion: user.sessionVersion, audience: internal ? 'internal' : 'patient' }),
     httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: sessionCookie.maxAge });
   return response;
 }

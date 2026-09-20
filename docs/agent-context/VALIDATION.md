@@ -1,52 +1,39 @@
-# Validação da integração — reexecutada em 20/09/2026
+# Validação do painel/IAM/CRM — 20/09/2026
 
-## Evidência pré-deploy
+## Estado inicial auditado
 
-- `npm run lint`: passou.
-- `npm run typecheck`: passou; TypeScript também passou no build.
-- `npm test`: 6 testes passaram (sessões, RBAC, origens, auditoria, proxy e publicação).
-- Build otimizado Next.js 16.3.5: passou; 134 páginas processadas.
-- `ruff check --no-cache src tests`: passou.
-- `pytest -q -p no:cacheprovider`: 7 testes passaram (RAG isolado/deduplicação, cache, auditoria, bloqueio demo, revisão humana).
-- Governança integrada em PostgreSQL temporário: passou (negação de privilégio, proteção MASTER, desativação, revogação de sessões de usuário/perfil, auditoria sem senha, validação transacional).
-- Testes HTTP: 12 grupos passaram. Inicialização, páginas e APIs, login local, Supabase simulado/vínculo de identidade, confirmação de e-mail, MASTER, bloqueio paciente/médico, CSRF, indisponibilidade Supabase retornando 503 sem sessão, ações reais de agenda/conteúdo com auditoria transacional, fila/RAG/auditoria LIOS, publicação sintética bloqueada, um único rascunho, logout e histórico sem credenciais.
-- Migrations 001–008: esquema histórico aplicado em banco vazio descartável, seguido de aplicação e reexecução idempotente de 007/008; checksums confirmados. O banco descartável foi removido ao fim.
-- `npm audit --omit=dev --audit-level=moderate`: zero vulnerabilidades reportadas.
-- `git diff --check`: passou.
+Branch operacional agent/portal-seo-home-ux. SHA inicial:
+`7314d9937fcfe2d181153990912854a68acfc731`.
+Fetch inicial: HEAD igual ao upstream, working tree limpo, sem commits ahead/behind.
+007/008 já aplicadas e preservadas; Next/systemd :3002, LIOS :8081 e PostgreSQL existentes.
 
-## Evidência do banco real
+## Testes antes do deploy
 
-Backup executado pelo script operacional antes das migrations.
-007/008 aplicadas e registradas em `schema_migrations` em 19/09/2026.
-Dr. Paulo e Matheus: perfis MASTER ativos nas identidades existentes; Dra. Cris preservada como DOCTOR.
-`has_table_privilege` para nogueira_lios: app_users=false, patient_profiles=false, lios.applications=true.
-Backup de `nogueira_app` e `n8n` validado em 20/09; arquivos de configuração protegidos
-com 0600. A credencial administrativa foi rotacionada e o backup deixou de manter
-senha inline. AUTH_SECRET independente foi provisionado sem alterar senhas pessoais.
+- Lint e typecheck: PASS.
+- Build otimizado Next.js 16.3.5: PASS, 136 páginas e proxy por Host.
+- Unidade: 9 testes PASS — tokens, audience assinada, roteamento/permissões, senha, Origin/CSRF, auditoria, proxy LIOS e bloqueio de publicação sintética.
+- PostgreSQL/IAM: PASS — criação interna, recusa de escalada, revogação por usuário/perfil, inativo sem sessão, MASTER protegido, último MASTER protegido também contra gestor delegado, auto-lockout, restrição CRM_OPERATOR, validação transacional e ausência de senha na auditoria.
+- HTTP integrado: 15 grupos PASS. App/frontend/backend/banco, páginas e APIs, identidade existente ativada sem duplicação, senha temporária/troca obrigatória, criação de operador pelo MASTER, três MASTER, médico/paciente/CRM sem IAM, CSRF, Supabase paciente indisponível sem afetar login interno, CRUD operacional, projeções sem CPF/notas/financeiro, agenda privada excluída, sessões revogadas, Host painel, Server Actions de conteúdo/agenda preservadas, LIOS RAG/fila/auditoria, publicação demo bloqueada, rascunho idempotente, logout e logs sem credenciais.
+- Chromium desktop 1440px/mobile 390px: PASS — login real de fixture, dashboard/IAM, matriz/perfis, menu recolhível, logout, operador direcionado ao CRM, navegação por query, criação de lead, rota proibida, ausência de erros JavaScript e de overflow horizontal da página.
+- LIOS: 7 pytest PASS; ruff PASS, usando imagem SHA da mesma fonte LIOS preservada. Deploy repete sobre a imagem final.
+- Migration 009: aplicação e reexecução por checksum PASS no banco isolado já existente. 007/008 sem alterações. Não foi criado banco novo.
+- npm audit --omit=dev: zero vulnerabilidades reportadas.
+- Revisão do diff e verificação de credenciais antes do commit; arquivos .env/runtime/testes e uploads privados permanecem ignorados.
 
-## Correções da reauditoria
+Screenshots locais com dados fictícios: /tmp/nogueira-panel-browser. Resultados HTTP: /tmp/nogueira-http-test-results.json. Ferramenta Chromium e bibliotecas auxiliares foram instaladas apenas em cache/tmp para teste; não houve upgrade/reinício de serviços do sistema para isso.
 
-- Checkout inicial limpo e igual ao GitHub em `b16b640947348a4b3809650b929a15925473e4e8`; build ativo antigo, `/api/health` ainda retornava 404.
-- A imagem LIOS `:local` existente continha testes antigos que esperavam publicação automática de conteúdo demo. Reconstruída a partir do código versionado, passou nos 7 testes e ruff.
-- Deploy agora bloqueia concorrência, faz fetch antes/depois, backup, confere a label SHA da imagem, preserva builds ativos e restaura web/LIOS em falhas.
-- Ações existentes de conteúdo e agenda agora têm auditoria na mesma transação.
-- Smoke persistente foi incorporado ao deploy e usa as identidades reais com sessões efêmeras, sem senha pessoal ou token em arquivos/logs.
+## Validação de produção incorporada ao deploy
+
+Backup obrigatório antes da migration. Smoke verifica migrations 007/008/009, três MASTER com todas as permissões, sessão audience paciente recusada mesmo para identidade privilegiada, páginas canônicas/aliases, APIs protegidas, Origin, eventos reais de auditoria e privilégios restritos da conta PostgreSQL LIOS.
+Host painel é exercitado pelo Traefik real em loopback, com SNI/Host corretos: login na raiz, redirect pós-sessão, IAM e /api/health. Somente esse teste pré-DNS aceita certificado padrão. TLS público do site continua validado normalmente.
+Se a base real não possuir operador comum ativo, não se fabricam usuários reais para teste: a restrição CRM é exercitada integralmente na base isolada, enquanto produção valida perfis/permissões, audience paciente e conta inativa existente.
+
+O deploy só conclui quando HEAD, upstream, BUILD_ID web, /api/health local/público/painel e /healthz/label LIOS coincidem. Evidência pós-publicação: `/var/log/nogueira-deploy-<SHA>.json`. Working tree deve estar limpo após fetch final. O próprio SHA final não é gravado no documento contido por esse commit.
 
 ## Limites explícitos
 
-Senhas pessoais não foram solicitadas ou alteradas. O fluxo Supabase foi exercitado com provedor simulado; as identidades e vínculos reais foram conferidos no banco. Não houve cobrança, e-mail real nem geração paga de IA.
-**Bloqueio real:** `nwqkwuxewbtyaisjiucy.supabase.co` retorna NXDOMAIN em dois
-resolvedores independentes. Matheus tem MASTER, mas login por senha remoto exige
-restaurar o provedor. Não há credencial de gestão Supabase nesta VPS. O resultado
-do smoke distingue esse bloqueio da autorização validada com sessões efêmeras.
-Não há credencial de geração real configurada: LIOS funciona em demonstração, com publicação sintética bloqueada. Feeds RSS são opcionais e precisam de configuração explícita.
-A auditoria editorial usa heurísticas da LIOS original e não substitui revisão clínica.
-
-## Evidência final
-
-O deploy só informa sucesso após comparar o SHA do web local, domínio público e
-LIOS privada e passar no smoke autenticado. A evidência gerada após a publicação
-fica em `/var/log/nogueira-deploy-<SHA>.json`, com SHA, data, checks e migrations,
-sem credenciais. O estado final é verificável por `/api/health`, `/healthz`, BUILD_ID,
-label da imagem e `git rev-parse`, conforme DEPLOY_RUNBOOK. Não gravar neste arquivo
-o próprio SHA do commit que o contém.
+Nenhuma senha pessoal foi conhecida, criada ou alterada pelo agente. UUIDs, senhas e vínculos Supabase são comparados antes/depois por fingerprint sem expor credenciais. Smoke real usa sessões de diagnóstico assinadas de três minutos em memória; isso valida autorização/sessão, não senha pessoal.
+Matheus mantém MASTER, mas requer habilitação manual de credencial local por outro MASTER no novo IAM. O fluxo completo foi testado com senhas fictícias e a mesma estrutura de identidade, sem alterar a conta real.
+DNS painel é ação futura do proprietário: A painel → 2.24.215.163. TLS automático preparado para habilitar após propagação; ausência do DNS não é falha de deploy.
+Supabase dos pacientes estava indisponível por NXDOMAIN antes desta entrega; o portal e seu mecanismo foram preservados. Restauração depende da gestão externa do provedor e não interfere no painel local.
+LIOS permanece em demonstração por falta da chave de IA real. Publicação sintética é bloqueada. Não foram executados pagamentos, e-mails reais nem geração paga.

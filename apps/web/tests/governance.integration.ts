@@ -21,7 +21,7 @@ async function main() {
   const updated=(await loadSessionUser(editor.id))!;
   assert.equal(updated.sessionVersion,editor.sessionVersion!+1);
   assert.ok(!updated.permissions?.includes('lios.manage'));
-  await changeAccess(master,{operation:'role',id:'AUDITOR',name:'Auditor',permissions:['governance.read']},request);
+  await changeAccess(master,{operation:'role',id:'AUDITOR',name:'Auditor',permissions:['panel.access','governance.read']},request);
   assert.equal((await loadSessionUser(editor.id))!.sessionVersion,updated.sessionVersion!+1);
   await changeAccess(master,{operation:'user',id:editor.id,fullName:editor.fullName,isActive:false,roles:[]},request);
   assert.equal(await loadSessionUser(editor.id),null);
@@ -31,6 +31,24 @@ async function main() {
   const count=(await query('select count(*) from app_users')).rows[0].count;
   await assert.rejects(changeAccess(master,{operation:'create',email:'bad@example.invalid',fullName:'Bad',password:'test-password-do-not-use',isActive:true,roles:['UNKNOWN']},request),/desconhecido/);
   assert.equal((await query('select count(*) from app_users')).rows[0].count,count);
+  await assert.rejects(changeAccess(master,{operation:'role',id:'CRM_OPERATOR',name:'CRM',permissions:['panel.access','governance.read']},request),/operacional/);
+  await assert.rejects(changeAccess(master,{operation:'role',id:'MASTER',name:'Unsafe',permissions:[]},request),/protegido/);
+  // Exercise last-MASTER protection with a delegated manager, so self-protection cannot mask a regression.
+  await changeAccess(master,{operation:'role',id:'TEST_MANAGER',name:'Test manager',permissions:['panel.access','governance.read','governance.manage']},request);
+  const delegate=(await query(`insert into app_users(email,full_name,role) values($1,'Delegated manager','secretary') returning id`,[`manager-${Date.now()}@example.invalid`])).rows[0];
+  await query("insert into user_roles values($1,'TEST_MANAGER')",[delegate.id]);
+  const manager=(await loadSessionUser(delegate.id))!;
+  const masters=(await query("select user_id from user_roles where role_id='MASTER' and user_id<>$1",[master.id])).rows;
+  try {
+    await query("delete from user_roles where role_id='MASTER' and user_id<>$1",[master.id]);
+    await assert.rejects(changeAccess(manager,{operation:'user',id:master.id,fullName:master.fullName,isActive:false,roles:[]},request),/MASTER ativo/);
+    await assert.rejects(changeAccess(manager,{operation:'user',id:manager.id,fullName:manager.fullName,isActive:true,roles:['CRM_OPERATOR']},request),/próprio acesso/);
+    await assert.rejects(changeAccess(manager,{operation:'role',id:'TEST_MANAGER',name:'Unsafe',permissions:['panel.access']},request),/próprio acesso/);
+  } finally {
+    for(const row of masters)await query("insert into user_roles values($1,'MASTER') on conflict do nothing",[row.user_id]);
+    await query('delete from user_roles where user_id=$1',[manager.id]);
+    await query('update app_users set is_active=false where id=$1',[manager.id]);
+  }
   console.log('PASS: RBAC, privilege denial, MASTER protection, session revocation, disabled user, audit redaction, transactional validation');
 }
 main().then(()=>process.exit(0)).catch(error=>{console.error(error);process.exit(1);});

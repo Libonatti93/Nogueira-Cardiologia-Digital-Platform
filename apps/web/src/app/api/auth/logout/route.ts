@@ -12,7 +12,9 @@ export async function POST(request: Request) {
     await query('update app_users set session_version=session_version+1 where id=$1', [user.id]);
     await audit({ actor: user.id, action: 'auth.logout' }, request);
   }
-  const response = NextResponse.redirect(new URL('/portal?logout=1', getPublicBaseUrl(request)), 303);
+  const target = user?.audience === 'internal' ? new URL('/acesso?logout=1', request.headers.get('origin')!)
+    : new URL('/portal?logout=1', getPublicBaseUrl(request));
+  const response = NextResponse.redirect(target, 303);
   response.cookies.set({
     name: sessionCookie.name,
     value: '',

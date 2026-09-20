@@ -48,3 +48,7 @@ Logs não contêm payloads, credenciais ou corpos de respostas de provedores.
 ## Atualização futura
 
 Compare a origem com o SHA acima, revise alterações do domínio e adapte mudanças em vez de substituir todo o serviço. Preserve PostgreSQL/RBAC/publicação por rascunho. Rode testes Python, TypeScript, banco e HTTP. Versione novas migrations, construa imagens com o SHA Nogueira e siga DEPLOY_RUNBOOK.
+
+## Compatibilidade com painel/IAM
+
+A interface canônica agora é `/lios` no Host painel.nogueiracardiologia.com.br; `/acesso/lios` continua alias. Serviço/schema/upstream e permissões editoriais não mudaram. panel.access é requisito adicional para sessões internas, que usam autenticação local. CRM_OPERATOR não recebe lios.read/manage/publish; controles no proxy/backend permanecem. O deploy continua conferindo a imagem e healthz pelo mesmo SHA do web.

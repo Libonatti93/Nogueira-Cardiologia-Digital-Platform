@@ -1,55 +1,7 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { AuthorityBackdrop } from '@/components/site/authority-backdrop';
 import { getSessionUser } from '@/lib/auth';
+import { PanelSidebar } from '@/components/internal/panel-sidebar';
 
-const navItems = [
-  ['Dashboard', '/acesso/dashboard'],
-  ['Pacientes', '#pacientes'],
-  ['Leads', '#leads'],
-  ['Consultas', '#consultas'],
-  ['Exames', '#exames'],
-  ['Financeiro', '#financeiro'],
-] as const;
-
-export async function InternalShell({ children }: { children: React.ReactNode }) {
-  const user = await getSessionUser();
-  const visibleItems = user?.permissions?.includes('internal.access') ? navItems : [];
-  return (
-    <main className="min-h-screen w-full overflow-x-clip bg-[#F6F8FB] text-slate-950">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <Link href="/acesso/dashboard" className="flex items-center gap-3" aria-label="Dashboard interna Nogueira Cardiologia">
-            <Image
-              src="/uploads-imagens-nogueira/nogueira-cardio4-transparent.png"
-              alt="Nogueira Cardiologia"
-              width={320}
-              height={80}
-              className="h-10 w-auto object-contain"
-              priority
-            />
-            <span className="hidden border-l border-slate-200 pl-3 text-sm font-bold text-[#0F3760] sm:inline">
-              Equipe interna
-            </span>
-          </Link>
-          <nav className="flex min-w-0 max-w-full flex-wrap gap-2 text-sm font-bold text-[#14508B]">
-            {visibleItems.map(([label, href]) => (
-              <Link key={href} href={href.startsWith('#') ? `/acesso/dashboard${href}` : href} className="rounded-lg border border-[#14508B]/18 px-3 py-2 hover:border-[#14508B]/55">
-                {label}
-              </Link>
-            ))}
-            {user?.permissions?.includes('governance.read') && <Link href="/acesso/governanca" className="rounded-lg border border-[#14508B]/18 px-3 py-2">Governança</Link>}
-            {user?.permissions?.includes('lios.read') && <Link href="/acesso/lios" className="rounded-lg border border-[#14508B]/18 px-3 py-2">LIOS</Link>}
-            <form action="/api/auth/logout" method="post"><button className="rounded-lg border border-slate-200 px-3 py-2">Sair</button></form>
-          </nav>
-        </div>
-      </header>
-      <AuthorityBackdrop
-        eyebrow="Dashboard médico/admin"
-        title="Visão interna da operação digital, pacientes, consultas, pagamentos e exames enviados."
-        description="Os médicos autorizados acompanham a jornada clínica, os exames recebidos e a documentação necessária ao atendimento em ambiente protegido."
-      />
-      <div className="mx-auto w-full max-w-7xl min-w-0 px-4 py-8 sm:px-6 lg:px-8">{children}</div>
-    </main>
-  );
+export async function InternalShell({children}:{children:React.ReactNode}) {
+  const user=await getSessionUser();
+  return <PanelSidebar name={user?.fullName??'Equipe'} roles={user?.roles??[]} permissions={user?.permissions??[]}>{children}</PanelSidebar>;
 }

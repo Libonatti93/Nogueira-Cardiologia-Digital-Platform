@@ -46,14 +46,14 @@ export default function RootLayout({
       className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col">
-        <OrganizationSchema />
-        <PromotionTicker />
+        <div className="public-chrome contents"><OrganizationSchema />
+        <PromotionTicker /></div>
         {children}
-        <PromotionTicker placement="footer" />
+        <div className="public-chrome contents"><PromotionTicker placement="footer" />
         <CookieConsent />
         <BackToTopButton />
         <SecurityTrustBadges variant="floating" />
-        <FloatingWhatsappButton />
+        <FloatingWhatsappButton /></div>
       </body>
     </html>
   );

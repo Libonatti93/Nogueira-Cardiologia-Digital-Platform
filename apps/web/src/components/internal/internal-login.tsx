@@ -33,8 +33,8 @@ export function InternalLogin() {
         throw new Error(body?.message ?? 'Não foi possível entrar.');
       }
 
-      setFeedback({ status: 'success', message: 'Acesso validado. Abrindo dashboard...' });
-      window.location.href = body?.redirectTo ?? '/acesso/dashboard';
+      setFeedback({ status: 'success', message: 'Acesso validado. Abrindo seu workspace...' });
+      window.location.href = body?.redirectTo ?? '/dashboard';
     } catch (error) {
       setFeedback({
         status: 'error',
@@ -46,7 +46,7 @@ export function InternalLogin() {
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-        E-mail institucional
+        E-mail de acesso
         <input
           name="email"
           type="email"
@@ -73,7 +73,7 @@ export function InternalLogin() {
         disabled={feedback.status === 'submitting'}
         className="inline-flex w-fit rounded-lg bg-[#14508B] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760] disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {feedback.status === 'submitting' ? 'Validando...' : 'Entrar na dashboard'}
+        {feedback.status === 'submitting' ? 'Validando...' : 'Entrar no painel'}
       </button>
 
       {feedback.status !== 'idle' ? (

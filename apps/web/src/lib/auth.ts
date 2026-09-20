@@ -12,6 +12,8 @@ export type SessionUser = {
   sessionVersion?: number;
   roles?: string[];
   permissions?: string[];
+  audience?: 'internal' | 'patient';
+  mustChangePassword?: boolean;
 };
 
 const sessionCookieName = 'nogueira_session';
@@ -35,6 +37,7 @@ export function createSessionToken(user: SessionUser) {
   const payload = Buffer.from(
     JSON.stringify({
       ...user,
+      audience: user.audience ?? 'internal',
       expiresAt: Date.now() + sessionMaxAgeSeconds * 1000,
     }),
   ).toString('base64url');
@@ -74,6 +77,7 @@ export function verifySessionToken(token: string | undefined): SessionUser | nul
       fullName: parsed.fullName,
       role: parsed.role,
       sessionVersion: parsed.sessionVersion ?? 0,
+      audience: parsed.audience,
     };
   } catch {
     return null;
@@ -83,9 +87,11 @@ export function verifySessionToken(token: string | undefined): SessionUser | nul
 export async function requireInternalUser(permission = 'internal.access') {
   const user = await getSessionUser();
 
-  if (!user || !hasPermission(user, permission)) {
+  if (!user || user.audience !== 'internal' || !hasPermission(user, 'panel.access')) {
     redirect('/acesso');
   }
+  if (user.mustChangePassword) redirect('/alterar-senha');
+  if (!hasPermission(user, permission)) redirect('/sem-acesso');
 
   return user;
 }
@@ -95,13 +101,13 @@ export async function getSessionUser() {
   const token = verifySessionToken(cookieStore.get(sessionCookieName)?.value);
   if (!token) return null;
   const user = await loadSessionUser(token.id);
-  return user && user.sessionVersion === token.sessionVersion ? user : null;
+  return user && user.sessionVersion === token.sessionVersion ? { ...user, audience: token.audience } : null;
 }
 
 export async function loadSessionUser(id: string): Promise<SessionUser | null> {
   const result = await query<{ id: string; email: string; full_name: string; role: string;
-    session_version: number; roles: string[]; permissions: string[] }>(`
-    select u.id, u.email, u.full_name, u.role, u.session_version,
+    session_version: number; must_change_password: boolean; roles: string[]; permissions: string[] }>(`
+    select u.id, u.email, u.full_name, u.role, u.session_version,u.must_change_password,
       coalesce(array_agg(distinct ur.role_id) filter (where ur.role_id is not null), '{}') roles,
       coalesce(array_agg(distinct rp.permission_id) filter (where rp.permission_id is not null), '{}') permissions
     from app_users u left join user_roles ur on ur.user_id = u.id
@@ -109,7 +115,7 @@ export async function loadSessionUser(id: string): Promise<SessionUser | null> {
     where u.id = $1 and u.is_active = true group by u.id`, [id]);
   const row = result.rows[0];
   return row ? { id: row.id, email: row.email, fullName: row.full_name, role: row.role,
-    sessionVersion: row.session_version, roles: row.roles, permissions: row.permissions } : null;
+    sessionVersion: row.session_version, mustChangePassword: row.must_change_password, roles: row.roles, permissions: row.permissions } : null;
 }
 
 export function canAccessInternalArea(user: Pick<SessionUser, 'permissions'>) {
@@ -119,7 +125,7 @@ export function canAccessInternalArea(user: Pick<SessionUser, 'permissions'>) {
 export async function requirePatientUser() {
   const user = await getSessionUser();
 
-  if (!user || user.role !== 'patient') {
+  if (!user || user.role !== 'patient' || user.audience === 'internal') {
     redirect('/portal');
   }
 
@@ -133,7 +139,7 @@ export async function requirePatientUser() {
 export async function getVerifiedPatientUser() {
   const user = await getSessionUser();
 
-  if (!user || user.role !== 'patient') {
+  if (!user || user.role !== 'patient' || user.audience === 'internal') {
     return null;
   }
 

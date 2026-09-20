@@ -40,8 +40,19 @@ As permissões do usuário de runtime LIOS são provisionadas separadamente com 
 revalidados em cada deploy. A reauditoria de 20/09 aplica o esquema histórico e
 007/008 em banco vazio descartável, sem copiar pacientes, e confirma a reexecução.
 Não houve necessidade de alterar migrations aplicadas ou criar entidades duplicadas.
-O banco principal contém 21 tabelas públicas e 6 tabelas no schema `lios`.
+A implementação do painel não cria tabelas: reutiliza as entidades e relações existentes.
 
 As ações de conteúdo e criação de compromissos gravam mudança e auditoria na mesma
 transação. Título, notas clínicas, conteúdo do artigo, documentos e credenciais
 não são replicados nos snapshots da auditoria administrativa.
+
+## Migration 009 — painel/IAM/CRM
+
+- app_users.must_change_password boolean NOT NULL DEFAULT false: exige troca inicial quando credencial é habilitada/resetada pelo IAM.
+- app_users.password_changed_at timestamptz: data da última troca concluída pelo titular.
+- internal_calendar_events.crm_visible boolean NOT NULL DEFAULT false: agenda compartilhada; eventos privados existentes não se tornam visíveis automaticamente.
+- Sete permissões panel/CRM, perfil CRM_OPERATOR e concessões a MASTER; panel.access aos perfis internos existentes.
+- Cris recebe MASTER na identidade existente e mantém DOCTOR. Nenhum password_hash, UUID, vínculo Supabase ou clínico é alterado.
+- session_version dos usuários com perfis é incrementado para exigir novo login após mudança de política. 007/008 permanecem com conteúdo/checksum original.
+
+leads/lead_events/patient_profiles/appointments/doctors/internal_calendar_events são reutilizadas pelo CRM. Projeções explícitas excluem CPF, anamnese, notas privadas, pagamentos e credenciais. Mutações CRM + evento de auditoria são transacionais. Sem DDL em runtime e sem banco adicional.

@@ -7,6 +7,7 @@ import { requireInternalUser } from '@/lib/auth';
 import { audit } from '@/lib/audit';
 import { getBlogCategories } from '@/data/blog-posts';
 import { query, transaction } from '@/lib/db';
+import { MasterStatus } from '@/components/internal/master-status';
 import {
   buildSectionsFromBody,
   createPostSlug,
@@ -858,12 +859,13 @@ export default async function InternalDashboardPage() {
 
   return (
     <InternalShell>
+      {user.permissions?.includes('governance.read')&&<MasterStatus canLios={user.permissions?.includes('lios.read')??false} canAudit={user.permissions?.includes('audit.read')??false} />}
       <section className="rounded-2xl border border-[#14508B]/12 bg-white p-5 shadow-[0_24px_54px_-46px_rgba(20,80,139,0.72)]">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Centro de comando médico</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#15A7DD]">Visão geral da operação</p>
             <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#0F3760] md:text-4xl">
-              Painel de trabalho do Dr. Paulo.
+              Central de gestão da equipe.
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
               Agenda, operação, financeiro, conteúdo educativo e relatórios separados por área para tomada de decisão diária.

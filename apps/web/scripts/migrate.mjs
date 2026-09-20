@@ -10,7 +10,7 @@ try {
   await client.query("select pg_advisory_lock(hashtextextended('nogueira-migrations',0))");
   await client.query(`create table if not exists schema_migrations (
     name text primary key, checksum text not null, applied_at timestamptz not null default now())`);
-  for (const name of ['007_governance.sql', '008_lios.sql']) {
+  for (const name of ['007_governance.sql', '008_lios.sql', '009_panel_iam_crm.sql']) {
     const sql = await readFile(new URL(`../database/${name}`, import.meta.url), 'utf8');
     const checksum = createHash('sha256').update(sql).digest('hex');
     const prior = (await client.query('select checksum from schema_migrations where name=$1', [name])).rows[0];

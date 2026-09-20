@@ -227,3 +227,6 @@ video {
     animation: none;
   }
 }
+
+/* Internal workspaces keep the public/patient promotional UI outside the panel. */
+body:has([data-panel]) .public-chrome { display: none; }

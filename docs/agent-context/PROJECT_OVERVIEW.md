@@ -7,13 +7,13 @@ Next.js App Router serve páginas React, Route Handlers e Server Actions. Tailwi
 
 Módulos públicos: página inicial, médicos, exames, blog educativo, política de privacidade e agendamento.
 Área de pacientes: cadastro, confirmação de e-mail, login, consultas e arquivos de exames.
-Administração: `/acesso/dashboard` reutiliza `src/app/interno/dashboard/page.tsx`; relatórios, conteúdo e operação clínica. `/acesso/governanca` administra acessos; `/acesso/lios` opera conhecimento e produção editorial.
+Administração canônica: `https://painel.nogueiracardiologia.com.br`, mesma aplicação/infraestrutura, DNS pendente externamente. `/dashboard` reutiliza o dashboard completo; `/crm` organiza operação sobre as tabelas existentes com projeções restritas; `/governanca`, `/auditoria`, `/lios` e `/configuracoes` completam a navegação por permissões. Aliases `/acesso/*` preservados. Veja PANEL_IAM_CRM.
 
 ## Autenticação
 
-Contas canônicas em `app_users`. Médicos existentes usam senha local com pgcrypto/bcrypt; pacientes e Matheus podem autenticar pelo Supabase. O login interno aceita Supabase somente quando seu subject já corresponde ao vínculo no banco. E-mail isolado não concede acesso administrativo.
-Cookie HTTP-only, SameSite Lax, Secure em produção, assinatura HMAC e validade de oito horas. `session_version`, usuário ativo e permissões são consultados no banco a cada acesso. Produção tem AUTH_SECRET independente, configurado em 20/09/2026; o fallback legado DATABASE_URL permanece no código por compatibilidade. A troca do segredo requer novo login das sessões antigas.
-Turnstile do portal de pacientes e confirmação de e-mail permanecem. Login possui limitação persistida por IP/e-mail e validação de origem.
+Identidade única em app_users. O painel interno autentica exclusivamente pela senha local pgcrypto/bcrypt, sem consultar Supabase. Pacientes mantêm seu mecanismo e vínculo externos. MASTER pode habilitar credencial interna na conta existente com senha temporária e troca obrigatória; nenhuma senha real foi alterada nesta entrega.
+Cookie host-only, HTTP-only, SameSite=Lax, Secure em produção, assinatura HMAC, audience interna/paciente e validade de oito horas. Usuário ativo, session_version e permissões são consultados no banco. AUTH_SECRET independente permanece configurado; não imprimir valores.
+Turnstile e confirmação do portal são preservados. Login possui limite por IP/e-mail e validação Origin. CRM_OPERATOR recebe apenas operação; MASTER inclui Matheus, Paulo e Cris, preservando papéis clínicos. GOVERNANCE_ACCESS descreve proteções e ativação local ainda necessária para Matheus.
 
 ## Integrações
 
@@ -37,7 +37,7 @@ Na retomada: `b3135bf`, merge de `origin/main` já concluído; quatro arquivos a
 O upstream LIOS foi conferido com `git ls-remote`: `b32d1cc8086541fcb5eeeb6e734e9601676cf5a8`.
 Dependências Next.js foram corrigidas de 16.2.4 para 16.3.5 após relatório do npm audit.
 
-## Auditoria desta entrega — 20/09/2026
+## Histórico da entrega anterior — 20/09/2026
 
 SHA inicial do checkout e upstream: `b16b640947348a4b3809650b929a15925473e4e8`.
 Após `git fetch --all --prune`: árvore limpa, zero commits à frente/atrás do upstream;
@@ -50,3 +50,8 @@ Os documentos antigos de `apps/web/docs` registram planejamento e podem divergir
 do estado atual; esta pasta contém a referência operacional revisada.
 
 As variáveis e seus papéis estão em [ENVIRONMENT.md](ENVIRONMENT.md).
+
+## Auditoria do painel — 20/09/2026
+
+Início desta implementação: `7314d9937fcfe2d181153990912854a68acfc731`, checkout/upstream sincronizados após fetch, árvore limpa. 007/008 já aplicadas. LIOS/Governança existentes foram evoluídas, sem novo projeto, banco, autenticação ou cópia do serviço.
+009 acrescenta campos de credencial, agenda operacional, perfil CRM_OPERATOR e permissões; promove a mesma Cris para MASTER. Deploy mantém builds por SHA e exige igualdade de checkout, GitHub, BUILD_ID, web health e LIOS.

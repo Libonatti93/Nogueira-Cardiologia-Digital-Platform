@@ -39,7 +39,8 @@ export async function GET(_request: NextRequest, context: RouteContext<'/api/exa
     return NextResponse.json({ message: 'Exame não encontrado.' }, { status: 404 });
   }
 
-  const isInternal = hasPermission(user, 'exams.read');
+  if (user.audience==='internal' && user.mustChangePassword) return NextResponse.json({message:'Altere sua senha.'},{status:403});
+  const isInternal = user.audience==='internal' && hasPermission(user, 'panel.access') && hasPermission(user, 'exams.read');
   const isOwner = exam.uploaded_by_user_id === user.id || exam.patient_email.toLowerCase() === user.email.toLowerCase();
 
   if (!isInternal && !isOwner) {

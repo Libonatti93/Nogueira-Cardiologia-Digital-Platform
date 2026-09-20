@@ -9,7 +9,7 @@ Serviço existente: `nogueira-web.service`, npm start na porta 3002. Proxy e TLS
 2. Preservar alterações; nunca reset hard/force push. Instalar versões do lock com `npm ci` quando necessário.
 3. `npm run lint`, `npm run typecheck`, `npm test`, build e testes de integração abaixo.
 4. Backup: `/opt/nogueira-postgres/backup.sh`. Não imprimir arquivos de segredos.
-5. Migrations: `node scripts/migrate.mjs`. 007/008 são aditivas e aplicadas por transação/checksum; bancos existentes precisam das migrations históricas.
+5. Migrations: `node scripts/migrate.mjs`. 007/008/009 são aditivas e aplicadas por transação/checksum; bancos existentes precisam das migrations históricas.
 6. Primeira configuração LIOS: `node scripts/configure-lios.mjs`. Usa manutenção local do PostgreSQL para criar conta restrita, arquivos .env ignorados e contexto editorial geral. Reexecução preserva credenciais existentes.
 7. Revisar diff, segredos e documentos; commit com autoria Git já configurada; `git push origin agent/portal-seo-home-ux`.
 
@@ -28,7 +28,7 @@ O runner preserva o tsconfig original quando o Next adiciona caminhos temporári
 Valida web local e domínio público comparando o SHA do artefato. Em falha,
 restaura a configuração web e a imagem LIOS que estavam ativas antes da tentativa.
 Executa `node scripts/smoke-production.mjs`: rotas públicas, banco, MASTER nas
-duas contas existentes, páginas Governança/LIOS, APIs, recusa para usuário comum,
+três contas existentes, páginas Governança/LIOS, APIs, recusa para usuário comum,
 CSRF, auditoria e isolamento do usuário PostgreSQL LIOS. As sessões de teste duram
 três minutos, ficam em memória e não mudam senhas, último login ou perfis.
 O teste produz eventos `access.denied` e `access.origin_denied` esperados.
@@ -98,3 +98,20 @@ como prova de login por senha nesse provedor. Em 20/09 o DNS do projeto retorna
 NXDOMAIN e não há permissão de gestão Supabase na VPS. A API Nogueira retorna 503
 para essa falha, sem enfraquecer autenticação. Após restauração externa, executar
 o smoke novamente e validar login Supabase com o titular da conta. Ver ENVIRONMENT.
+
+## Painel, DNS e smoke atualizado
+
+Deploy também executa ensure-traefik-nogueira-route.js para preparar o Host painel no Traefik existente. Smoke verifica as três identidades MASTER, todas as permissões, perfil CRM_OPERATOR restrito, páginas/APIs canônicas e aliases, separação de audience paciente e auditoria sem secrets.
+Com DNS pendente, smoke usa HTTPS/SNI/Host painel através de **127.0.0.1:443**, aceitando somente nesse diagnóstico o certificado padrão. Confere login na raiz, redirect pós-sessão, IAM, portal público e SHA de /api/health. Não altera DNS nem gera senha real. Se não houver usuário comum ativo na base real, testa audience paciente e identidade inativa existentes; os testes de CRM/DOCTOR permanecem completos no banco isolado.
+
+```sh
+curl -ksS --resolve painel.nogueiracardiologia.com.br:443:127.0.0.1 https://painel.nogueiracardiologia.com.br/api/health
+curl -ksS -o /dev/null -w '%{http_code}\n' --resolve painel.nogueiracardiologia.com.br:443:127.0.0.1 https://painel.nogueiracardiologia.com.br/
+```
+
+O proprietário cria A painel → 2.24.215.163. O cron de um minuto verifica DNS e habilita letsencrypt após propagação. Depois, conferir HTTPS **sem -k**, /api/health e certificado válido. Não tentar ACME repetidamente antes do apontamento. HSTS existente exige certificado válido para uso normal no browser.
+
+A migration 009 invalida sessões internas prévias, mas mantém senhas e vínculos. Matheus deve receber senha temporária pelo IAM de outro MASTER antes do primeiro login local; o deploy não inventa essa credencial.
+Rollback de código mantém as colunas e concessões aditivas. Para suspender apenas o novo Host, ajuste de forma versionada o guard antes de remover os dois routers; caso contrário, o cron os recria. Preserve os routers públicos, banco e aliases. Não reverta senhas/identidades por restore cego.
+
+Teste de interface opcional: `PLAYWRIGHT_MODULE=/caminho/playwright/index.mjs node --env-file=.env.test tests/browser.integration.mjs`. Requer Chromium instalado para esse Playwright. Usa somente identidades e senhas fictícias no banco isolado, inicia Next :3003 e gera screenshots sem dados reais em /tmp/nogueira-panel-browser. Pare o container de teste nogueira-lios-test após a validação; preserve o banco de testes existente para reexecução.

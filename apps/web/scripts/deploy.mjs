@@ -52,6 +52,7 @@ try {
   run('docker', ['run', '--rm', image, 'ruff', 'check', '--no-cache', 'src', 'tests']);
   run('/opt/nogueira-postgres/backup.sh', []);
   run('node', ['scripts/migrate.mjs']);
+  run('node', ['scripts/ensure-traefik-nogueira-route.js']);
   if (git('status', '--porcelain') || git('rev-parse', 'HEAD') !== sha) throw new Error('Source changed during build.');
   let previousImage = '';
   try { previousImage = capture('docker', ['inspect', '--format', '{{.Config.Image}}', 'nogueira-lios']); } catch { /* First deployment. */ }

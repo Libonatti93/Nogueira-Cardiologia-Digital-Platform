@@ -1,30 +1,23 @@
 # Leia primeiro
 
-Nogueira Cardiologia: site público, blog, portal de pacientes e painel administrativo.
-Raiz de produção: `/root/Nogueira-Cardiologia-Digital-Platform`.
-Branch de produção: `agent/portal-seo-home-ux`. Remote:
-`git@github.com:Libonatti93/Nogueira-Cardiologia-Digital-Platform.git`.
+Nogueira Cardiologia reúne site público, blog, portal de pacientes e painel da equipe.
+Produção: `/root/Nogueira-Cardiologia-Digital-Platform`, branch `agent/portal-seo-home-ux`.
+Remote: `git@github.com:Libonatti93/Nogueira-Cardiologia-Digital-Platform.git`.
 
-1. Inspecione status/diff, fetch e SHAs antes de editar. Não use reset hard ou force push.
-2. Web: `apps/web`, Next.js 16.3.5/React 19/TypeScript. Leia seu AGENTS.md e os guias locais do Next.
-3. Produção: `nogueira-web.service`, porta 3002, Traefik/EasyPanel e PostgreSQL 16 existentes.
-4. Governança: `/acesso/governanca`. RBAC no PostgreSQL, permissões conferidas no backend e sessões revogáveis. Dr. Paulo e Matheus reutilizam suas identidades com MASTER.
-5. LIOS: `/acesso/lios`, código versionado em `services/lios`, container privado na porta **local** 8081 e schema `lios` no banco existente. Não expor essa porta publicamente.
-6. IA inicia em demonstração enquanto não houver credencial própria. Fontes sintéticas nunca chegam ao blog. Toda publicação passa por rascunho/revisão humana.
-7. Migrations aditivas 007/008 têm registro/checksum em `schema_migrations`. Nunca editar uma migration já aplicada.
-8. Segredos ficam em arquivos ignorados; não imprimir `.env`, cookies ou credenciais. Há backup do trabalho recuperado em `/root/nogueira-resume-20260919.tar.gz`.
-9. Reauditoria de 20/09/2026 começou em `b16b640947348a4b3809650b929a15925473e4e8`. O build então servido estava antigo, apesar do checkout sincronizado. Sempre conferir também os healthchecks e BUILD_ID.
-10. `node scripts/deploy.mjs` faz backup, build por SHA, teste LIOS, migrations, atualização systemd/Compose e smoke autenticado. A evidência pós-deploy fica em `/var/log/nogueira-deploy-<SHA>.json`, sem credenciais. Smoke cria apenas eventos de acesso/auditoria e sessões em memória de três minutos.
+1. Faça fetch, confira status/diff e compare checkout, upstream e SHA servido antes de editar. Não use reset hard ou force push.
+2. Leia `apps/web/AGENTS.md` e a documentação Next instalada. Web: Next.js 16.3.5, React 19, TypeScript, Tailwind 4, pg; não há Prisma.
+3. Painel canônico: **https://painel.nogueiracardiologia.com.br**. DNS depende do proprietário. Rota Traefik preparada na mesma aplicação; veja PANEL_IAM_CRM e DEPLOY_RUNBOOK.
+4. Login interno usa exclusivamente `app_users.password_hash`, sem Supabase. Cookie assinado distingue sessões internas de pacientes; RBAC e session_version são conferidos no backend.
+5. Dr. Paulo, Matheus e Dra. Cris têm MASTER nas mesmas identidades. Cris mantém DOCTOR. Nenhuma senha real foi criada/alterada nesta entrega. Matheus não possuía hash local: outro MASTER deve habilitá-lo no IAM com senha temporária; o titular troca no primeiro acesso.
+6. `/dashboard` mantém o dashboard completo existente. `/crm` usa projeções operacionais e APIs próprias sobre as mesmas tabelas, sem financeiro, documentos clínicos, IAM ou LIOS para CRM_OPERATOR.
+7. `/governanca` administra usuários/perfis/permissões, credenciais e sessões. `/auditoria` lista eventos. `/lios` preserva o serviço privado em `services/lios`, porta local 8081, schema `lios` no PostgreSQL existente.
+8. Novas migrations são aditivas. 007/008 estão preservadas; 009 acrescenta IAM/CRM e promove Cris. Nunca edite migration aplicada.
+9. Produção: systemd `nogueira-web` na porta 3002; Docker `nogueira-postgres`, `nogueira-lios`, EasyPanel/Traefik. Deploy oficial, a partir de `apps/web`: `node scripts/deploy.mjs`.
+10. Deploy exige commit enviado/árvore limpa, faz backup, build por SHA, migrations, reinício controlado, smoke real e comparação do artefato. Evidência sanitizada: `/var/log/nogueira-deploy-<SHA>.json`.
+11. SHA inicial desta implementação: `7314d9937fcfe2d181153990912854a68acfc731`, igual ao upstream, sem alterações locais ou divergência. Confira o SHA atual pelo Git e `/api/health`; não confunda checkout com build servido.
+12. Não imprimir arquivos .env, cookies, hashes ou credenciais. Não criar usuários/bancos/autenticações paralelos. Testes usam o banco isolado já existente `nogueira_integration_test`.
 
-Leia PROJECT_OVERVIEW, DATABASE_MAP, GOVERNANCE_ACCESS, LIOS_INTEGRATION e DEPLOY_RUNBOOK neste diretório.
-`/api/health` e `/healthz` privado da LIOS informam o SHA do **artefato**, não o HEAD lido no momento da requisição.
-O deploy mantém builds anteriores; o runbook explica a reversão.
-Leia também VALIDATION e ENVIRONMENT. IA real continua dependendo de credencial externa;
-o modo demo opera, mas nunca publica conteúdo sintético.
+Leia PROJECT_OVERVIEW, DATABASE_MAP, GOVERNANCE_ACCESS, PANEL_IAM_CRM, LIOS_INTEGRATION,
+DEPLOY_RUNBOOK, ENVIRONMENT e VALIDATION antes de continuar.
 
-**Bloqueio externo identificado em 20/09:** o domínio Supabase configurado
-`nwqkwuxewbtyaisjiucy.supabase.co` retorna NXDOMAIN. Matheus possui MASTER, mas seu
-login depende desse provedor. Não criar conta duplicada, senha alternativa ou
-contornar a checagem de identidade. É necessário restaurar o projeto no painel
-Supabase ou obter URL/chave válidas do mesmo provedor com identidade preservada;
-não há credencial de gestão Supabase nesta VPS. O login local de Dr. Paulo é independente.
+Dependências externas anteriores: Supabase dos pacientes retorna NXDOMAIN; sua restauração exige acesso externo ao provedor. Isso não afeta mais o login interno. LIOS opera em demo sem chave de IA real; publicação sintética continua bloqueada. DNS do painel é ação do proprietário, com TLS automático após propagação.
