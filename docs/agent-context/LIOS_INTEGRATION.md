@@ -1,7 +1,7 @@
 # Integração LIOS
 
 Origem: `git@github.com:Libonatti93/LIOS.git`, branch main,
-SHA `b32d1cc8086541fcb5eeeb6e734e9601676cf5a8`, conferido no remoto em 19/09/2026.
+SHA `b32d1cc8086541fcb5eeeb6e734e9601676cf5a8`, reconferido com fetch no remoto em 20/09/2026.
 Autoria e licença de Matheus Libonatti preservadas em `services/lios`.
 
 ## Adaptação
@@ -34,6 +34,11 @@ A auditoria é uma política editorial heurística; ela não substitui validaç�
 LIOS_PUBLIC_URL, LIOS_DOCKER_NETWORK. Opcionais: LIOS_OPENAI_API_KEY, LIOS_TEXT_MODEL, LIOS_IMAGE_MODEL, LIOS_RSS_FEEDS.
 `apps/web/.env.local`: LIOS_INTERNAL_URL e mesmo LIOS_OPERATOR_TOKEN.
 O modo inicial é demo: não há chave de IA real configurada. RSS requer feeds públicos explicitamente configurados; conectores sociais não são apresentados como ativos.
+As extensões Cross Doctoring citadas no upstream são uma evolução separada;
+este repositório não depende de serviços, autenticação, banco ou código da Cross.
+As branches remotas do repositório LIOS foram conferidas: `main` é a referência disponível.
+O núcleo e seus testes estão incorporados e versionados em `services/lios`; o clone
+`/root/LIOS-inspection` foi apenas material de consulta e não participa do runtime.
 O administrador pode inserir sinais públicos e operar RAGs desde já. A aplicação inicial Nogueira tem público/oferta editoriais gerais, sem dados de pacientes.
 
 Container `nogueira-lios`: bind `127.0.0.1:8081`, rede existente easypanel, usuário 10001, filesystem somente leitura, sem capabilities, sem Docker socket e limites CPU/memória.

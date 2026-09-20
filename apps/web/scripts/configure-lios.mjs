@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { randomBytes, createHash } from 'node:crypto';
 import pg from 'pg';
 import nextEnv from '@next/env';
@@ -28,11 +28,15 @@ const values={LIOS_ENV:'production',LIOS_DATABASE_URL:`postgresql://nogueira_lio
 await writeFile(liosFile,Object.entries(values).map(([key,value])=>`${key}=${value}`).join('\n')+'\n',{mode:0o600});
 let web=await readFile(webFile,'utf8');
 for(const [key,value] of Object.entries({LIOS_INTERNAL_URL:'http://127.0.0.1:8081',LIOS_OPERATOR_TOKEN:token,
+  AUTH_SECRET:process.env.AUTH_SECRET || randomBytes(32).toString('hex'),
   AUTH_ALLOWED_ORIGINS:'https://nogueiracardiologia.com.br,https://www.nogueiracardiologia.com.br'})) {
   const line=`${key}=${value}`;
   web=new RegExp(`^${key}=.*$`,'m').test(web)?web.replace(new RegExp(`^${key}=.*$`,'m'),line):`${web.trimEnd()}\n${line}\n`;
 }
 await writeFile(webFile,web,{mode:0o600});
+// writeFile's mode applies only at creation; protect pre-existing files too.
+await chmod(webFile,0o600);
+await chmod(liosFile,0o600);
 const client=new pg.Client({connectionString:process.env.DATABASE_URL});await client.connect();
 try {
   await client.query('begin');

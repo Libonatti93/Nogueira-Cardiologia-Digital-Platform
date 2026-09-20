@@ -34,6 +34,7 @@ async function main() {
     const body=JSON.parse(Buffer.concat(chunks).toString()||'{}');
     const id=subjects[body.email];
     res.setHeader('Content-Type','application/json');
+    if(body.email==='unavailable@example.invalid'){res.writeHead(503);res.end(JSON.stringify({message:'Auth temporarily unavailable'}));return;}
     if(body.email==='unconfirmed@example.invalid'){res.writeHead(400);res.end(JSON.stringify({error:'email_not_confirmed',error_description:'Email not confirmed'}));return;}
     if(!id||body.password!==password){res.writeHead(400);res.end(JSON.stringify({error:'invalid_grant',error_description:'Invalid login credentials'}));return;}
     res.end(JSON.stringify({access_token:'fixture-access',refresh_token:'fixture-refresh',token_type:'bearer',expires_in:3600,
@@ -50,6 +51,22 @@ async function main() {
     const response=await call('/api/auth/login','',{email,password,portal});
     const body=await response.json();assert.equal(response.status,200,JSON.stringify(body));
     return {cookie:response.headers.get('set-cookie')!.split(';')[0],body};
+  };
+  const serverAction=async(cookie:string,field:string,values:Record<string,string>,entityId?:string)=>{
+    const html=await(await call('/acesso/dashboard',cookie)).text();
+    const form=[...html.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map(match=>match[0])
+      .find(markup=>markup.includes(`name="${field}"`)&&(!entityId||markup.includes(`value="${entityId}"`)));
+    assert.ok(form,`Server action form: ${field}`);
+    const body=new FormData();
+    for(const input of form.matchAll(/<input\b[^>]*>/g)) {
+      const name=input[0].match(/name="([^"]+)"/)?.[1];
+      if(name?.startsWith('$ACTION_'))body.set(name,input[0].match(/value="([^"]*)"/)?.[1]??'');
+    }
+    assert.ok([...body.keys()].length,'Rendered server action token');
+    for(const [key,value] of Object.entries(values))body.set(key,value);
+    const response=await fetch(base+'/acesso/dashboard',{method:'POST',redirect:'manual',
+      headers:{cookie,origin,'x-forwarded-host':new URL(origin).host},body});
+    assert.ok([200,303].includes(response.status),`Server action status: ${response.status}`);
   };
   try {
     for(let n=0;n<60;n++){try{if((await fetch(base+'/api/health')).ok)break;}catch{}await delay(500);}
@@ -69,6 +86,24 @@ async function main() {
     await query('update app_users set supabase_user_id=$2 where id=$1',[matheus,subjects['libonattimatheus@gmail.com']]);pass('invalid credentials and mismatched Supabase identity blocked');
     const unconfirmed=await call('/api/auth/login','',{email:'unconfirmed@example.invalid',password,portal:'patient'});
     assert.equal(unconfirmed.status,403);assert.equal((await unconfirmed.json()).code,'email_not_verified');pass('unconfirmed patient retains email verification guidance');
+    const unavailable=await call('/api/auth/login','',{email:'unavailable@example.invalid',password,portal:'admin'});
+    assert.equal(unavailable.status,503);assert.equal((await unavailable.json()).code,'auth_unavailable');
+    assert.equal(unavailable.headers.get('set-cookie'),null);
+    assert.ok((await query("select 1 from audit_logs where action='auth.login' and result='failure' and metadata->>'code'='provider_unavailable'")).rowCount);
+    pass('Supabase outage fails closed with 503 and technical audit, without creating a session');
+    const fixtureTitle=`HTTP audit fixture ${Date.now()}`;
+    await serverAction(p.cookie,'startsAt',{title:fixtureTitle,startsAt:'2030-01-01T12:00',location:'Fixture',notes:'fixture-sensitive-calendar-note'});
+    const event=(await query('select id from internal_calendar_events where title=$1',[fixtureTitle])).rows[0];assert.ok(event);
+    const eventAudit=(await query("select after_data from audit_logs where entity_id=$1 and action='calendar.create'",[event.id])).rows;
+    assert.equal(eventAudit.length,1);assert.ok(!JSON.stringify(eventAudit).includes('fixture-sensitive-calendar-note'));
+    await serverAction(p.cookie,'body',{title:fixtureTitle,excerpt:'Fixture summary',body:'Fixture article content for transactional audit.',category:'Test'});
+    const post=(await query('select id from educativo_posts where title=$1',[fixtureTitle])).rows[0];assert.ok(post);
+    await serverAction(p.cookie,'status',{id:post.id,title:fixtureTitle,excerpt:'Edited fixture',category:'Test',status:'archived'},post.id);
+    const updatedPost=(await query('select status from educativo_posts where id=$1',[post.id])).rows[0];assert.equal(updatedPost.status,'archived');
+    const postAudit=(await query("select action,before_data,after_data from audit_logs where entity_id=$1 and action like 'content.%' order by created_at",[post.id])).rows;
+    assert.deepEqual(postAudit.map(row=>row.action),['content.create','content.update']);
+    assert.equal(postAudit[1].before_data.status,'draft');assert.equal(postAudit[1].after_data.status,'archived');
+    pass('existing calendar and editorial server actions persist transactional audit without sensitive content');
     const health=await call('/api/internal/lios/health',p.cookie);assert.equal(health.status,200);assert.equal((await health.json()).ai_mode,'demo');
     const appResponse=await call('/api/internal/lios/applications',p.cookie,{name:'HTTP Integration',slug:`http-${Date.now()}`});assert.equal(appResponse.status,201);const application=await appResponse.json();
     for(const kind of ['avatar','offer','signals']){const response=await call(`/api/internal/lios/applications/${application.id}/documents`,p.cookie,{rag_type:kind,title:'Public fixture',content:'General editorial context for a synthetic test. Never patient data.',source_url:'https://example.com/source',source_name:'Fixture'});assert.equal(response.status,201);}

@@ -6,7 +6,7 @@ import { InternalShell } from '@/components/internal/internal-shell';
 import { requireInternalUser } from '@/lib/auth';
 import { audit } from '@/lib/audit';
 import { getBlogCategories } from '@/data/blog-posts';
-import { query } from '@/lib/db';
+import { query, transaction } from '@/lib/db';
 import {
   buildSectionsFromBody,
   createPostSlug,
@@ -508,41 +508,43 @@ async function createEducativoPostAction(formData: FormData) {
   const sections = buildSectionsFromBody(body);
   const readingTime = estimateReadingTime(body);
 
-  const created = await query<{id:string}>(
-    `
-      insert into educativo_posts (
-        author_id,
+  await transaction(async client => {
+    const created = await client.query<{id:string}>(
+      `
+        insert into educativo_posts (
+          author_id,
+          title,
+          slug,
+          excerpt,
+          category,
+          tags,
+          cover_image_url,
+          seo_title,
+          seo_description,
+          reading_time,
+          status,
+          published_at,
+          sections
+        )
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $4, $9, $10::post_status, case when $10 = 'published' then now() else null end, $11::jsonb) returning id
+      `,
+      [
+        user.id,
         title,
         slug,
         excerpt,
         category,
         tags,
-        cover_image_url,
-        seo_title,
-        seo_description,
-        reading_time,
-        status,
-        published_at,
-        sections
-      )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $4, $9, $10::post_status, case when $10 = 'published' then now() else null end, $11::jsonb) returning id
-    `,
-    [
-      user.id,
-      title,
-      slug,
-      excerpt,
-      category,
-      tags,
-      coverImageUrl,
-      `${title} | Nogueira Cardiologia`,
-      readingTime,
-      publishNow ? 'published' : 'draft',
-      JSON.stringify(sections),
-    ],
-  );
+        coverImageUrl,
+        `${title} | Nogueira Cardiologia`,
+        readingTime,
+        publishNow ? 'published' : 'draft',
+        JSON.stringify(sections),
+      ],
+    );
 
-  await audit({ actor: user.id, action: 'content.create', entity: 'educativo_posts', id: created.rows[0].id, after: { status: publishNow ? 'published' : 'draft' } });
+    await audit({ actor: user.id, action: 'content.create', entity: 'educativo_posts', id: created.rows[0].id, after: { status: publishNow ? 'published' : 'draft' } }, undefined, client);
+  });
   revalidatePath('/blog');
   revalidatePath(`/blog/${slug}`);
   revalidatePath('/acesso/dashboard');
@@ -562,28 +564,31 @@ async function updateEducativoPostAction(formData: FormData) {
     throw new Error('Dados inválidos para atualizar o post.');
   }
 
-  const before = await query('select id,status from educativo_posts where id=$1',[id]);
-  await query(
-    `
-      update educativo_posts
-      set title = $2,
-          category = $3,
-          excerpt = $4,
-          seo_title = $5,
-          seo_description = $4,
-          status = $6::post_status,
-          published_at = case
-            when $6 = 'published' and published_at is null then now()
-            when $6 <> 'published' then null
-            else published_at
-          end,
-          updated_at = now()
-      where id = $1
-    `,
-    [id, title, category, excerpt, `${title} | Nogueira Cardiologia`, status],
-  );
+  await transaction(async client => {
+    const before = await client.query('select id,status from educativo_posts where id=$1 for update',[id]);
+    if (!before.rowCount) throw new Error('Post não encontrado.');
+    await client.query(
+      `
+        update educativo_posts
+        set title = $2,
+            category = $3,
+            excerpt = $4,
+            seo_title = $5,
+            seo_description = $4,
+            status = $6::post_status,
+            published_at = case
+              when $6 = 'published' and published_at is null then now()
+              when $6 <> 'published' then null
+              else published_at
+            end,
+            updated_at = now()
+        where id = $1
+      `,
+      [id, title, category, excerpt, `${title} | Nogueira Cardiologia`, status],
+    );
 
-  await audit({ actor: user.id, action: 'content.update', entity: 'educativo_posts', id, before: before.rows[0], after: { status } });
+    await audit({ actor: user.id, action: 'content.update', entity: 'educativo_posts', id, before: before.rows[0], after: { status } }, undefined, client);
+  });
   revalidatePath('/blog');
   revalidatePath('/acesso/dashboard');
 }
@@ -596,9 +601,12 @@ async function deleteEducativoPostAction(formData: FormData) {
 
   if (!id) throw new Error('Post inválido.');
 
-  const before = await query('select id,status from educativo_posts where id=$1',[id]);
-  await query('delete from educativo_posts where id = $1', [id]);
-  await audit({ actor: user.id, action: 'content.delete', entity: 'educativo_posts', id, before: before.rows[0] });
+  await transaction(async client => {
+    const before = await client.query('select id,status from educativo_posts where id=$1 for update',[id]);
+    if (!before.rowCount) throw new Error('Post não encontrado.');
+    await client.query('delete from educativo_posts where id = $1', [id]);
+    await audit({ actor: user.id, action: 'content.delete', entity: 'educativo_posts', id, before: before.rows[0] }, undefined, client);
+  });
   revalidatePath('/blog');
   revalidatePath('/acesso/dashboard');
 }
@@ -616,13 +624,17 @@ async function createManualEventAction(formData: FormData) {
     throw new Error('Informe título e data/hora do compromisso.');
   }
 
-  await query(
-    `
-      insert into internal_calendar_events (created_by_user_id, title, starts_at, location, notes)
-      values ($1, $2, $3::timestamptz, $4, $5)
-    `,
-    [user.id, title, startsAt, location || null, notes || null],
-  );
+  await transaction(async client => {
+    const event = await client.query<{id: string}>(
+      `
+        insert into internal_calendar_events (created_by_user_id, title, starts_at, location, notes)
+        values ($1, $2, $3::timestamptz, $4, $5) returning id
+      `,
+      [user.id, title, startsAt, location || null, notes || null],
+    );
+    await audit({ actor: user.id, action: 'calendar.create', entity: 'internal_calendar_events',
+      id: event.rows[0].id, after: { starts_at: startsAt } }, undefined, client);
+  });
 
   revalidatePath('/acesso/dashboard');
 }

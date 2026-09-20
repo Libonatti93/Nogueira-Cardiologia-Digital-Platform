@@ -32,10 +32,20 @@ Novas permissões devem ser atribuídas a MASTER por nova migration. Papéis cl�
 auth.login (sucesso, recusa, limite), auth.logout, access.denied, access.origin_denied,
 governance.master.bootstrap, governance.user.create/update, governance.role.update,
 reports.read, exams.read, content.create/update/delete, lios.request, lios.mutation, lios.submit.
-Governança e envio de rascunhos gravam o evento na mesma transação da mudança.
+`calendar.create` registra a criação de compromisso sem copiar título, local ou notas.
+Governança, conteúdo, agenda e envio de rascunhos gravam o evento na mesma transação da mudança.
 Solicitações LIOS registram intenção e resultado sem copiar corpo editorial ou segredos.
 IP usa o último endereço de X-Forwarded-For; o servidor deve continuar atrás do proxy confiável.
 
 ## Verificação
 
 Testes unitários cobrem tokens, origem, permissões e redaction. Testes de banco cobrem revogação, proteção MASTER e transações. Testes HTTP usam credenciais fictícias e Supabase simulado em banco isolado; não conhecem nem alteram as senhas reais dos usuários.
+O smoke de produção valida páginas e APIs com sessões assinadas de três minutos
+para as identidades existentes de Dr. Paulo e Matheus; testa também recusa para
+usuário comum e CSRF, conferindo os eventos reais no banco. Tokens ficam somente
+em memória. Isso comprova autorização/sessão no ambiente real, não a senha pessoal
+nem uma autenticação real de senha no provedor Supabase.
+Em 20/09 o provedor Supabase configurado retorna NXDOMAIN; portanto o login real
+de Matheus e dos pacientes que dependem dele está bloqueado externamente.
+O perfil MASTER e suas permissões estão presentes e testados. A API sinaliza 503
+sem emitir sessão; restauração do provedor requer gestão externa (ver ENVIRONMENT).

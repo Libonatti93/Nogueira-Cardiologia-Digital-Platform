@@ -57,3 +57,4 @@ next-env.d.ts
 .next-*/
 .runtime.env
 .runtime.env.previous
+.deploy.lock

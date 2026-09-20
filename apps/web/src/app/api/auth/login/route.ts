@@ -50,6 +50,12 @@ export async function POST(request: Request) {
   const useSupabase = Boolean(supabase && (!internal || !identity?.local_password));
   if (useSupabase && supabase) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error && (error.name === 'AuthRetryableFetchError' || error.status === 0 || (error.status ?? 0) >= 500)) {
+      await audit({ actor: identity?.id, action: 'auth.login', result: 'failure',
+        metadata: { provider: 'supabase', code: 'provider_unavailable' } }, request);
+      return NextResponse.json({ code: 'auth_unavailable',
+        message: 'O serviço de autenticação está temporariamente indisponível. Tente novamente mais tarde.' }, { status: 503 });
+    }
     if (error && !internal) {
       const normalized = normalizeSupabaseAuthError(error.message);
       if (normalized.code === 'email_not_verified') {

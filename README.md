@@ -1,5 +1,14 @@
 # Nogueira-Cardiologia-Digital-Platform
-Nogueira Cardiologia’s digital platform: authority website, SEO blog, patient portal, mobile app, online scheduling, PIX payments, insurance workflow, and exam upload system.
+
+Plataforma de produção da Nogueira Cardiologia: Next.js/React, PostgreSQL,
+portal de pacientes, painel clínico, Governança/RBAC e LIOS editorial integrada.
+O backend atual usa Route Handlers e Server Actions do Next.js; NestJS e aplicativo
+móvel mencionados no planejamento histórico abaixo não são serviços em produção.
+
+**Agentes: começar por [AGENT_HANDOFF](docs/agent-context/AGENT_HANDOFF.md).**
+O estado técnico e o procedimento de produção estão em
+[PROJECT_OVERVIEW](docs/agent-context/PROJECT_OVERVIEW.md) e
+[DEPLOY_RUNBOOK](docs/agent-context/DEPLOY_RUNBOOK.md).
 
 # Nogueira Cardiologia Digital Platform
 
@@ -185,8 +194,7 @@ nogueira-cardiologia/
     docker/
     scripts/
   docs/
-
-
+```
 
 ## Contexto operacional para agentes
 
