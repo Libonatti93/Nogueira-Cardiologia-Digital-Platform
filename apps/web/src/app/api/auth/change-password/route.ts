@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSessionToken, getSessionUser, loadSessionUser, sessionCookie } from '@/lib/auth';
+import { createSessionToken, getSessionUser, sessionCookie } from '@/lib/auth';
 import { isSameOrigin } from '@/lib/access-policy';
 import { validInternalPassword, panelLanding } from '@/lib/panel-policy';
 import { audit } from '@/lib/audit';
@@ -25,16 +25,17 @@ export async function POST(request:Request) {
     const found=await client.query(`select id from app_users where id=$1 and is_active and session_version=$2
       and password_hash=crypt($3,password_hash) and password_hash<>crypt($4,password_hash) for update`,
     [user.id,user.sessionVersion,body.currentPassword,body.password]);
-    if(!found.rowCount){await audit({actor:user.id,action:'auth.password.change',result:'denied'},request,client);return false;}
-    await client.query(`update app_users set password_hash=crypt($2,gen_salt('bf',12)),must_change_password=false,
-      password_changed_at=now(),session_version=session_version+1,updated_at=now() where id=$1`,[user.id,body.password]);
+    if(!found.rowCount){await audit({actor:user.id,action:'auth.password.change',result:'denied'},request,client);return null;}
+    const updated=await client.query(`update app_users set password_hash=crypt($2,gen_salt('bf',12)),must_change_password=false,
+      password_changed_at=now(),session_version=session_version+1,updated_at=now() where id=$1 returning session_version`,[user.id,body.password]);
     await audit({actor:user.id,action:'auth.password.change',entity:'app_users',id:user.id,after:{must_change_password:false}},request,client);
-    return true;
+    return updated.rows[0].session_version as number;
   });
-  if(!changed)return NextResponse.json({message:'Senha atual inválida, nova senha igual à atual ou sessão revogada.'},{status:400});
-  const updated=(await loadSessionUser(user.id))!;
+  if(changed===null)return NextResponse.json({message:'Senha atual inválida, nova senha igual à atual ou sessão revogada.'},{status:400});
+  // Never adopt a later version from another reset/revocation after this transaction commits.
+  const updated={...user,mustChangePassword:false,sessionVersion:changed};
   const response=NextResponse.json({ok:true,redirectTo:panelLanding(updated)});
-  response.cookies.set({name:sessionCookie.name,value:createSessionToken({...updated,audience:'internal'}),httpOnly:true,
+  response.cookies.set({name:sessionCookie.name,value:createSessionToken({id:updated.id,email:updated.email,fullName:updated.fullName,role:updated.role,sessionVersion:changed,audience:'internal'}),httpOnly:true,
     sameSite:'lax',secure:process.env.NODE_ENV==='production',path:'/',maxAge:sessionCookie.maxAge});
   return response;
 }

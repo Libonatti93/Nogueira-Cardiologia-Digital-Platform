@@ -38,6 +38,7 @@ Somente governance.manage pode habilitar/resetar credencial de outra conta inter
 
 - Sessão interna exige audience=internal, panel.access, usuário ativo, session_version atual e permissão específica. Sessão de paciente, mesmo da mesma pessoa, não abre IAM.
 - Mutações exigem Origin permitido e recusam Sec-Fetch-Site cross-site. Cookie host-only, Secure, HttpOnly e SameSite=Lax, validade de oito horas.
+- A versão de sessão emitida fica vinculada à verificação de credencial/troca transacional. Reset ou revogação concorrentes não são absorvidos por uma sessão emitida a partir da credencial anterior.
 - Login local não chama Supabase; pacientes continuam com seu fluxo/provider atual. Rate limit persistente por IP/e-mail; troca de senha limitada por usuário.
 - Mutações de governança são serializadas e revalidam ator no banco. Auto-lockout de MASTER/gestor delegado e remoção do último MASTER ativo são recusados.
 - CRM consulta apenas contatos, etapas e agendamentos autorizados, sem CPF, anamnese, notas clínicas, arquivos, valores financeiros ou credenciais. Agenda histórica privada não aparece no CRM; apenas eventos crm_visible.

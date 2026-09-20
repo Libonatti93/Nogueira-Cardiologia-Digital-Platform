@@ -144,6 +144,12 @@ async function main() {
     assert.equal((await call('/api/internal/crm?view=leads',patientLogin.cookie)).status,403);
     assert.equal((await call('/api/internal/governance',p.cookie,{operation:'revoke',id:operator})).status,200);
     assert.equal((await call('/api/internal/crm',o.cookie)).status,401);
+    const resetSession=await login('operator@example.invalid');
+    assert.equal((await call('/api/internal/governance',p.cookie,{operation:'credential',id:operator,password:permanentPassword})).status,200);
+    assert.equal((await call('/api/internal/crm',resetSession.cookie)).status,401);
+    assert.equal((await call('/api/auth/login','',{email:'operator@example.invalid',password,portal:'admin'})).status,401);
+    const resetLogin=await login('operator@example.invalid','admin',permanentPassword);assert.equal(resetLogin.body.redirectTo,'/alterar-senha');
+    assert.equal((await call('/api/auth/change-password',resetLogin.cookie,{currentPassword:permanentPassword,password})).status,200);
     const o2=await login('operator@example.invalid');
     assert.equal((await call('/api/internal/governance',p.cookie,{operation:'user',id:operator,fullName:'CRM Operator',roles:['CRM_OPERATOR'],isActive:false})).status,200);
     assert.equal((await call('/api/internal/crm',o2.cookie)).status,401);

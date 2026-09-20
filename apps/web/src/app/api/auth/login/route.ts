@@ -51,6 +51,7 @@ export async function POST(request: Request) {
   if (internal && (!identity?.local_password || !(await loadSessionUser(identity.id))?.permissions?.includes('panel.access'))) return deny();
   const supabase = internal ? null : createSupabaseAuthClient();
   const useSupabase = Boolean(supabase);
+  let validatedSessionVersion: number | undefined;
   if (useSupabase && supabase) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error && (error.name === 'AuthRetryableFetchError' || error.status === 0 || (error.status ?? 0) >= 500)) {
@@ -83,8 +84,9 @@ export async function POST(request: Request) {
     }
   } else {
     if (!identity) return deny();
-    const valid = await query(`select id from app_users where id=$1 and is_active=true and password_hash=crypt($2,password_hash)`, [identity.id, password]);
+    const valid = await query(`select session_version from app_users where id=$1 and is_active=true and password_hash=crypt($2,password_hash)`, [identity.id, password]);
     if (!valid.rowCount) return deny();
+    validatedSessionVersion = valid.rows[0].session_version;
     if (!internal && identity.role === 'patient' && !identity.email_verified_at) {
       await audit({ actor: identity.id, action: 'auth.login', result: 'denied' }, request);
       return NextResponse.json({ code: 'email_not_verified', message: 'Confirme seu e-mail antes de entrar no portal.' }, { status: 403 });
@@ -92,6 +94,8 @@ export async function POST(request: Request) {
   }
   const user = await loadSessionUser(identity.id);
   if (!user || (internal && !user.permissions?.includes('panel.access'))) return deny();
+  // Bind the issued session to the credential check; a concurrent reset/revocation must win.
+  if (!useSupabase && user.sessionVersion !== validatedSessionVersion) return deny();
   if (!internal && user.role !== 'patient') return deny();
   await query('update app_users set last_login_at=now() where id=$1', [user.id]);
   await audit({ actor: user.id, action: 'auth.login', metadata: { provider: useSupabase ? 'supabase' : 'local' } }, request);
