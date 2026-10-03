@@ -51,6 +51,13 @@ Diretórios 0700 e objetos 0600. Nomes originais ficam apenas no banco.
 
 Limites v1: 250 MB/arquivo, 10 GB por proprietário incluindo lixeira, até 3 uploads
 simultâneos por processo, reserva de 1 GB livre, até 64 níveis, 100 itens/página/ação.
+O indicador de armazenamento em Meus Arquivos mostra uso e limite da conta, saldo para
+envios e capacidade livre/total do filesystem do storage, consultada por statfs na API
+autenticada. O saldo considera o menor valor entre quota restante e espaço utilizável
+na VPS, preservando a reserva e o mesmo critério de admissão dos uploads. Lixeira conta
+no uso; a interface atualiza após operações e avisa a partir de 90% da quota ou quando
+o servidor limita os envios. Falha na leitura do disco mantém a listagem disponível,
+sem inventar capacidade. Unidades exibidas em base 1024, como nos limites existentes.
 Upload em streaming com SHA-256, validação de tamanho real e assinaturas dos formatos
 visualizáveis, sem confiar no MIME do cliente. Formatos desconhecidos, HTML/SVG/scripts,
 Office, ZIP e HEIC continuam disponíveis para download com application/octet-stream.

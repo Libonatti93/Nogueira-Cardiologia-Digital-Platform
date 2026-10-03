@@ -8,6 +8,24 @@ import { DriveError, driveUuid, detectDriveMime } from './drive-policy';
 export const driveRoot = path.resolve(/* turbopackIgnore: true */ process.env.DRIVE_STORAGE_ROOT || '/opt/nogueira-drive');
 export const maxDriveFileBytes = 250 * 1024 * 1024;
 export const driveQuotaBytes = 10 * 1024 * 1024 * 1024;
+const driveReserveBytes = 1024 ** 3;
+
+export async function getDriveStorage(usedBytes: number) {
+  try {
+    const disk = await statfs(driveRoot);
+    const freeBytes = disk.bavail * disk.bsize;
+    // Match upload admission and keep the server's operating reserve untouched.
+    const writableBytes = freeBytes < maxDriveFileBytes + driveReserveBytes ? 0 : freeBytes - driveReserveBytes;
+    return {
+      totalBytes: disk.blocks * disk.bsize,
+      freeBytes,
+      availableBytes: Math.max(0, Math.min(driveQuotaBytes - usedBytes, writableBytes)),
+    };
+  } catch {
+    console.error('drive_storage_capacity_unavailable');
+    return null;
+  }
+}
 export function drivePath(key: string) {
   if (!driveUuid.test(key)) throw new DriveError('Identificador de armazenamento inválido.');
   return path.join(driveRoot,'objects',key.slice(0,2),key);
@@ -34,7 +52,7 @@ export async function receiveDriveFile(request: Request, name: string) {
   try {
     await mkdir(path.dirname(target),{recursive:true,mode:0o700});
     const disk = await statfs(driveRoot);
-    if (disk.bavail*disk.bsize < maxDriveFileBytes + 1024**3) throw new DriveError('Armazenamento temporariamente sem espaço para novos envios.',507);
+    if (disk.bavail*disk.bsize < maxDriveFileBytes + driveReserveBytes) throw new DriveError('Armazenamento temporariamente sem espaço para novos envios.',507);
     file = await open(target,constants.O_CREAT|constants.O_EXCL|constants.O_WRONLY|constants.O_NOFOLLOW,0o600);
     const hash = createHash('sha256'), reader = request.body.getReader();
     let size = 0, head = Buffer.alloc(0);

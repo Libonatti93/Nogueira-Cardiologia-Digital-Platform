@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile, readdir, readFile, stat } from 'node:fs/promises';
+import { mkdir, writeFile, readdir, readFile, stat, statfs } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { request as httpRequest } from 'node:http';
@@ -63,6 +63,14 @@ try {
   const breadcrumbs=(await list('?folder='+year.id)).breadcrumbs;assert.deepEqual(breadcrumbs.map(c=>c.name),['Documentos','2026']);
   const text=await uploaded('Anotações.txt','Documento privado de teste. Olá!','text/plain',year.id);
   const duplicate=await uploaded('Anotações.txt','Outra versão, sem sobrescrever.','text/plain',year.id);assert.notEqual(text.id,duplicate.id);
+  const capacity=await list(),disk=await statfs(storage);
+  assert.equal(capacity.usage.bytes,Buffer.byteLength('Documento privado de teste. Olá!Outra versão, sem sobrescrever.'));
+  assert.equal(capacity.storage.totalBytes,disk.blocks*disk.bsize);
+  assert.ok(Math.abs(capacity.storage.freeBytes-disk.bavail*disk.bsize)<64*1024**2,'Free space reflects the actual storage filesystem');
+  assert.equal(capacity.storage.availableBytes,capacity.quota-capacity.usage.bytes);
+  assert.equal((await list('?q=nonexistent')).usage.bytes,capacity.usage.bytes,'Usage is account-wide, not filtered');
+  assert.equal((await list('',other)).usage.bytes,0,'Usage is isolated by owner');
+  pass('storage capacity reflects actual disk, account quota and owner-wide usage');
   pass('folders/subfolders, breadcrumb, duplicate conflicts and non-overwriting upload');
   assert.equal(await (await content(text.id)).text(),'Documento privado de teste. Olá!');
   const preview=await fetch(`${base}/api/internal/files/${text.id}/content?preview=1`,{headers:{cookie}});
@@ -87,6 +95,7 @@ try {
   pass('owner isolation across MASTER accounts, traversal, malicious filenames, forged MIME and direct URLs');
   const largeStatus=await new Promise((resolve,reject)=>{const req=httpRequest(`${base}/api/internal/files/upload?name=large.zip`,{method:'PUT',headers:{cookie,origin:base,'Content-Type':'application/zip','Content-Length':251*1024**2}},res=>{res.resume();resolve(res.statusCode);req.destroy();});req.on('error',e=>{if(e.code!=='ECONNRESET')reject(e);});req.write('x');});assert.equal(largeStatus,413);
   await db.query('update drive_files set size=$2 where id=$1',[active.id,10*1024**3]);
+  assert.equal((await list()).storage.availableBytes,0,'An over-quota account never shows negative availability');
   assert.equal((await upload('over-quota.txt','x')).status,413);await db.query('update drive_files set size=$2 where id=$1',[active.id,29]);
   // Restore actual fixture size to make backup checksum validation meaningful.
   await db.query('update drive_files set size=$2 where id=$1',[active.id,Buffer.byteLength('<script>alert(1)</script>')]);
@@ -99,7 +108,9 @@ try {
   assert.equal((await list('?q=consulta')).items[0].id,text.id);assert.ok((await list('?view=recent&sort=date&direction=desc')).items.length);
   await checked(await action('move',[year],{parentId:destination.id}));
   pass('rename, move file/folder, cycle prevention, global search, sorting, recent and favorites');
+  const usedBeforeTrash=(await list()).usage.bytes;
   await checked(await action('trash',[duplicate]));await checked(await action('trash',[destination]));
+  assert.equal((await list()).usage.bytes,usedBeforeTrash,'Trash still consumes storage');
   assert.equal((await content(text.id)).status,404);
   assert.equal((await action('restore',[destination],{},other)).status,404);
   assert.equal((await action('purge',[destination],{},other)).status,404);
@@ -108,6 +119,7 @@ try {
   await checked(await action('trash',[destination]));await checked(await action('restore',[duplicate]));
   assert.ok((await list()).items.some(i=>i.id===duplicate.id));
   await checked(await action('purge',[destination]));assert.equal((await content(text.id)).status,404);
+  assert.equal((await list()).usage.bytes,usedBeforeTrash-Number(fileRow.size),'Permanent deletion releases account capacity');
   await assert.rejects(stat(physical),{code:'ENOENT'});
   assert.equal((await action('purge',[documents])).status,409);
   pass('recursive trash, independent delete batches, root fallback restoration and physical permanent deletion');
@@ -130,16 +142,22 @@ try {
       browser=await pw[engine].launch({headless:true,...(engine==='webkit'&&process.env.PLAYWRIGHT_WEBKIT_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_WEBKIT_EXECUTABLE}:{})});const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true,ignoreHTTPSErrors:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.goto(browserBase+'/acesso');await page.getByLabel('E-mail de acesso').fill('drive-0@example.invalid');await page.getByLabel('Senha',{exact:true}).fill(password);await page.getByRole('button',{name:'Entrar no painel',exact:true}).click();await page.waitForURL('**/dashboard');
       await page.getByRole('link',{name:'Arquivos',exact:true}).click();await page.getByRole('heading',{name:'Meus Arquivos',exact:true}).waitFor();await page.getByRole('button',{name:'Documentos Pasta',exact:true}).waitFor();
+      const meter=page.getByRole('meter',{name:'Espaço usado na conta'});await meter.waitFor();
+      const usedBeforeUpload=Number(await meter.getAttribute('aria-valuenow'));
+      assert.equal(Number(await meter.getAttribute('aria-valuemax')),10*1024**3);
+      await page.getByText(/^VPS: .* livres de /).waitFor();
       await page.screenshot({path:`${evidence}/${engine}-desktop.png`,fullPage:true});
       await page.getByRole('button',{name:'Nova pasta',exact:true}).click();await page.getByLabel('Nome',{exact:true}).fill('Pasta navegador '+engine);await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
       await page.getByLabel('Selecionar arquivos para upload').setInputFiles([{name:'Browser upload.txt',mimeType:'text/plain',buffer:Buffer.from('Browser upload fixture')},{name:'Segundo upload.csv',mimeType:'text/csv',buffer:Buffer.from('nome,valor\nfixture,1')}]);
       await page.getByRole('status').filter({hasText:'2 arquivos enviados.'}).waitFor();
+      await page.waitForFunction(previous=>Number(document.querySelector('[role="meter"]').getAttribute('aria-valuenow'))>previous,usedBeforeUpload);
       await page.getByRole('button',{name:/^Browser upload.txt TXT/}).click();await page.getByRole('dialog').waitFor();await page.frameLocator('iframe').locator('body').getByText('Browser upload fixture').waitFor();
       const downloaded=page.waitForEvent('download');await page.getByRole('link',{name:'Download',exact:true}).click();assert.equal((await downloaded).suggestedFilename(),'Browser upload.txt');await page.getByRole('button',{name:'Fechar janela'}).click();
       await page.getByRole('button',{name:'Visualização em lista'}).click();await page.screenshot({path:`evidence/${engine}-list.png`.replace('evidence/',evidence+'/'),fullPage:true});
       await page.getByLabel('Buscar arquivos e pastas').fill('Browser upload');await page.getByRole('button',{name:/^Browser upload.txt TXT/}).waitFor();await page.waitForFunction(()=>document.querySelectorAll('.drive-item').length===1);assert.equal(await page.locator('.drive-item').count(),1);await page.getByLabel('Buscar arquivos e pastas').fill('');
       await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Visualização em grade'}).click();await page.getByRole('button',{name:'Documentos Pasta',exact:true}).waitFor();
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile layout overflow');await page.screenshot({path:`${evidence}/${engine}-mobile.png`,fullPage:true});
+      const meterBounds=await meter.boundingBox();assert.ok(meterBounds.x>=0&&meterBounds.x+meterBounds.width<=390,'Storage meter fits mobile viewport');
       await page.getByRole('button',{name:/^Browser upload.txt TXT/}).click();await page.getByRole('dialog').waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${evidence}/${engine}-preview-mobile.png`,fullPage:true});await page.getByRole('button',{name:'Fechar janela'}).click();
       await page.getByLabel('Selecionar Browser upload.txt',{exact:true}).check();await page.getByRole('button',{name:'Excluir',exact:true}).click();await page.getByRole('button',{name:'Mover para lixeira',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});await page.getByRole('button',{name:'Lixeira',exact:true}).click();
       await page.getByLabel('Selecionar Browser upload.txt',{exact:true}).check();await page.getByRole('button',{name:'Restaurar',exact:true}).click();await page.getByRole('status').filter({hasText:'Itens restaurados.'}).waitFor();

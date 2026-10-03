@@ -3,7 +3,7 @@ import type { SessionUser } from './auth';
 import { query, transaction } from './db';
 import { audit } from './audit';
 import { DriveError, driveId, driveName, driveExtension } from './drive-policy';
-import { driveQuotaBytes, maxDriveFileBytes, removeDriveObject, commitDriveObject } from './drive-storage';
+import { driveQuotaBytes, maxDriveFileBytes, removeDriveObject, commitDriveObject, getDriveStorage } from './drive-storage';
 
 type Db = {query:typeof query};
 export type DriveItem = {id:string;kind:'folder'|'file';name:string;parent_id:string|null;size:number;mime_type:string;extension:string;favorite:boolean;updated_at:string;created_at:string;deleted_at:string|null};
@@ -44,7 +44,8 @@ export async function readDrive(owner:string,params:URLSearchParams) {
   const items=await query(`select id,kind,name,parent_id,size::float8,mime_type,extension,favorite,updated_at,created_at,deleted_at,count(*) over()::int total
     from (${projection}) items where ${where} order by ${view==='recent'?'':"(kind='folder') desc,"} ${order} ${direction},id limit 100 offset ${offset}`,values);
   const usage=(await query(`select coalesce(sum(size),0)::float8 bytes,count(*)::int files,count(*) filter(where deleted_at is not null)::int trash from drive_files where owner_id=$1`,[owner])).rows[0];
-  return {items:items.rows,total:items.rows[0]?.total||0,breadcrumbs:crumbs,usage,quota:driveQuotaBytes,maxFileSize:maxDriveFileBytes};
+  const storage = await getDriveStorage(usage.bytes);
+  return {items:items.rows,total:items.rows[0]?.total||0,breadcrumbs:crumbs,usage,quota:driveQuotaBytes,maxFileSize:maxDriveFileBytes,storage};
 }
 export async function driveTransaction<T>(user:SessionUser,callback:(client:PoolClient)=>Promise<T>) {
   return transaction(async client=>{

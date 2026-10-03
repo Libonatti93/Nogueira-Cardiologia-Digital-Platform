@@ -7,7 +7,7 @@ import type { DriveItem } from '@/lib/drive';
 import { canPreviewDrive } from '@/lib/drive-policy';
 import './files.css';
 
-type Listing={items:DriveItem[];total:number;breadcrumbs:{id:string;name:string}[];usage:{bytes:number;files:number;trash:number};quota:number;maxFileSize:number};
+type Listing={items:DriveItem[];total:number;breadcrumbs:{id:string;name:string}[];usage:{bytes:number;files:number;trash:number};quota:number;maxFileSize:number;storage:{totalBytes:number;freeBytes:number;availableBytes:number}|null};
 type DialogState={action:'folder'|'rename'|'move'|'trash'|'purge'|'preview';items:DriveItem[]};
 const endpoint='/api/internal/files';
 function bytes(n:number){if(!n)return '0 B';const units=['B','KB','MB','GB','TB'],i=Math.min(4,Math.floor(Math.log(n)/Math.log(1024)));return `${(n/1024**i).toLocaleString('pt-BR',{maximumFractionDigits:i?1:0})} ${units[i]}`;}
@@ -104,8 +104,18 @@ export function FilesConsole() {
   const preview=dialog?.action==='preview'?dialog.items[0]:null;
   const previewUrl=preview?`${endpoint}/${preview.id}/content?preview=1`:'';
   const tabs=[['files','folder','Todos os arquivos'],['recent','clock','Recentes'],['favorites','star','Favoritos'],['trash','trash','Lixeira']];
+  const usedPercent=data?Math.min(100,Math.max(0,data.usage.bytes/data.quota*100)):0;
+  const diskLimited=Boolean(data?.storage&&data.storage.availableBytes<Math.max(0,data.quota-data.usage.bytes));
   return <section className="drive" onDragOver={event=>{if(view!=='trash'&&event.dataTransfer.types.includes('Files')){event.preventDefault();setDrag(true);}}} onDragLeave={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))setDrag(false);}} onDrop={event=>{event.preventDefault();setDrag(false);void sendFiles(Array.from(event.dataTransfer.files));}}>
     <header className="drive-heading"><div><span className="drive-eyebrow">NOGUEIRA CARDIOLOGIA</span><h1>Meus Arquivos</h1><p>Seus documentos, organizados em um só lugar.</p></div><span className="drive-private"><Icon name="lock"/> Espaço privado</span></header>
+    <section className={`drive-storage ${usedPercent>=90||diskLimited?'drive-storage-warning':''}`} aria-label="Armazenamento da conta">
+      <div className="drive-storage-heading"><strong>Armazenamento</strong><span>{data?.storage?`${bytes(data.storage.availableBytes)} disponíveis`:data?'Disponibilidade temporariamente indisponível':loading?'Consultando espaço…':'Não foi possível consultar o espaço'}</span></div>
+      {data&&<>
+        <div className="drive-storage-track" role="meter" aria-label="Espaço usado na conta" aria-valuemin={0} aria-valuemax={data.quota} aria-valuenow={Math.min(data.usage.bytes,data.quota)} aria-valuetext={`${bytes(data.usage.bytes)} usados de ${bytes(data.quota)}`}><span style={{width:`${usedPercent}%`}}/></div>
+        <div className="drive-storage-details"><span><strong>{bytes(data.usage.bytes)}</strong> de {bytes(data.quota)} usados na conta</span><span>{data.storage?`VPS: ${bytes(data.storage.freeBytes)} livres de ${bytes(data.storage.totalBytes)}`:'Espaço da VPS indisponível no momento'}</span></div>
+        <p>{diskLimited?'O espaço disponível está limitado pela capacidade livre do servidor. ':usedPercent>=90?'Sua conta está próxima do limite de armazenamento. ':''}Os arquivos na lixeira também ocupam espaço.</p>
+      </>}
+    </section>
     <div className="drive-topbar"><nav aria-label="Áreas de arquivos">{tabs.map(([key,icon,label])=><button key={key} aria-label={label} className={view===key?'active':''} onClick={()=>{setSort(key==='recent'?'date':'name');setDirection(key==='recent'?'desc':'asc');navigate('',key);}} aria-current={view===key?'page':undefined}><Icon name={icon}/>{label}</button>)}</nav>
       <details className="drive-new"><summary>+ Novo</summary><div><button onClick={e=>{e.currentTarget.closest('details')?.removeAttribute('open');input.current?.click();}} disabled={view==='trash'}><Icon name="upload"/>Upload de arquivo</button><button onClick={e=>{e.currentTarget.closest('details')?.removeAttribute('open');openDialog('folder',[]);}} disabled={view==='trash'}><Icon name="folder"/>Nova pasta</button></div></details>
     </div>
@@ -139,7 +149,7 @@ export function FilesConsole() {
         </div>
       </div>
       {(offset>0||(data?.total||0)>100)&&<div className="drive-pagination"><button disabled={!offset} onClick={()=>{setOffset(Math.max(0,offset-100));setSelected([]);}}>Anterior</button><span>Página {offset/100+1}</span><button disabled={offset+100>=(data?.total||0)} onClick={()=>{setOffset(offset+100);setSelected([]);}}>Próxima</button></div>}
-      <footer className="drive-footer"><span><Icon name="lock"/>Apenas você tem acesso aos seus arquivos.</span><span>{bytes(data?.usage.bytes||0)} de {bytes(data?.quota||10*1024**3)} usados</span></footer>
+      <footer className="drive-footer"><span><Icon name="lock"/>Apenas você tem acesso aos seus arquivos.</span></footer>
     </div>
     {drag&&<div className="drive-drop" aria-hidden="true"><Icon name="upload" large/><strong>Solte seus arquivos aqui</strong><span>Enviar para {data?.breadcrumbs.at(-1)?.name||'Meus Arquivos'}</span></div>}
     {dialog&&<Modal title={dialog.action==='folder'?'Nova pasta':dialog.action==='rename'?'Renomear':dialog.action==='move'?'Mover para uma pasta':dialog.action==='trash'?'Mover para a lixeira?':dialog.action==='purge'?'Excluir definitivamente?':preview?.name||'Visualizar'} onClose={()=>{if(!busy)setDialog(null);}}>
