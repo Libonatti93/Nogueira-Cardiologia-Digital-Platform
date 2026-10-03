@@ -7,8 +7,9 @@ import { DriveError, driveUuid, detectDriveMime } from './drive-policy';
 // External persistent volume: never include its contents in the application artifact.
 export const driveRoot = path.resolve(/* turbopackIgnore: true */ process.env.DRIVE_STORAGE_ROOT || '/opt/nogueira-drive');
 export const maxDriveFileBytes = 250 * 1024 * 1024;
-export const driveQuotaBytes = 10 * 1024 * 1024 * 1024;
-const driveReserveBytes = 1024 ** 3;
+export const driveQuotaBytes = 50 * 1024 * 1024 * 1024;
+// Keep operating headroom for the database, application and other VPS services.
+const driveReserveBytes = 10 * 1024 ** 3;
 
 export async function getDriveStorage(usedBytes: number) {
   try {

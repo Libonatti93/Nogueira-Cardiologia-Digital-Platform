@@ -64,7 +64,7 @@ export async function finishDriveUpload(user:SessionUser,parent:string|null,name
     return await driveTransaction(user,async client=>{
       await folder(client,user.id,parent);
       const used=Number((await client.query('select coalesce(sum(size),0) bytes from drive_files where owner_id=$1',[user.id])).rows[0].bytes);
-      if(used+upload.size>driveQuotaBytes) throw new DriveError('O limite de 10 GB foi atingido. Esvazie itens da lixeira para liberar espaço.',413);
+      if(used+upload.size>driveQuotaBytes) throw new DriveError('O limite de armazenamento foi atingido. Esvazie itens da lixeira para liberar espaço.',413);
       const row=(await client.query(`insert into drive_files(owner_id,folder_id,original_name,stored_name,mime_type,extension,size,checksum)
         values($1,$2,$3,$4,$5,$6,$7,$8) returning id`,[user.id,parent,name,upload.key,upload.mime,driveExtension(name),upload.size,upload.checksum])).rows[0];
       await audit({actor:user.id,action:'files.upload',entity:'drive_files',id:row.id},request,client);

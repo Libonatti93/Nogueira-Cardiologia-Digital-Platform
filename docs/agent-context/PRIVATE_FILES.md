@@ -49,8 +49,11 @@ bind mount desse mesmo diretório; não usar filesystem efêmero.
 Objetos: `objects/<prefixo UUID>/<UUID>`; envios incompletos: `incoming/<UUID>`.
 Diretórios 0700 e objetos 0600. Nomes originais ficam apenas no banco.
 
-Limites v1: 250 MB/arquivo, 10 GB por proprietário incluindo lixeira, até 3 uploads
-simultâneos por processo, reserva de 1 GB livre, até 64 níveis, 100 itens/página/ação.
+Limites atuais: 250 MB/arquivo, 50 GB por proprietário incluindo lixeira, até 3 uploads
+simultâneos por processo, reserva de 10 GB livres para operação da VPS, até 64 níveis,
+100 itens/página/ação. O limite por conta não representa espaço dedicado: as contas e
+os backups compartilham o disco. A reserva operacional não garante espaço para todas
+as cópias completas da retenção local; backup externo segue pendente (ver abaixo).
 O indicador de armazenamento em Meus Arquivos mostra uso e limite da conta, saldo para
 envios e capacidade livre/total do filesystem do storage, consultada por statfs na API
 autenticada. O saldo considera o menor valor entre quota restante e espaço utilizável

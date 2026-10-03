@@ -94,7 +94,12 @@ try {
   assert.equal((await call('/storage/'+fileRow.stored_name)).status,404);
   pass('owner isolation across MASTER accounts, traversal, malicious filenames, forged MIME and direct URLs');
   const largeStatus=await new Promise((resolve,reject)=>{const req=httpRequest(`${base}/api/internal/files/upload?name=large.zip`,{method:'PUT',headers:{cookie,origin:base,'Content-Type':'application/zip','Content-Length':251*1024**2}},res=>{res.resume();resolve(res.statusCode);req.destroy();});req.on('error',e=>{if(e.code!=='ECONNRESET')reject(e);});req.write('x');});assert.equal(largeStatus,413);
-  await db.query('update drive_files set size=$2 where id=$1',[active.id,10*1024**3]);
+  // Simulate aggregate usage in the isolated database without allocating gigabytes.
+  await db.query('update drive_files set size=$2 where id=$1',[active.id,12*1024**3]);
+  const aboveOldQuota=await uploaded('above-old-quota.txt','Quota ampliada.');
+  assert.ok((await list()).usage.bytes>10*1024**3,'Uploads remain available above the former 10 GB limit');
+  await checked(await action('trash',[aboveOldQuota]));await checked(await action('purge',[aboveOldQuota]));
+  await db.query('update drive_files set size=$2 where id=$1',[active.id,50*1024**3]);
   assert.equal((await list()).storage.availableBytes,0,'An over-quota account never shows negative availability');
   assert.equal((await upload('over-quota.txt','x')).status,413);await db.query('update drive_files set size=$2 where id=$1',[active.id,29]);
   // Restore actual fixture size to make backup checksum validation meaningful.
@@ -144,7 +149,7 @@ try {
       await page.getByRole('link',{name:'Arquivos',exact:true}).click();await page.getByRole('heading',{name:'Meus Arquivos',exact:true}).waitFor();await page.getByRole('button',{name:'Documentos Pasta',exact:true}).waitFor();
       const meter=page.getByRole('meter',{name:'Espaço usado na conta'});await meter.waitFor();
       const usedBeforeUpload=Number(await meter.getAttribute('aria-valuenow'));
-      assert.equal(Number(await meter.getAttribute('aria-valuemax')),10*1024**3);
+      assert.equal(Number(await meter.getAttribute('aria-valuemax')),50*1024**3);
       await page.getByText(/^VPS: .* livres de /).waitFor();
       await page.screenshot({path:`${evidence}/${engine}-desktop.png`,fullPage:true});
       await page.getByRole('button',{name:'Nova pasta',exact:true}).click();await page.getByLabel('Nome',{exact:true}).fill('Pasta navegador '+engine);await page.getByRole('button',{name:'Salvar',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
