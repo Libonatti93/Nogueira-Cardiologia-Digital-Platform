@@ -49,6 +49,21 @@ async function main() {
     },
   };
 
+  const extraBefore = JSON.stringify([cfg.http.routers['http-nogueira-app'], cfg.http.routers['https-nogueira-app']]);
+  const appMarker = '/etc/easypanel/traefik/nogueira-app-tls-ready';
+  let appReady = fs.existsSync(appMarker);
+  if (!appReady) {
+    try {
+      if ((await dns.resolve4('app.nogueiracardiologia.com.br')).includes('2.24.215.163')) {
+        fs.writeFileSync(appMarker, new Date().toISOString(), {mode:0o600}); appReady = true;
+      }
+    } catch { /* Wait for the owner to publish DNS. */ }
+  }
+  const appRule = `Host(${bt}app.nogueiracardiologia.com.br${bt})`;
+  cfg.http.routers['http-nogueira-app'] = {...panelHttp,rule:appRule};
+  cfg.http.routers['https-nogueira-app'] = {...panelHttps,rule:appRule,tls:appReady?{certResolver:'letsencrypt'}:{}};
+  const extraAfter = JSON.stringify([cfg.http.routers['http-nogueira-app'], cfg.http.routers['https-nogueira-app']]);
+
   const before = JSON.stringify({
     http: cfg.http.routers['http-nogueira-web'],
     https: cfg.http.routers['https-nogueira-web'],
@@ -71,7 +86,7 @@ async function main() {
     panelHttps:cfg.http.routers['https-nogueira-panel'],
   });
 
-  if (before !== after) {
+  if (before !== after || extraBefore !== extraAfter) {
     const temporary = '/etc/easypanel/traefik/nogueira-route.tmp';
     fs.writeFileSync(temporary, JSON.stringify(cfg, null, 2));
     fs.renameSync(temporary,configPath);

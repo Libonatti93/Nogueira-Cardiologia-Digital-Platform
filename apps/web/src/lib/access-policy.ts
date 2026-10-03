@@ -5,7 +5,7 @@ export function hasPermission(user: { permissions?: string[] } | null, permissio
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get('origin');
   const expected = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
-  const allowed = [new URL(expected).origin, 'https://painel.nogueiracardiologia.com.br', ...(process.env.AUTH_ALLOWED_ORIGINS || '').split(',').filter(Boolean)];
+  const allowed = [new URL(expected).origin, 'https://painel.nogueiracardiologia.com.br', 'https://app.nogueiracardiologia.com.br', ...(process.env.AUTH_ALLOWED_ORIGINS || '').split(',').filter(Boolean)];
   return origin !== null && allowed.includes(origin) && request.headers.get('sec-fetch-site') !== 'cross-site';
 }
 

@@ -27,6 +27,7 @@ Git e protegidos com 0600. Nunca copiar seus valores para tickets, logs ou docs.
 | LIOS_TEXT_MODEL / LIOS_IMAGE_MODEL | Modelos do provedor quando ativado |
 | LIOS_RSS_FEEDS | URLs de feeds públicos aprovados, separados por vírgulas |
 | NEXT_DIST_DIR / RELEASE_SHA / GIT_SHA | Identificação do artefato no build/deploy; não são segredos |
+| DRIVE_STORAGE_ROOT | Diretório host persistente dos arquivos privados; padrão /opt/nogueira-drive, fora de Git/public/build |
 
 Não há configuração de IA paga ou feeds reais nesta entrega. O modo demonstração
 exercita o pipeline e a revisão, mas seus artigos são impedidos de entrar no blog.

@@ -3,6 +3,12 @@
 Diretório de comandos web: `/root/Nogueira-Cardiologia-Digital-Platform/apps/web`.
 Serviço existente: `nogueira-web.service`, npm start na porta 3002. Proxy e TLS permanecem no Traefik/EasyPanel.
 
+Arquivos privados: ver [PRIVATE_FILES.md](PRIVATE_FILES.md). Migration 010 é aditiva.
+Deploy prepara `/opt/nogueira-drive` fora das releases, integra o backup local e executa
+`scripts/smoke-drive.mjs` com arquivos técnicos temporários, removidos ao terminar.
+O alias `app.nogueiracardiologia.com.br` reutiliza web/Traefik; TLS público depende do DNS A.
+O storage não deve ser removido em rollback. Cópia externa dos backups continua pendente.
+
 ## Pré-deploy
 
 1. `git status -sb`, `git diff`, `git fetch --all --prune`, comparar HEAD e origin/agent/portal-seo-home-ux.

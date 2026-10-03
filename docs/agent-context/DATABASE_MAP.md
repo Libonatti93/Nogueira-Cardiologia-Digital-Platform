@@ -19,6 +19,8 @@ Banco de produção `nogueira_app`, container `nogueira-postgres`.
 | user_roles / role_permissions | Relações N:N do RBAC |
 | auth_rate_limits | Limitação de tentativas; chave com hash, contagem e expiração |
 | schema_migrations | Nome, SHA-256 do arquivo e data de aplicação das migrations novas |
+| drive_folders / drive_files | Migration 010: pastas e metadados privados por owner_id, favoritos e lixeira; bytes fora do banco |
+| drive_file_cleanup | Fila transacional de remoção física dos arquivos excluídos definitivamente |
 
 ## Schema lios (migration 008)
 

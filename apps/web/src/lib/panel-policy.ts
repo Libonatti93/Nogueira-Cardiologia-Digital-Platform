@@ -1,11 +1,13 @@
 export const panelHost = 'painel.nogueiracardiologia.com.br';
 export const panelOrigin = `https://${panelHost}`;
+export const panelHosts = [panelHost, 'app.nogueiracardiologia.com.br'];
 
 type Access = { permissions?: string[]; mustChangePassword?: boolean };
 export function panelLanding(user: Access) {
   if (!user.permissions?.includes('panel.access')) return '/acesso?denied=1';
   if (user.mustChangePassword) return '/alterar-senha';
   if (user.permissions.includes('internal.access')) return '/dashboard';
+  if (user.permissions.includes('files.access')) return '/arquivos';
   if (user.permissions.includes('crm.access')) return '/crm';
   if (user.permissions.includes('lios.read')) return '/lios';
   if (user.permissions.includes('governance.read')) return '/governanca';
@@ -15,6 +17,7 @@ export function panelLanding(user: Access) {
 
 export const panelNavigation = [
   {label:'Dashboard',href:'/dashboard',permission:'internal.access',icon:'▦'},
+  {label:'Arquivos',href:'/arquivos',permission:'files.access',icon:'▱'},
   {label:'CRM',href:'/crm',permission:'crm.access',icon:'◫'},
   {label:'Agenda',href:'/crm?view=agenda',permission:'crm.appointments.read',icon:'▤'},
   {label:'Pacientes',href:'/crm?view=patients',permission:'crm.patients.read',icon:'♧'},

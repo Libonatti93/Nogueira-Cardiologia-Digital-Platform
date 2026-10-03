@@ -10,4 +10,7 @@ mkdir -p "$BACKUP_DIR"
 docker exec nogueira-postgres sh -ec 'export PGPASSWORD="$(cat /run/secrets/postgres_admin_password)"; exec pg_dump -U nogueira_admin -d nogueira_app'  | gzip > "$BACKUP_DIR/nogueira_app-$TS.sql.gz"
 docker exec nogueira-postgres sh -ec 'export PGPASSWORD="$(cat /run/secrets/postgres_admin_password)"; exec pg_dump -U nogueira_admin -d n8n'  | gzip > "$BACKUP_DIR/n8n-$TS.sql.gz"
 
+# Matched database + private objects under an application advisory lock.
+node /root/Nogueira-Cardiologia-Digital-Platform/apps/web/scripts/backup-drive.mjs
+
 find "$BACKUP_DIR" -type f -name '*.sql.gz' -mtime +14 -delete

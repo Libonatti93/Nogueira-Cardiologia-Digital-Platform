@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { panelHost } from '@/lib/panel-policy';
+import { panelHosts } from '@/lib/panel-policy';
 
 // Routing only. Every page/API performs its own database-backed authorization.
 export function proxy(request:NextRequest) {
   const host=request.headers.get('host')?.split(':')[0]?.toLowerCase();
   const path=request.nextUrl.pathname;
-  if(host!==panelHost)return NextResponse.next();
+  if(!host||!panelHosts.includes(host))return NextResponse.next();
   let response;
   if(path==='/') {
     const target=request.nextUrl.clone();target.pathname='/acesso';response=NextResponse.rewrite(target);
@@ -16,4 +16,4 @@ export function proxy(request:NextRequest) {
   response.headers.set('Cache-Control','private, no-store');
   return response;
 }
-export const config={matcher:['/','/acesso/:path*','/dashboard/:path*','/crm/:path*','/governanca/:path*','/auditoria/:path*','/lios/:path*','/configuracoes/:path*','/alterar-senha','/sem-acesso','/portal/:path*','/blog/:path*','/privacidade','/exames']};
+export const config={matcher:['/','/arquivos/:path*','/acesso/:path*','/dashboard/:path*','/crm/:path*','/governanca/:path*','/auditoria/:path*','/lios/:path*','/configuracoes/:path*','/alterar-senha','/sem-acesso','/portal/:path*','/blog/:path*','/privacidade','/exames']};

@@ -50,6 +50,15 @@ try {
   if (imageSha !== sha) throw new Error('LIOS image revision mismatch.');
   run('docker', ['run', '--rm', image, 'pytest', '-q', '-p', 'no:cacheprovider']);
   run('docker', ['run', '--rm', image, 'ruff', 'check', '--no-cache', 'src', 'tests']);
+  // The web service runs on the host: keep private objects outside releases and Git.
+  run('install', ['-d', '-m', '700', '/opt/nogueira-drive', '/opt/nogueira-drive/objects', '/opt/nogueira-drive/incoming']);
+  const backupPath = '/opt/nogueira-postgres/backup.sh';
+  const backupSource = await readFile('deploy/postgres-n8n/backup.sh', 'utf8');
+  const backupPrevious = await readFile(backupPath, 'utf8');
+  if (backupSource !== backupPrevious) {
+    await writeFile(`${backupPath}.before-drive`, backupPrevious, { mode: 0o700 });
+    run('install', ['-m', '700', 'deploy/postgres-n8n/backup.sh', backupPath]);
+  }
   run('/opt/nogueira-postgres/backup.sh', []);
   run('node', ['scripts/migrate.mjs']);
   run('node', ['scripts/ensure-traefik-nogueira-route.js']);
@@ -75,6 +84,7 @@ try {
     await waitHealth('http://127.0.0.1:3002/api/health', sha);
     await waitHealth('https://www.nogueiracardiologia.com.br/api/health', sha);
     run('node', ['scripts/smoke-production.mjs']);
+    run('node', ['scripts/smoke-drive.mjs']);
   } catch (error) {
     if (webChanged) {
       await writeFile(runtime, previous, { mode: 0o600 });
