@@ -34,3 +34,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Private file quotas
+
+The default remains 50 GiB per account. After running `node scripts/migrate.mjs`,
+preview a change for one account with
+`node scripts/set-drive-quota.mjs --owner ACCOUNT_UUID --gib 70`; add `--apply`
+to persist it. The command checks disk capacity, retains a 10 GiB operating
+reserve, uses the upload/backup locks, and records the change in the audit log.
+Only that UUID receives an override; permissions and other accounts are unchanged.
+Account quotas do not allocate physical disk space. The API also limits the
+available capacity by the actual free space on `DRIVE_STORAGE_ROOT`.

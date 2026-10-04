@@ -12,6 +12,12 @@ const projection = `select id,'folder' kind,name,parent_id,0::bigint size,'' mim
 const subtree = `with recursive tree as (select id from drive_folders where id=$1 and owner_id=$2
  union all select f.id from drive_folders f join tree t on f.parent_id=t.id where f.owner_id=$2) select id from tree`;
 
+async function ownerQuota(db:Db,owner:string) {
+  const result=await db.query('select coalesce(drive_quota_bytes,$2::bigint) quota from app_users where id=$1',[owner,driveQuotaBytes]);
+  if(!result.rowCount) throw new DriveError('Conta indisponível.',403);
+  return Number(result.rows[0].quota);
+}
+
 async function folder(db:Db,owner:string,id:string|null) {
   if(!id) return;
   const found=await db.query('select id from drive_folders where id=$1 and owner_id=$2 and deleted_at is null',[id,owner]);
@@ -44,8 +50,9 @@ export async function readDrive(owner:string,params:URLSearchParams) {
   const items=await query(`select id,kind,name,parent_id,size::float8,mime_type,extension,favorite,updated_at,created_at,deleted_at,count(*) over()::int total
     from (${projection}) items where ${where} order by ${view==='recent'?'':"(kind='folder') desc,"} ${order} ${direction},id limit 100 offset ${offset}`,values);
   const usage=(await query(`select coalesce(sum(size),0)::float8 bytes,count(*)::int files,count(*) filter(where deleted_at is not null)::int trash from drive_files where owner_id=$1`,[owner])).rows[0];
-  const storage = await getDriveStorage(usage.bytes);
-  return {items:items.rows,total:items.rows[0]?.total||0,breadcrumbs:crumbs,usage,quota:driveQuotaBytes,maxFileSize:maxDriveFileBytes,storage};
+  const quota = await ownerQuota({query},owner);
+  const storage = await getDriveStorage(usage.bytes,quota);
+  return {items:items.rows,total:items.rows[0]?.total||0,breadcrumbs:crumbs,usage,quota,maxFileSize:maxDriveFileBytes,storage};
 }
 export async function driveTransaction<T>(user:SessionUser,callback:(client:PoolClient)=>Promise<T>) {
   return transaction(async client=>{
@@ -64,7 +71,8 @@ export async function finishDriveUpload(user:SessionUser,parent:string|null,name
     return await driveTransaction(user,async client=>{
       await folder(client,user.id,parent);
       const used=Number((await client.query('select coalesce(sum(size),0) bytes from drive_files where owner_id=$1',[user.id])).rows[0].bytes);
-      if(used+upload.size>driveQuotaBytes) throw new DriveError('O limite de armazenamento foi atingido. Esvazie itens da lixeira para liberar espaço.',413);
+      const quota=await ownerQuota(client,user.id);
+      if(used+upload.size>quota) throw new DriveError('O limite de armazenamento foi atingido. Esvazie itens da lixeira para liberar espaço.',413);
       const row=(await client.query(`insert into drive_files(owner_id,folder_id,original_name,stored_name,mime_type,extension,size,checksum)
         values($1,$2,$3,$4,$5,$6,$7,$8) returning id`,[user.id,parent,name,upload.key,upload.mime,driveExtension(name),upload.size,upload.checksum])).rows[0];
       await audit({actor:user.id,action:'files.upload',entity:'drive_files',id:row.id},request,client);
@@ -81,7 +89,7 @@ export async function finishDriveUpload(user:SessionUser,parent:string|null,name
 export async function checkDriveUpload(user:SessionUser,parent:string|null) {
   await folder({query},user.id,parent);
   const used=Number((await query('select coalesce(sum(size),0) bytes from drive_files where owner_id=$1',[user.id])).rows[0].bytes);
-  if(used>=driveQuotaBytes) throw new DriveError('O limite de armazenamento foi atingido.',413);
+  if(used>=await ownerQuota({query},user.id)) throw new DriveError('O limite de armazenamento foi atingido.',413);
 }
 export async function cleanDriveFiles(owner:string) {
   // Preserve a consistent dump/archive pair while removing queued objects.

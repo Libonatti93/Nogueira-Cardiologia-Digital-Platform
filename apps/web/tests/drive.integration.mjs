@@ -48,6 +48,7 @@ try {
       on conflict(id) do update set is_active=true,must_change_password=false,password_hash=excluded.password_hash`,[owners[i],`drive-${i}@example.invalid`,['Doutor · Teste Arquivos','Outro proprietário · Teste','Operador · Teste'][i],password]);
     await db.query('insert into user_roles(user_id,role_id) values($1,$2) on conflict do nothing',[owners[i],i===2?'CRM_OPERATOR':'MASTER']);
   }
+  await db.query('update app_users set drive_quota_bytes=null where id=any($1::uuid[])',[owners]);
   await start();cookie=await login(0);other=await login(1);denied=await login(2);
   // Clean only deterministic fixture owners from a previous isolated run.
   for(const session of [cookie,other]) {
@@ -101,7 +102,34 @@ try {
   await checked(await action('trash',[aboveOldQuota]));await checked(await action('purge',[aboveOldQuota]));
   await db.query('update drive_files set size=$2 where id=$1',[active.id,50*1024**3]);
   assert.equal((await list()).storage.availableBytes,0,'An over-quota account never shows negative availability');
-  assert.equal((await upload('over-quota.txt','x')).status,413);await db.query('update drive_files set size=$2 where id=$1',[active.id,29]);
+  assert.equal((await upload('over-quota.txt','x')).status,413);
+  const setQuota=(gib,apply=false,owner=owners[0])=>JSON.parse(execFileSync(process.execPath,
+    ['scripts/set-drive-quota.mjs','--owner',owner,'--gib',String(gib),...(apply?['--apply']:[])],
+    {env:{...process.env,DRIVE_STORAGE_ROOT:storage},encoding:'utf8',stdio:['ignore','pipe','pipe']}));
+  assert.equal(setQuota(70).applied,false);
+  assert.equal((await list()).quota,50*1024**3,'Preview does not change the account');
+  assert.equal(setQuota(70,true).changed,true);
+  assert.equal(setQuota(70,true).changed,false,'Repeated application is idempotent');
+  assert.equal((await list()).quota,70*1024**3);
+  assert.equal((await list('',other)).quota,50*1024**3,'Other accounts keep the default quota');
+  assert.equal((await list('?owner='+owners[0],other)).quota,50*1024**3,'Client cannot select another account quota');
+  assert.throws(()=>setQuota(99999,true),'Cannot grant a quota larger than physical capacity');
+  assert.throws(()=>setQuota(70,true,owners[2]),'A quota change does not grant access to Files');
+  const expanded=await uploaded('above-default-quota.txt','Quota exclusiva da conta.');
+  await checked(await action('trash',[expanded]));await checked(await action('purge',[expanded]));
+  const otherBytes=(await list()).usage.bytes-50*1024**3;
+  await db.query('update drive_files set size=$2 where id=$1',[active.id,70*1024**3-otherBytes-1]);
+  assert.equal((await list()).storage.availableBytes,1);
+  // Admission passes with one byte left; final commit must reject a two-byte file.
+  assert.equal((await upload('cross-account-quota.txt','ab')).status,413);
+  assert.equal((await list()).usage.bytes,70*1024**3-1,'Rejected uploads do not consume the quota');
+  await db.query('update drive_files set size=$2 where id=$1',[active.id,70*1024**3]);
+  assert.equal((await list()).storage.availableBytes,0);
+  assert.equal((await upload('over-account-quota.txt','x')).status,413);
+  assert.equal((await db.query("select count(*)::int total from audit_logs where action='files.quota.update' and entity_id=$1 and after_data->>'quota_bytes'=$2",[owners[0],String(70*1024**3)])).rows[0].total>0,true);
+  await db.query('update app_users set drive_quota_bytes=null where id=$1',[owners[0]]);
+  await db.query('update drive_files set size=$2 where id=$1',[active.id,29]);
+  pass('individual quota preview, application, isolation, disk guard and upload commit enforcement');
   // Restore actual fixture size to make backup checksum validation meaningful.
   await db.query('update drive_files set size=$2 where id=$1',[active.id,Buffer.byteLength('<script>alert(1)</script>')]);
   pass('upload size ceiling and owner quota enforcement');

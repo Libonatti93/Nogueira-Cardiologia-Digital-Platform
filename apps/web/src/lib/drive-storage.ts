@@ -11,7 +11,7 @@ export const driveQuotaBytes = 50 * 1024 * 1024 * 1024;
 // Keep operating headroom for the database, application and other VPS services.
 const driveReserveBytes = 10 * 1024 ** 3;
 
-export async function getDriveStorage(usedBytes: number) {
+export async function getDriveStorage(usedBytes: number, quotaBytes = driveQuotaBytes) {
   try {
     const disk = await statfs(driveRoot);
     const freeBytes = disk.bavail * disk.bsize;
@@ -20,7 +20,7 @@ export async function getDriveStorage(usedBytes: number) {
     return {
       totalBytes: disk.blocks * disk.bsize,
       freeBytes,
-      availableBytes: Math.max(0, Math.min(driveQuotaBytes - usedBytes, writableBytes)),
+      availableBytes: Math.max(0, Math.min(quotaBytes - usedBytes, writableBytes)),
     };
   } catch {
     console.error('drive_storage_capacity_unavailable');
