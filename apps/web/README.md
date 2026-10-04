@@ -37,7 +37,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Private file quotas
 
-The default remains 50 GiB per account. After running `node scripts/migrate.mjs`,
+Storage is enabled only for Dr. Paulo's verified account by migration 012.
+Other accounts, including MASTER accounts, cannot see the Files navigation or
+access its page and APIs. Existing files are retained. `drive_enabled` is checked
+on every session load and again when committing file mutations; role editing
+and quota changes cannot enable the service for another account.
+
+The default quota remains 50 GiB. After running `node scripts/migrate.mjs`,
 preview a change for one account with
 `node scripts/set-drive-quota.mjs --owner ACCOUNT_UUID --gib 70`; add `--apply`
 to persist it. The command checks disk capacity, retains a 10 GiB operating

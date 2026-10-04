@@ -17,16 +17,28 @@ const change=(cookie,action,items,extra={})=>call('/api/internal/files',cookie,{
 let cookie='';
 try{
   await db.connect();assert.equal((await db.query('select current_database() name')).rows[0].name,'nogueira_app');
-  const users=(await db.query("select id,email,full_name,role,session_version from app_users where id=any($1::uuid[]) and is_active",[['4d6a92f6-2a80-428e-84be-d2369de3c22f','9dfce534-033f-4f74-91ef-61478581ef48']])).rows;
+  const users=(await db.query("select id,email,full_name,role,session_version,drive_enabled,drive_quota_bytes from app_users where id=any($1::uuid[]) and is_active",[['4d6a92f6-2a80-428e-84be-d2369de3c22f','9dfce534-033f-4f74-91ef-61478581ef48','0c2a873f-828e-46f9-b9e1-6e4997a83d12']])).rows;
   const paulo=users.find(u=>u.id==='4d6a92f6-2a80-428e-84be-d2369de3c22f');assert.ok(paulo);cookie=cookieFor(paulo);
   assert.equal((await call('/api/internal/files')).status,401);assert.equal((await call('/arquivos')).status,307);
   assert.equal((await call('/arquivos',cookie)).status,200);
+  assert.deepEqual((await db.query('select id from app_users where drive_enabled order by id')).rows.map(u=>u.id),[paulo.id]);
+  const capacity=await (await call('/api/internal/files',cookie)).json();
+  assert.equal(capacity.quota,Number(paulo.drive_quota_bytes??50*1024**3));
+  for(const other of users.filter(u=>u.id!==paulo.id)) {
+    const session=cookieFor(other);
+    assert.equal((await call('/api/internal/files',session)).status,403);
+    const page=await call('/arquivos',session);assert.equal(page.status,307);assert.equal(page.headers.get('location'),'/sem-acesso');
+    assert.ok(!(await (await call('/dashboard',session)).text()).includes('href="/arquivos"'));
+    assert.equal((await change(session,'folder',[],{name:'Unauthorized storage'})).status,403);
+    assert.equal((await fetch(`${base}/api/internal/files/upload?name=denied.txt`,{method:'PUT',headers:{cookie:session,origin:base,'Content-Type':'text/plain'},body:'denied'})).status,403);
+  }
+  checks.push('storage enabled exclusively for Dr. Paulo; other MASTER accounts denied page, navigation, listing and uploads');
   const created=await change(cookie,'folder',[],{name:`Validação técnica temporária ${randomUUID()}`});assert.equal(created.status,200);folder={...await created.json(),kind:'folder'};
   const bytes=Buffer.from('Nogueira Drive: teste técnico temporário, sem dados pessoais.');
   const sent=await fetch(`${base}/api/internal/files/upload?${new URLSearchParams({name:'validacao.txt',folder:folder.id})}`,{method:'PUT',headers:{cookie,origin:base,'Content-Type':'text/plain'},body:bytes});assert.equal(sent.status,201);const file=await sent.json();
   const downloaded=await call(`/api/internal/files/${file.id}/content`,cookie);assert.equal(downloaded.status,200);assert.deepEqual(Buffer.from(await downloaded.arrayBuffer()),bytes);
   const preview=await call(`/api/internal/files/${file.id}/content?preview=1`,cookie);assert.equal(preview.status,200);assert.match(preview.headers.get('content-security-policy'),/sandbox/);
-  const other=users.find(u=>u.id!==paulo.id);assert.ok(other);assert.equal((await call(`/api/internal/files/${file.id}/content`,cookieFor(other))).status,404);
+  const other=users.find(u=>u.id!==paulo.id);assert.ok(other);assert.equal((await call(`/api/internal/files/${file.id}/content`,cookieFor(other))).status,403);
   assert.equal((await change(cookie,'trash',[folder])).status,200);assert.equal((await call(`/api/internal/files/${file.id}/content`,cookie)).status,404);
   assert.equal((await change(cookie,'restore',[folder])).status,200);assert.equal((await call(`/api/internal/files/${file.id}/content`,cookie)).status,200);
   assert.equal((await change(cookie,'trash',[folder])).status,200);assert.equal((await change(cookie,'purge',[folder])).status,200);folder=null;

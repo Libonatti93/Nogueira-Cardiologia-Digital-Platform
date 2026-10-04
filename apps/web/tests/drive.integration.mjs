@@ -20,7 +20,7 @@ const tls=https.createServer({key:await readFile(evidence+'/test.key'),cert:awai
 });
 await new Promise(resolve=>tls.listen(3444,'127.0.0.1',resolve));
 const db=new pg.Client({connectionString:process.env.DATABASE_URL});await db.connect();
-const owners=['00000000-0000-4000-8000-000000000081','00000000-0000-4000-8000-000000000082','00000000-0000-4000-8000-000000000083'];
+const owners=['00000000-0000-4000-8000-000000000081','00000000-0000-4000-8000-000000000082','00000000-0000-4000-8000-000000000083','00000000-0000-4000-8000-000000000084'];
 const password='private-drive-fixture-only';
 const checks=[];const pass=name=>{checks.push(name);console.log(`PASS: ${name}`);};
 let app,log='',browser;
@@ -34,7 +34,7 @@ async function call(route,cookie='',body,origin=base){return fetch(base+route,{m
 async function checked(response,status=200){assert.equal(response.status,status,await response.clone().text());return response.json();}
 async function login(index){const response=await call('/api/auth/login','',{email:`drive-${index}@example.invalid`,password,portal:'admin'});await checked(response);return response.headers.get('set-cookie').split(';')[0];}
 const entries=(items)=>items.map(({id,kind})=>({id,kind}));
-let cookie,other,denied;
+let cookie,other,denied,restricted;
 const action=(action,items=[],extra={},session=cookie)=>call('/api/internal/files',session,{action,items:entries(items),...extra});
 const folder=async(name,parentId=null)=>({...await checked(await action('folder',[],{name,parentId})),kind:'folder',name});
 const list=async(params='',session=cookie)=>checked(await call('/api/internal/files'+params,session));
@@ -45,13 +45,13 @@ try {
   await db.query('delete from auth_rate_limits');
   for(let i=0;i<owners.length;i++){
     await db.query(`insert into app_users(id,email,full_name,role,password_hash,email_verified_at) values($1,$2,$3,'doctor',crypt($4,gen_salt('bf',4)),now())
-      on conflict(id) do update set is_active=true,must_change_password=false,password_hash=excluded.password_hash`,[owners[i],`drive-${i}@example.invalid`,['Doutor · Teste Arquivos','Outro proprietário · Teste','Operador · Teste'][i],password]);
+      on conflict(id) do update set is_active=true,must_change_password=false,password_hash=excluded.password_hash`,[owners[i],`drive-${i}@example.invalid`,['Doutor · Teste Arquivos','Outro proprietário · Teste','Operador · Teste','MASTER sem armazenamento · Teste'][i],password]);
     await db.query('insert into user_roles(user_id,role_id) values($1,$2) on conflict do nothing',[owners[i],i===2?'CRM_OPERATOR':'MASTER']);
   }
-  await db.query('update app_users set drive_quota_bytes=null where id=any($1::uuid[])',[owners]);
-  await start();cookie=await login(0);other=await login(1);denied=await login(2);
+  await db.query('update app_users set drive_quota_bytes=null,drive_enabled=(id=any($2::uuid[])) where id=any($1::uuid[])',[owners,[owners[0],owners[1],owners[3]]]);
+  await start();cookie=await login(0);other=await login(1);denied=await login(2);restricted=await login(3);
   // Clean only deterministic fixture owners from a previous isolated run.
-  for(const session of [cookie,other]) {
+  for(const session of [cookie,other,restricted]) {
     for(const view of ['files','trash']){let data=await list(view==='trash'?'?view=trash':'',session);while(data.items.length){await checked(await action(view==='trash'?'purge':'trash',data.items,{},session));data=await list(view==='trash'?'?view=trash':'',session);}}
   }
   assert.equal((await call('/api/internal/files')).status,401);
@@ -59,6 +59,40 @@ try {
   assert.equal((await call('/api/internal/files',denied)).status,403);
   assert.equal((await call('/api/internal/files',cookie,{action:'folder',name:'bad'},'https://evil.invalid')).status,403);
   pass('real local login, anonymous/CRM rejection and CSRF');
+  const retained=await checked(await upload('preserved.txt','Preserved test file','text/plain','',restricted),201);
+  await db.query('update app_users set drive_enabled=false where id=$1',[owners[3]]);
+  assert.equal((await call('/api/internal/files',restricted)).status,403);
+  assert.equal((await call('/api/internal/files',restricted,{action:'folder',name:'Forbidden'})).status,403);
+  assert.equal((await upload('blocked.txt','x','text/plain','',restricted)).status,403);
+  assert.equal((await content(retained.id,restricted)).status,403);
+  assert.equal((await content(retained.id,restricted,{method:'HEAD'})).status,403);
+  const restrictedPage=await call('/arquivos',restricted);
+  assert.equal(restrictedPage.status,307);assert.equal(restrictedPage.headers.get('location'),'/sem-acesso');
+  assert.ok(!(await (await call('/dashboard',restricted)).text()).includes('href="/arquivos"'));
+  const overview=await checked(await call('/api/internal/governance?q=drive-3',cookie));
+  assert.ok(!overview.users.find(u=>u.id===owners[3]).permissions.includes('files.access'));
+  assert.equal((await db.query('select count(*)::int total from drive_files where id=$1',[retained.id])).rows[0].total,1);
+  await db.query('update app_users set drive_enabled=true where id=$1',[owners[3]]);
+  assert.equal(await (await content(retained.id,restricted)).text(),'Preserved test file','Revocation preserves existing bytes');
+  await checked(await action('trash',[{id:retained.id,kind:'file'}],{},restricted));
+  await checked(await action('purge',[{id:retained.id,kind:'file'}],{},restricted));
+  // Revoke after admission, while the request is still streaming its body.
+  const incomingBefore=new Set(await readdir(storage+'/incoming'));
+  let inFlight;
+  const inFlightStatus=new Promise((resolve,reject)=>{
+    inFlight=httpRequest(base+'/api/internal/files/upload?name=revoked-during-upload.txt',
+      {method:'PUT',headers:{cookie:restricted,origin:base,'content-type':'text/plain'}},res=>{res.resume();resolve(res.statusCode);});
+    inFlight.on('error',reject);inFlight.write('a');
+  });
+  try {
+    let admitted=false;
+    for(let i=0;i<100;i++) {if((await readdir(storage+'/incoming')).some(name=>!incomingBefore.has(name))){admitted=true;break;}await delay(20);}
+    assert.ok(admitted,'Upload entered the storage receiver');
+    await db.query('update app_users set drive_enabled=false where id=$1',[owners[3]]);
+    inFlight.end('b');assert.equal(await inFlightStatus,403);
+  } finally {inFlight.destroy();}
+  assert.equal((await db.query('select count(*)::int total from drive_files where owner_id=$1',[owners[3]])).rows[0].total,0);
+  pass('disabled MASTER storage: hidden navigation, denied page/APIs, preserved files and in-flight revocation');
   const documents=await folder('Documentos'),year=await folder('2026',documents.id),destination=await folder('Administrativo');
   assert.equal((await action('folder',[],{name:'Documentos'})).status,409);
   const breadcrumbs=(await list('?folder='+year.id)).breadcrumbs;assert.deepEqual(breadcrumbs.map(c=>c.name),['Documentos','2026']);
@@ -115,6 +149,7 @@ try {
   assert.equal((await list('?owner='+owners[0],other)).quota,50*1024**3,'Client cannot select another account quota');
   assert.throws(()=>setQuota(99999,true),'Cannot grant a quota larger than physical capacity');
   assert.throws(()=>setQuota(70,true,owners[2]),'A quota change does not grant access to Files');
+  assert.throws(()=>setQuota(70,true,owners[3]),'A MASTER quota change cannot enable the storage service');
   const expanded=await uploaded('above-default-quota.txt','Quota exclusiva da conta.');
   await checked(await action('trash',[expanded]));await checked(await action('purge',[expanded]));
   const otherBytes=(await list()).usage.bytes-50*1024**3;

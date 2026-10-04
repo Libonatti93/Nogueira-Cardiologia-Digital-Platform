@@ -59,7 +59,7 @@ export async function driveTransaction<T>(user:SessionUser,callback:(client:Pool
     // Backup takes the exclusive variant. Owner lock serializes hierarchy/quota changes.
     await client.query("select pg_advisory_xact_lock_shared(hashtextextended('nogueira-drive-backup',0))");
     await client.query("select pg_advisory_xact_lock(hashtextextended('drive-owner:'||$1,0))",[user.id]);
-    const active=await client.query(`select u.id from app_users u where u.id=$1 and u.is_active and not u.must_change_password and u.session_version=$2
+    const active=await client.query(`select u.id from app_users u where u.id=$1 and u.is_active and u.drive_enabled and not u.must_change_password and u.session_version=$2
       and exists(select 1 from user_roles ur join role_permissions rp on rp.role_id=ur.role_id where ur.user_id=u.id and rp.permission_id='files.access')
       and exists(select 1 from user_roles ur join role_permissions rp on rp.role_id=ur.role_id where ur.user_id=u.id and rp.permission_id='panel.access') for share`,[user.id,user.sessionVersion]);
     if(user.audience!=='internal'||!active.rowCount) throw new DriveError('Acesso revogado.',403);

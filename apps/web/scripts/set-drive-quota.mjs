@@ -23,12 +23,12 @@ try {
   await db.query("select pg_advisory_xact_lock(hashtextextended('drive-owner:'||$1,0))", [values.owner]);
   const owner = (await db.query(`select u.id,u.full_name,u.email,u.drive_quota_bytes,
     (select coalesce(sum(size),0)::text from drive_files where owner_id=u.id) used_bytes
-    from app_users u where u.id=$1 and u.is_active
+    from app_users u where u.id=$1 and u.is_active and u.drive_enabled
     and exists(select 1 from user_roles ur join role_permissions rp on rp.role_id=ur.role_id
       where ur.user_id=u.id and rp.permission_id='files.access')
     and exists(select 1 from user_roles ur join role_permissions rp on rp.role_id=ur.role_id
       where ur.user_id=u.id and rp.permission_id='panel.access') for update of u`, [values.owner])).rows[0];
-  if (!owner) throw new Error('Conta ativa com acesso a Arquivos não encontrada.');
+  if (!owner) throw new Error('Conta ativa com armazenamento habilitado e acesso a Arquivos não encontrada.');
   const used = Number(owner.used_bytes), previous = Number(owner.drive_quota_bytes ?? 50 * 1024 ** 3);
   if (quota < used) throw new Error('A cota solicitada é menor que o espaço já utilizado pela conta.');
   const disk = await statfs(path.resolve(process.env.DRIVE_STORAGE_ROOT || '/opt/nogueira-drive'));

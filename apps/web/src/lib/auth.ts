@@ -112,6 +112,7 @@ export async function loadSessionUser(id: string): Promise<SessionUser | null> {
       coalesce(array_agg(distinct rp.permission_id) filter (where rp.permission_id is not null), '{}') permissions
     from app_users u left join user_roles ur on ur.user_id = u.id
     left join role_permissions rp on rp.role_id = ur.role_id
+      and (rp.permission_id <> 'files.access' or u.drive_enabled)
     where u.id = $1 and u.is_active = true group by u.id`, [id]);
   const row = result.rows[0];
   return row ? { id: row.id, email: row.email, fullName: row.full_name, role: row.role,

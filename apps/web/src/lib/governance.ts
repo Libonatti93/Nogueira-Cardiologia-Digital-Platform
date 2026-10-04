@@ -15,7 +15,8 @@ export async function governanceOverview(search: string, offset = 0) {
   const [users, roles, permissions,summary] = await Promise.all([
     query(`select u.id,u.full_name,u.email,u.role,u.is_active,u.last_login_at,u.created_at,u.must_change_password,
       u.password_hash is not null as has_local_credential,
-      coalesce((select array_agg(distinct rp.permission_id) from user_roles x join role_permissions rp on rp.role_id=x.role_id where x.user_id=u.id),'{}') permissions,
+      coalesce((select array_agg(distinct rp.permission_id) from user_roles x join role_permissions rp on rp.role_id=x.role_id
+        where x.user_id=u.id and (rp.permission_id<>'files.access' or u.drive_enabled)),'{}') permissions,
       coalesce(array_agg(ur.role_id) filter (where ur.role_id is not null),'{}') roles
       from app_users u left join user_roles ur on ur.user_id=u.id
       where u.full_name ilike $1 or u.email::text ilike $1 group by u.id order by u.full_name limit 100 offset $2`, [`%${search.slice(0,100)}%`, offset]),
