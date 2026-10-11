@@ -4,6 +4,7 @@ import { hasPermission } from '@/lib/access-policy';
 import type { SessionUser } from '@/lib/auth';
 import type { PoolClient } from 'pg';
 import { patientRegistration, PatientValidationError } from '@/lib/crm-patient';
+import { crmPipelineStage } from '@/lib/crm-pipeline';
 
 export class CrmError extends Error { constructor(message:string,public status=400){super(message);} }
 export const crmReadPermissions:Record<string,string>={summary:'crm.access',leads:'crm.leads.read',history:'crm.leads.read',patients:'crm.patients.read',patient:'crm.patients.read',appointments:'crm.appointments.read',agenda:'crm.appointments.read'};
@@ -26,14 +27,18 @@ export async function crmOverview(user:SessionUser,view:string,search='',offset=
     return {counts};
   }
   if(view==='leads') {
+    const latestAppointment=`left join lateral (select id,scheduled_for,status,doctor_id,modality from appointments where lead_id=l.id order by created_at desc,id limit 1) a on true`;
     const [items,totals]=await Promise.all([
       query(`select l.id,l.full_name,l.email,l.phone_whatsapp,l.source,l.stage,l.patient_id,l.created_at,l.last_contact_at,l.next_follow_up_at,
         a.id appointment_id,a.scheduled_for,a.status appointment_status,a.doctor_id,a.modality from leads l
-        left join lateral (select id,scheduled_for,status,doctor_id,modality from appointments where lead_id=l.id and status<>'cancelled' order by created_at desc,id limit 1) a on true
+        ${latestAppointment}
         where l.full_name ilike $1 or l.email::text ilike $1 or l.phone_whatsapp ilike $1 order by l.created_at desc,l.id limit 100 offset $2`,[q,offset]),
-      query(`select stage,count(*)::int total from leads where full_name ilike $1 or email::text ilike $1 or phone_whatsapp ilike $1 group by stage`,[q]),
+      query(`select l.stage,a.status appointment_status,count(*)::int total from leads l ${latestAppointment}
+        where l.full_name ilike $1 or l.email::text ilike $1 or l.phone_whatsapp ilike $1 group by l.stage,a.status`,[q]),
     ]);
-    return {items:items.rows,total:totals.rows.reduce((sum,row)=>sum+row.total,0),stageCounts:Object.fromEntries(totals.rows.map(row=>[row.stage,row.total]))};
+    const stageCounts:Record<string,number>={};
+    for(const row of totals.rows){const stage=crmPipelineStage(row);stageCounts[stage]=(stageCounts[stage]??0)+row.total;}
+    return {items:items.rows,total:totals.rows.reduce((sum,row)=>sum+row.total,0),stageCounts};
   }
   if(view==='patient') {
     if(!uuid.test(patientId))throw new CrmError('Paciente inválido.');

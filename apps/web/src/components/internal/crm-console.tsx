@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { patientAge } from '@/lib/crm-patient';
 import { CrmPatientForm } from './crm-patient-form';
 import { CrmKanban } from './crm-kanban';
-import { commercialStages, crmButton as button, crmCard as card, crmDate as date, crmField as field, crmLabels as labels, type CrmRow as Row } from './crm-types';
+import { crmButton as button, crmCard as card, crmDate as date, crmField as field, crmLabels as labels, type CrmRow as Row } from './crm-types';
+import { crmPipelineStage, crmPipelineStages } from '@/lib/crm-pipeline';
 
 const tabs = [['leads','crm.leads.read'],['patients','crm.patients.read'],['appointments','crm.appointments.read'],['agenda','crm.appointments.read'],['summary','crm.access'],['history','crm.leads.read']];
 type Overview = { items?: Row[]; events?: Row[]; doctors?: Row[]; counts?: Record<string, number>; stageCounts?: Record<string, number>; total?: number };
@@ -90,17 +91,17 @@ export function CrmConsole({ permissions, initialView }: { permissions: string[]
     switchView('patients'); setSourceLead(row.id);
     setPatientEditor({ full_name: row.full_name, email: row.email, phone_whatsapp: row.phone_whatsapp });
   }
-  function scheduleFromLead(row: Row) {
+  function scheduleFromLead(row: Row, status = row.appointment_status ?? 'confirmed') {
     switchView('appointments');
     setEditing({ id: row.appointment_id, patient_id: row.patient_id, patient_name: row.full_name,
-      lead_id: row.id, status: row.appointment_status ?? 'confirmed', scheduled_for: row.scheduled_for,
+      lead_id: row.id, status, scheduled_for: row.scheduled_for,
       doctor_id: row.doctor_id, modality: row.modality });
   }
   async function moveLead(row: Row, stage: string) {
-    if (stage === row.stage) return;
-    if (stage === 'confirmed' && !row.appointment_id) {
-      if (row.patient_id && canSchedule) scheduleFromLead(row);
-      else setMessage('Cadastre o paciente e use Agendar consulta para definir a data e o horário.');
+    if (stage === crmPipelineStage(row)) return;
+    if (stage === 'attended') {
+      if (row.appointment_id && canSchedule) scheduleFromLead(row, 'attended');
+      else setMessage('Agende a consulta antes de registrar sua realização.');
       return;
     }
     const result = await save({ operation: 'lead_stage', id: row.id, stage, expectedStage: row.stage });
@@ -121,7 +122,7 @@ export function CrmConsole({ permissions, initialView }: { permissions: string[]
     <div className="flex flex-wrap items-end justify-between gap-4"><div>
       <p className="text-xs font-bold uppercase tracking-[.2em] text-[#15A7DD]">Atendimento e relacionamento</p>
       <h1 className="mt-2 text-3xl font-bold text-[#103E6A]">{view === 'patients' ? 'Pacientes' : 'CRM de consultas'}</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{view === 'patients' ? 'Cadastre o paciente e leve o atendimento para o funil comercial.' : 'Acompanhe cada contato até o agendamento da consulta na Nogueira.'}</p>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{view === 'patients' ? 'Cadastre o paciente e leve o atendimento para o funil comercial.' : 'Acompanhe cada contato desde a entrada até a consulta realizada na Nogueira.'}</p>
     </div><div className="flex gap-2">
       {view === 'patients' && canRegister && <button disabled={busy} className={button} onClick={() => { setPatientEditor({}); setSourceLead(undefined); }}>Novo paciente</button>}
       {view === 'leads' && canLead && <button disabled={busy} className={button} onClick={() => setEditing({})}>Nova oportunidade</button>}
@@ -133,12 +134,14 @@ export function CrmConsole({ permissions, initialView }: { permissions: string[]
     {view === 'leads' && editing && canLead && <section ref={editorRef} className={`${card} scroll-mt-20`}><h2 className="mb-4 text-lg font-bold">{editing.id ? 'Editar acompanhamento' : 'Nova oportunidade'}</h2>
       <form key={editing.id ?? 'new-lead'} className="grid gap-4 md:grid-cols-2" onSubmit={async event => {
         event.preventDefault(); const f = new FormData(event.currentTarget);
-        await save({ operation: 'lead', id: editing.id, fullName: f.get('fullName'), email: f.get('email'), phone: f.get('phone'), stage: f.get('stage'), nextFollowUp: clinicDate(f.get('nextFollowUp')) });
+        const selectedStage = f.get('stage');
+        const stage = !selectedStage || selectedStage === crmPipelineStage(editing) ? editing.stage ?? 'new' : selectedStage;
+        await save({ operation: 'lead', id: editing.id, fullName: f.get('fullName'), email: f.get('email'), phone: f.get('phone'), stage, nextFollowUp: clinicDate(f.get('nextFollowUp')) });
       }}>
         <label>Nome<input name="fullName" className={field} required minLength={2} maxLength={160} defaultValue={editing.full_name}/></label>
         <label>E-mail<input name="email" type="email" className={field} maxLength={254} defaultValue={editing.email}/></label>
         <label>WhatsApp<input name="phone" type="tel" className={field} maxLength={40} defaultValue={editing.phone_whatsapp}/></label>
-        <label>Etapa<select aria-label="Etapa" name="stage" className={field} defaultValue={editing.stage ?? 'new'}>{editing.stage && ['paid','awaiting_payment'].includes(editing.stage) && <option value={editing.stage}>{labels[editing.stage]}</option>}{commercialStages.map(stage => <option key={stage} value={stage}>{labels[stage]}</option>)}</select></label>
+        <label>Etapa<select aria-label="Etapa" name="stage" className={field} defaultValue={crmPipelineStage(editing)} disabled={crmPipelineStage(editing) === 'attended' || ['paid', 'awaiting_payment'].includes(editing.stage ?? '')}>{crmPipelineStages.map(stage => <option key={stage} value={stage} disabled={stage === 'attended'}>{labels[stage]}</option>)}</select><span className="mt-1 block text-xs text-slate-500">Para registrar a realização, edite o status da consulta.</span></label>
         <label>Próximo contato (horário de Brasília)<input name="nextFollowUp" type="datetime-local" className={field} defaultValue={localDate(editing.next_follow_up_at)}/></label>
         <div className="flex items-end gap-4"><button disabled={busy} className={button}>Salvar oportunidade</button><button type="button" disabled={busy} onClick={() => setEditing(null)}>Cancelar</button></div>
       </form>
@@ -150,7 +153,7 @@ export function CrmConsole({ permissions, initialView }: { permissions: string[]
       <div className="flex flex-wrap items-end gap-3"><label className="min-w-0 flex-1 text-sm font-semibold">Pesquisar por nome ou contato<input disabled={busy} className={field} value={q} onChange={event => { setQ(event.target.value); setOffset(0); setLoading(true); }} placeholder="Pesquisar..."/></label>{q && <button disabled={busy} className="rounded-xl border bg-white px-4 py-3 text-sm" onClick={() => { setQ(''); setOffset(0); }}>Limpar pesquisa</button>}</div>
       {loading && <p className="text-sm text-slate-500">Carregando registros…</p>}
       {view === 'leads' ? <>
-        <p className="text-sm text-slate-500">Arraste os cartões entre as etapas ou use “Mover para”. Para concluir, use “Agendar consulta”.</p>
+        <p className="text-sm text-slate-500">Arraste os cartões entre as etapas ou use “Mover para”. Em “Consulta Realizada”, confirme e salve o status da consulta.</p>
         <CrmKanban items={items} counts={data.stageCounts ?? {}} busy={busy || loading} canManage={canLead} canRegister={canRegister && canLead} canSchedule={canSchedule} focusSingleCard={Boolean(q)}
           onMove={moveLead} onEdit={row => setEditing(row)} onRegister={registerFromLead} onSchedule={scheduleFromLead}/>
       </> : <section className={card}><div className="overflow-x-auto"><table className="w-full text-left text-sm">

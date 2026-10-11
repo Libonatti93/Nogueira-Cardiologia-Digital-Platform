@@ -77,6 +77,12 @@ try {
   assert.equal((await api(cookie,{operation:'appointment',patientId:second.body.id,doctorId:doctor,status:'confirmed',scheduledFor})).status,409);
   assert.equal((await api(cookie,{...appointment,id:scheduled.body.id,status:'rescheduled',scheduledFor:'2037-04-21T13:45:00-03:00'})).status,200);
   assert.equal((await db.query('select stage from leads where id=$1',[leadId])).rows[0].stage,'reschedule');
+  assert.equal((await api(cookie,{...appointment,id:scheduled.body.id,status:'attended'})).status,200);
+  const completedBoard = await api(cookie,undefined,`/api/internal/crm?view=leads&q=${marker}`);
+  assert.equal(completedBoard.body.stageCounts.attended,1);
+  assert.equal(completedBoard.body.items.find(row=>row.id===leadId).appointment_status,'attended');
+  assert.equal((await api(cookie,{...appointment,id:scheduled.body.id,status:'rescheduled'})).status,200);
+  assert.equal((await api(cookie,undefined,`/api/internal/crm?view=leads&q=${marker}`)).body.stageCounts.attended,undefined);
   assert.equal((await api(cookie,{...appointment,id:scheduled.body.id,status:'paid'})).status,403);
   await db.query("update leads set stage='paid' where id=$1",[leadId]);
   assert.equal((await api(cookie,{operation:'lead',id:leadId,fullName:registration.fullName,stage:'new'})).status,403);
@@ -90,6 +96,18 @@ try {
   assert.ok(audits.length >= 7); assert.ok(!JSON.stringify(audits).includes('PRIVATE_MEDICATION')); assert.ok(!JSON.stringify(audits).includes('Rua de Teste'));
   pass('Kanban persistence/concurrency, patient linking/reuse, real scheduling/rescheduling, doctor conflict, financial isolation and redacted audit');
 
+  const storedStages = ['new','contact_started','interested','registered','confirmed','reschedule','lost','paid','awaiting_payment'];
+  await db.query(`insert into leads(full_name,stage,source) select $1,stage::lead_stage,'crm' from unnest($2::text[]) stage`, [`Buckets ${marker}`, [...storedStages,...Array(100).fill('new')]]);
+  const bucketPage = await api(cookie,undefined,`/api/internal/crm?view=leads&q=Buckets%20${marker}`);
+  assert.equal(bucketPage.body.items.length,100);
+  assert.equal(bucketPage.body.total,109);
+  assert.deepEqual(bucketPage.body.stageCounts,{new:102,contact_started:1,interested:1,registered:5});
+  const bucketNext = await api(cookie,undefined,`/api/internal/crm?view=leads&q=Buckets%20${marker}&offset=100`);
+  assert.equal(bucketNext.body.items.length,9);
+  assert.deepEqual(bucketNext.body.stageCounts,bucketPage.body.stageCounts);
+  assert.deepEqual([...new Set([...bucketPage.body.items,...bucketNext.body.items].map(row=>row.stage))].sort(),storedStages.sort());
+  pass('all existing lead statuses remain visible and column totals include every page');
+
   browser = await chromium.launch({headless:true});
   page = await browser.newPage({viewport:{width:1440,height:1000}});
   const errors = []; page.on('pageerror',error=>errors.push(error.message));
@@ -97,6 +115,9 @@ try {
   await page.getByLabel('E-mail de acesso').fill(email); await page.getByLabel('Senha',{exact:true}).fill(password);
   await page.getByRole('button',{name:'Entrar no painel',exact:true}).click(); await page.waitForURL('**/crm');
   await page.getByRole('region',{name:'Kanban comercial de consultas'}).waitFor();
+  assert.deepEqual(await page.getByRole('region',{name:'Kanban comercial de consultas'}).getByRole('heading',{level:2}).allTextContents(),[
+    'Entrada/Base','Negociação/Prospecção','Orçamento/Conexão','Agendamento/Aguard. Consulta','Consulta Realizada',
+  ]);
   await page.getByRole('link',{name:'Pacientes',exact:true}).click();
   await page.waitForURL('**/crm?view=patients');
   await page.getByRole('heading',{name:'Pacientes',exact:true}).waitFor();
@@ -112,11 +133,11 @@ try {
   await page.getByRole('status').filter({hasText:'Paciente salvo e vinculado'}).waitFor();
   const card = page.getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}); await card.waitFor();
   await card.getByLabel(`Etapa de ${browserName}`,{exact:true}).selectOption('interested');
-  await page.getByRole('region',{name:'Interessado',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
+  await page.getByRole('region',{name:'Orçamento/Conexão',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
   await page.getByRole('status').filter({hasText:'Alteração salva'}).waitFor();
   await page.waitForFunction(() => document.querySelector('article[draggable="true"]'));
-  await card.dragTo(page.getByRole('region',{name:'Agendar consulta',exact:true}), {sourcePosition:{x:20,y:20},targetPosition:{x:100,y:70}});
-  await page.getByRole('region',{name:'Agendar consulta',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
+  await card.dragTo(page.getByRole('region',{name:'Agendamento/Aguard. Consulta',exact:true}), {sourcePosition:{x:20,y:20},targetPosition:{x:100,y:70}});
+  await page.getByRole('region',{name:'Agendamento/Aguard. Consulta',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
   await page.getByRole('status').filter({hasText:'Alteração salva'}).waitFor();
   await card.getByRole('button',{name:'Agendar consulta',exact:true}).click();
   await page.getByRole('heading',{name:'Novo agendamento',exact:true}).waitFor();
@@ -126,7 +147,25 @@ try {
   await page.getByRole('status').filter({hasText:'Alteração salva'}).waitFor();
   await page.getByRole('button',{name:'Kanban de consultas',exact:true}).click();
   await page.getByLabel('Pesquisar por nome ou contato',{exact:true}).fill(browserName);
-  await page.getByRole('region',{name:'Consulta agendada',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
+  await page.getByRole('region',{name:'Agendamento/Aguard. Consulta',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
+  await card.getByRole('button',{name:'Editar contato / retorno',exact:true}).click();
+  assert.equal(await page.getByLabel('Etapa',{exact:true}).inputValue(),'registered');
+  await page.getByRole('button',{name:'Salvar oportunidade',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Alteração salva'}).waitFor();
+  const browserLead = (await db.query('select id,stage from leads where full_name=$1',[browserName])).rows[0];
+  assert.equal(browserLead.stage,'confirmed','Editing contact details must preserve the stored scheduling status');
+  await card.getByLabel(`Etapa de ${browserName}`,{exact:true}).selectOption('attended');
+  await page.getByRole('heading',{name:'Organizar atendimento',exact:true}).waitFor();
+  assert.equal(await page.getByLabel('Status',{exact:true}).inputValue(),'attended');
+  await page.getByRole('button',{name:'Salvar agendamento',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Alteração salva'}).waitFor();
+  await page.getByRole('button',{name:'Kanban de consultas',exact:true}).click();
+  await page.getByLabel('Pesquisar por nome ou contato',{exact:true}).fill(browserName);
+  await page.getByRole('region',{name:'Consulta Realizada',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
+  assert.equal((await db.query('select status from appointments where lead_id=$1',[browserLead.id])).rows[0].status,'attended');
+  await page.reload();
+  await page.getByLabel('Pesquisar por nome ou contato',{exact:true}).fill(browserName);
+  await page.getByRole('region',{name:'Consulta Realizada',exact:true}).getByRole('article',{name:`Oportunidade de ${browserName}`,exact:true}).waitFor();
   await page.waitForFunction(() => {
     const board=document.querySelector('[aria-label="Kanban comercial de consultas"]'),card=board?.querySelector('article');
     return board && card && card.getBoundingClientRect().left>=board.getBoundingClientRect().left && card.getBoundingClientRect().right<=board.getBoundingClientRect().right;

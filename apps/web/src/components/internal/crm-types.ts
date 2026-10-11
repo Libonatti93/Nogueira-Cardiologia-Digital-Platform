@@ -1,3 +1,5 @@
+import { crmPipelineLabels } from '@/lib/crm-pipeline';
+
 export type CrmRow = {
   id: string; full_name?: string; email?: string; phone_whatsapp?: string; stage?: string;
   source?: string; created_at?: string; next_follow_up_at?: string; patient_id?: string;
@@ -11,10 +13,9 @@ export type CrmRow = {
 
 export const crmLabels: Record<string, string> = {
   summary: 'Visão geral', leads: 'Kanban de consultas', patients: 'Pacientes', appointments: 'Consultas',
-  agenda: 'Agenda', history: 'Histórico', new: 'Novo contato', contact_started: 'Em atendimento',
-  interested: 'Interessado', registered: 'Agendar consulta', confirmed: 'Consulta agendada',
+  agenda: 'Agenda', history: 'Histórico', ...crmPipelineLabels, confirmed: 'Consulta agendada',
   reschedule: 'Reagendar', lost: 'Encerrado', requested: 'Solicitado', cancelled: 'Cancelado',
-  rescheduled: 'Reagendado', attended: 'Atendido', no_show: 'Não compareceu', paid: 'Pago',
+  rescheduled: 'Reagendado', no_show: 'Não compareceu', paid: 'Pago',
   awaiting_payment: 'Aguardando pagamento',
 };
 export const commercialStages = ['new','contact_started','interested','registered','confirmed','reschedule','lost'];
