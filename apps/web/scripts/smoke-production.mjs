@@ -107,7 +107,7 @@ try {
     pass('no active ordinary production identity; patient audience isolation verified, CRM operator tested in isolated HTTP suite');
   }
   const crmPermissions=(await client.query("select permission_id from role_permissions where role_id='CRM_OPERATOR'")).rows.map(row=>row.permission_id);
-  const operational=['panel.access','crm.access','crm.leads.read','crm.leads.manage','crm.patients.read','crm.appointments.read','crm.appointments.manage'];
+  const operational=['panel.access','crm.access','crm.leads.read','crm.leads.manage','crm.patients.read','crm.patients.manage','crm.appointments.read','crm.appointments.manage'];
   assert.ok(crmPermissions.every(p=>operational.includes(p)));
   pass('production CRM_OPERATOR contains only operational permissions');
   const events = (await client.query(`select action,result,metadata,before_data,after_data from audit_logs

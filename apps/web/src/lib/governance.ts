@@ -85,6 +85,7 @@ export async function changeAccess(actor: SessionUser, body: Record<string, unkn
         ['content.manage', 'internal.access'], ['reports.export', 'internal.access'], ['exams.read', 'internal.access'],
         ['crm.leads.read','crm.access'],['crm.leads.manage','crm.leads.read'],
         ['crm.patients.read','crm.access'],['crm.appointments.read','crm.access'],
+        ['crm.patients.manage','crm.patients.read'],
         ['crm.appointments.manage','crm.appointments.read'],['crm.appointments.manage','crm.patients.read'],
       ]) {
         if (permissions.includes(permission) && !permissions.includes(prerequisite)) {

@@ -50,7 +50,7 @@ try {
   await page.getByLabel('Senha',{exact:true}).fill(password);
   await page.getByRole('button',{name:'Entrar no painel',exact:true}).click();
   await page.waitForURL('**/crm');
-  await page.getByText('Leads cadastrados',{exact:true}).waitFor();
+  await page.getByRole('region',{name:'Kanban comercial de consultas'}).waitFor();
   assert.equal(await page.getByRole('link',{name:'Governança & IAM',exact:true}).count(),0);
   assert.equal(await page.getByRole('link',{name:'Financeiro',exact:true}).count(),0);
   assert.equal(await page.getByRole('link',{name:'LIOS',exact:true}).count(),0);
@@ -59,9 +59,10 @@ try {
   await page.getByText('CRM fixture patient',{exact:true}).waitFor();
   await page.getByRole('link',{name:'Consultas',exact:true}).click();
   await page.getByRole('heading',{name:'Novo agendamento',exact:true}).waitFor();
-  await page.getByRole('button',{name:'Leads',exact:true}).click();
+  await page.getByRole('button',{name:'Kanban de consultas',exact:true}).click();
+  await page.getByRole('button',{name:'Nova oportunidade',exact:true}).click();
   await page.getByLabel('Nome',{exact:true}).fill('Browser fixture');
-  await page.getByRole('button',{name:'Salvar lead',exact:true}).click();
+  await page.getByRole('button',{name:'Salvar oportunidade',exact:true}).click();
   await page.getByRole('status').filter({hasText:'Alteração salva'}).waitFor();
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'Abrir navegação',exact:true}).click();

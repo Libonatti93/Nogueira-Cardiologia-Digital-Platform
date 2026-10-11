@@ -42,6 +42,7 @@ async function main() {
   }
   await query(await readFile('database/007_governance.sql','utf8'));
   await query(await readFile('database/009_panel_iam_crm.sql','utf8'));
+  await query(await readFile('database/013_crm_patient_registration.sql','utf8'));
   await query("insert into user_roles values($1,'CRM_OPERATOR') on conflict do nothing",[operator]);
   const fakeAuth = createServer(async(req,res)=>{
     const chunks=[];for await(const chunk of req)chunks.push(chunk);

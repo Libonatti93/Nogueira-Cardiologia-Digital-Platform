@@ -6,6 +6,6 @@ export const metadata={title:'CRM | Nogueira Cardiologia',robots:noIndexRobots};
 export const dynamic='force-dynamic';
 export default async function CrmPage({searchParams}:{searchParams:Promise<{view?:string}>}){
   const user=await requireInternalUser('crm.access');
-  const initialView=(await searchParams).view??'summary';
+  const initialView=(await searchParams).view??'leads';
   return <InternalShell><CrmConsole key={initialView} permissions={user.permissions??[]} initialView={initialView}/></InternalShell>;
 }

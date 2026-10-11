@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { panelNavigation } from '@/lib/panel-policy';
 
@@ -9,6 +9,7 @@ export function PanelSidebar({name,roles,permissions,children}:{name:string;role
   const [collapsed,setCollapsed]=useState(false);
   const [mobileOpen,setMobileOpen]=useState(false);
   const pathname=usePathname();
+  const searchParams=useSearchParams();
   const items=panelNavigation.filter(item=>permissions.includes(item.permission)
     && (!item.href.startsWith('/crm')||permissions.includes('crm.access')));
   return <div data-panel className="min-h-screen bg-[#F3F6FA] text-slate-900">
@@ -24,7 +25,8 @@ export function PanelSidebar({name,roles,permissions,children}:{name:string;role
       <div className="flex-1 overflow-y-auto px-3 py-5">
         {!collapsed&&<p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-slate-400">Workspace da equipe</p>}
         <nav aria-label="Navegação do painel" className="space-y-1">{items.map(item=>{
-          const active=pathname===item.href;
+          const [itemPath,itemQuery]=item.href.split('?');
+          const active=pathname===itemPath && (itemPath!=='/crm' || (searchParams.get('view')??'leads')===(new URLSearchParams(itemQuery).get('view')??'leads'));
           return <Link key={item.label} title={item.label} href={item.href} onClick={()=>setMobileOpen(false)} aria-current={active?'page':undefined}
             className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors ${active?'bg-[#103E6A] text-white shadow-sm':'text-slate-600 hover:bg-blue-50 hover:text-[#14508B]'}`}>
             <span aria-hidden className="w-5 text-center text-lg">{item.icon}</span>{!collapsed&&item.label}</Link>;

@@ -4,7 +4,7 @@ import { changeCrm, crmOverview, crmReadPermissions, crmWritePermissions, CrmErr
 export async function GET(request:Request){
   const params=new URL(request.url).searchParams,view=params.get('view')||'summary';
   const access=await authorize(request,crmReadPermissions[view]||'crm.access');if(access.response)return access.response;
-  try{return Response.json(await crmOverview(access.user!,view,params.get('q')||'',Math.floor(Math.max(0,Math.min(100000,Number(params.get('offset'))||0)))),{headers:{'Cache-Control':'private, no-store'}});}
+  try{return Response.json(await crmOverview(access.user!,view,params.get('q')||'',Math.floor(Math.max(0,Math.min(100000,Number(params.get('offset'))||0))),params.get('id')||''),{headers:{'Cache-Control':'private, no-store'}});}
   catch(error){if(error instanceof CrmError)return Response.json({message:error.message},{status:error.status});console.error('crm_read_failed');return Response.json({message:'Não foi possível consultar o CRM.'},{status:500});}
 }
 export async function POST(request:Request){
