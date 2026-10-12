@@ -76,7 +76,7 @@ export async function changeAccess(actor: SessionUser, body: Record<string, unkn
       const permissions = list(body.permissions);
       if (!/^[A-Z][A-Z0-9_]{1,39}$/.test(id) || !name || id === 'MASTER') throw new GovernanceError('Perfil inválido ou protegido.');
       if (permissions.length && !permissions.includes('panel.access')) throw new GovernanceError('Perfis internos exigem panel.access.');
-      if (id==='CRM_OPERATOR' && permissions.some(permission=>permission!=='panel.access'&&!permission.startsWith('crm.'))) {
+      if (id==='CRM_OPERATOR' && permissions.some(permission=>permission==='crm.metrics.read'||permission!=='panel.access'&&!permission.startsWith('crm.'))) {
         throw new GovernanceError('CRM_OPERATOR é operacional. Conceda outro perfil explicitamente para acessos adicionais.');
       }
       for (const [permission, prerequisite] of [
@@ -87,6 +87,7 @@ export async function changeAccess(actor: SessionUser, body: Record<string, unkn
         ['crm.patients.read','crm.access'],['crm.appointments.read','crm.access'],
         ['crm.patients.manage','crm.patients.read'],
         ['crm.appointments.manage','crm.appointments.read'],['crm.appointments.manage','crm.patients.read'],
+        ['crm.tasks.manage','crm.leads.read'],['crm.metrics.read','crm.access'],
       ]) {
         if (permissions.includes(permission) && !permissions.includes(prerequisite)) {
           throw new GovernanceError(`A permissão ${permission} exige ${prerequisite}.`);

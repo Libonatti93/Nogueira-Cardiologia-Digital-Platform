@@ -1,12 +1,12 @@
 import Link from 'next/link';
 
-const message = 'CONSULTAS ONLINE COM 24% DE DESCONTO · CADASTRE-SE E APROVEITE';
+const message = 'CONSULTA PARTICULAR R$ 700 · PRESENCIAL OU ONLINE · AGENDE SEU HORÁRIO';
 
 export function PromotionTicker({ placement = 'top' }: { placement?: 'top' | 'footer' }) {
   return (
     <Link
       href="/portal"
-      aria-label="Cadastrar-se para aproveitar o desconto da consulta online"
+      aria-label="Cadastrar-se para agendar consulta particular por R$ 700"
       className={`group block h-8 shrink-0 overflow-hidden bg-black text-white ${
         placement === 'top' ? 'sticky top-0 z-[80]' : 'mt-auto'
       }`}

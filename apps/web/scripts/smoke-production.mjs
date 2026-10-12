@@ -12,10 +12,10 @@ const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).tri
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
 const checks = [];
 const panelHost='painel.nogueiracardiologia.com.br';
-// Pre-DNS: connect only to the local Traefik. Default certificate is expected until DNS propagates.
+// Exercise the existing Traefik with the real hostname and validate its public TLS certificate.
 function panelRequest(route,cookie='') {
   return new Promise((resolve,reject)=>{
-    const req=https.get({hostname:'127.0.0.1',port:443,servername:panelHost,rejectUnauthorized:false,
+    const req=https.get({hostname:'127.0.0.1',port:443,servername:panelHost,rejectUnauthorized:true,
       path:route,headers:{host:panelHost,...(cookie?{cookie}:{})},timeout:15000},response=>{
       let body='';response.setEncoding('utf8');response.on('data',chunk=>body+=chunk);
       response.on('end',()=>resolve({status:response.statusCode,headers:response.headers,body}));
@@ -53,7 +53,7 @@ try {
   const panelLogin=await panelRequest('/');assert.equal(panelLogin.status,200);assert.ok(panelLogin.body.includes('workspace'));
   assert.equal(panelLogin.headers['x-robots-tag'],'noindex, nofollow');
   assert.equal((await panelRequest('/portal')).headers.location,base+'/portal');
-  pass('pre-DNS panel hostname through real local Traefik, root login and public portal separation');
+  pass('panel hostname and valid TLS through real local Traefik, root login and public portal separation');
   for (const route of ['/', '/blog', '/exames', '/portal', '/acesso']) {
     assert.equal((await request(route)).status, 200, route);
   }
@@ -79,10 +79,10 @@ try {
     assert.ok(user?.roles.includes('MASTER'), `${name}: active MASTER`);
     assert.ok(permissions.every(permission => user.permissions.includes(permission)), `${name}: all permissions`);
     const cookie = session(user);
-    for (const route of ['/acesso/dashboard', '/acesso/governanca', '/acesso/lios', '/api/internal/governance', '/api/internal/audit', '/api/internal/lios/health', '/api/internal/lios/applications','/dashboard','/governanca','/crm','/auditoria','/configuracoes','/api/internal/crm']) {
+    for (const route of ['/acesso/dashboard', '/acesso/governanca', '/acesso/lios', '/api/internal/governance', '/api/internal/audit', '/api/internal/lios/health', '/api/internal/lios/applications','/dashboard','/governanca','/crm','/auditoria','/configuracoes','/api/internal/crm','/api/internal/crm?view=workspace','/api/internal/crm?view=people','/api/internal/crm?view=calendar','/api/internal/crm?view=work','/api/internal/crm?view=metrics']) {
       assert.equal((await request(route, cookie)).status, 200, `${name}: ${route}`);
     }
-    assert.equal((await panelRequest('/',cookie)).headers.location,'/dashboard');
+    assert.equal((await panelRequest('/',cookie)).headers.location,'/crm');
     assert.equal((await panelRequest('/governanca',cookie)).status,200);
     // A patient-audience token for the same identity cannot unlock IAM.
     assert.equal((await request('/api/internal/governance',session(user,'patient'))).status,403);
@@ -107,8 +107,25 @@ try {
     pass('no active ordinary production identity; patient audience isolation verified, CRM operator tested in isolated HTTP suite');
   }
   const crmPermissions=(await client.query("select permission_id from role_permissions where role_id='CRM_OPERATOR'")).rows.map(row=>row.permission_id);
-  const operational=['panel.access','crm.access','crm.leads.read','crm.leads.manage','crm.patients.read','crm.patients.manage','crm.appointments.read','crm.appointments.manage'];
+  const operational=['panel.access','crm.access','crm.leads.read','crm.leads.manage','crm.patients.read','crm.patients.manage','crm.appointments.read','crm.appointments.manage','crm.tasks.manage'];
   assert.ok(crmPermissions.every(p=>operational.includes(p)));
+  assert.ok(operational.every(p=>crmPermissions.includes(p)));
+  const crmOperator=(await client.query(`select u.id,u.email,u.full_name,u.role,u.session_version from app_users u
+    where u.is_active and not u.must_change_password and exists(select 1 from user_roles r where r.user_id=u.id and r.role_id='CRM_OPERATOR')
+    and not exists(select 1 from user_roles r where r.user_id=u.id and r.role_id<>'CRM_OPERATOR') limit 1`)).rows[0];
+  if(crmOperator){
+    const cookie=session(crmOperator);
+    for(const view of ['workspace','people','calendar','work'])assert.equal((await request(`/api/internal/crm?view=${view}`,cookie)).status,200);
+    assert.equal((await request('/api/internal/crm?view=metrics',cookie)).status,403);
+    assert.equal((await panelRequest('/',cookie)).headers.location,'/crm');
+    const people=await (await request('/api/internal/crm?view=people',cookie)).json();
+    if(people.items.length)assert.equal((await request(`/api/internal/crm?view=person&id=${people.items[0].id}`,cookie)).status,200);
+    pass('existing operator reads shared CRM, contacts, tasks and calendar; management indicators remain denied');
+  }
+  const missingActions=(await client.query(`select count(*)::int n from leads l join patient_profiles p on p.id=l.patient_id
+    where l.operational_status='active' and not p.communication_blocked and p.relationship_status not in ('cold','lost','deceased')
+    and (l.next_action is null or l.next_follow_up_at is null or not exists(select 1 from crm_tasks t where t.lead_id=l.id and t.status='pending'))`)).rows[0].n;
+  assert.equal(missingActions,0);
   pass('production CRM_OPERATOR contains only operational permissions');
   const events = (await client.query(`select action,result,metadata,before_data,after_data from audit_logs
     where created_at >= $1 and action in ('access.denied','access.origin_denied')`, [startedAt])).rows;
@@ -117,6 +134,7 @@ try {
   assert.ok(!/password|cookie|authorization|secret|token/i.test(JSON.stringify(events)), 'no credentials in audit events');
   pass('production audit events persisted without credentials');
   const migrations = (await client.query('select name from schema_migrations order by name')).rows.map(row => row.name);
+  assert.ok(['014_operational_crm.sql','015_crm_integrity.sql','016_crm_workflow_fixes.sql'].every(name=>migrations.includes(name)));
   assert.ok(migrations.includes('007_governance.sql') && migrations.includes('008_lios.sql') && migrations.includes('009_panel_iam_crm.sql'));
   const privileges = (await client.query(`select has_table_privilege('nogueira_lios','app_users','select') clinical,
     has_table_privilege('nogueira_lios','patient_profiles','select') patients,
@@ -139,7 +157,7 @@ try {
   const result = { sha, at: new Date().toISOString(), status: supabase.status === 'reachable' ? 'passed' : 'passed_with_external_blocker',
     checks, migrations, externalDependencies: { supabaseAuth: supabase },
     passwordLogin: 'local internal activation/change/login tested in isolated database; patient Supabase simulated; personal passwords unchanged',
-    panel: {host:panelHost,preDns:'passed',dns:'owner managed; A record to 2.24.215.163'},
+    panel: {host:panelHost,tls:'valid certificate verified',dns:'existing panel hostname'},
     credentialActivation: 'Matheus existing identity has no local password initially; authorized MASTER must define a temporary password in IAM. No real password created by agent.' };
   await writeFile(`/var/log/nogueira-deploy-${sha}.json`, JSON.stringify(result, null, 2) + '\n', { mode: 0o600 });
 } catch (error) {

@@ -1,5 +1,11 @@
 # Leia primeiro
 
+**Atualização de 12/10/2026:** leia [CRM_OPERACIONAL.md](CRM_OPERACIONAL.md) para o CRM
+de nove etapas, Agenda/Contatos, POP, acesso da equipe, migrations 014–016, testes e
+cron. MASTER agora abre `/crm`; mantém o dashboard completo em `/dashboard`. O painel
+já tem DNS/TLS válidos. As observações antigas abaixo sobre DNS pendente são históricas.
+
+
 Nogueira Cardiologia reúne site público, blog, portal de pacientes e painel da equipe.
 Produção: `/root/Nogueira-Cardiologia-Digital-Platform`, branch `agent/portal-seo-home-ux`.
 Remote: `git@github.com:Libonatti93/Nogueira-Cardiologia-Digital-Platform.git`.

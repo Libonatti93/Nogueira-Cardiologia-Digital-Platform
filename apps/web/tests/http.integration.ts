@@ -56,7 +56,7 @@ async function main() {
       user:{id,email:body.email,aud:'authenticated',role:'authenticated',email_confirmed_at:new Date().toISOString(),user_metadata:{}}}));
   });
   await new Promise<void>(resolve=>fakeAuth.listen(8090,'127.0.0.1',resolve));
-  const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p','3003'],{env:process.env,stdio:['ignore','pipe','pipe']});
+  const app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p','3003'],{env:{...process.env,TURNSTILE_SECRET_KEY:'',ASAAS_API_KEY:''},stdio:['ignore','pipe','pipe']});
   let log='';app.stdout.on('data',chunk=>log+=chunk);app.stderr.on('data',chunk=>log+=chunk);
   const call=async(path:string,cookie='',body?:unknown,requestOrigin=origin)=>{
     const response=await fetch(base+path,{method:body===undefined?'GET':'POST',redirect:'manual',headers:{...(cookie?{cookie}:{}),...(body===undefined?{}:{origin:requestOrigin,'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)});
@@ -124,6 +124,17 @@ async function main() {
     assert.equal(unavailable.headers.get('set-cookie'),null);
     assert.ok((await query("select 1 from audit_logs where action='auth.login' and result='failure' and metadata->>'code'='provider_unavailable'")).rowCount);
     pass('patient Supabase outage fails closed without affecting internal login');
+    const checkoutPage=await call('/portal/paciente/agendar',patientLogin.cookie);assert.equal(checkoutPage.status,200);
+    const checkoutHtml=await checkoutPage.text();assert.ok(checkoutHtml.includes('700'));assert.ok(!checkoutHtml.includes('Cupom online aplicado'));
+    const portalDoctor=(await query("select id from doctors where is_active and full_name ilike '%Paulo%' limit 1")).rows[0].id;
+    const portalPerson=(await query("insert into patient_profiles(full_name,email,phone_whatsapp) values('Portal CRM fixture','patient@example.invalid','11988881111') returning id")).rows[0].id;
+    const portalBooking=(await query("insert into appointments(patient_id,doctor_id,scheduled_for,status) values($1,$2,'2040-08-10T13:00:00-03:00','confirmed') returning id",[portalPerson,portalDoctor])).rows[0].id;
+    const portalPayload={fullName:'Portal CRM fixture',cpf:'12345678901',email:'patient@example.invalid',phoneWhatsapp:'11988881111',birthDate:'1980-03-15',heightCm:170,weightKg:70,doctorPreference:'paulo',modality:'in_person',scheduledFor:'2040-08-10T13:00:00-03:00',paymentMethod:'pix',lgpdConsent:true};
+    const conflict=await call('/api/appointments',patientLogin.cookie,portalPayload);assert.equal(conflict.status,409,await conflict.text());
+    assert.equal((await query('select cpf from patient_profiles where id=$1',[portalPerson])).rows[0].cpf,null);
+    const overlap=await call('/api/appointments',patientLogin.cookie,{...portalPayload,scheduledFor:'2040-08-10T13:30:00-03:00'});assert.equal(overlap.status,409,await overlap.text());
+    await query("update appointments set status='cancelled' where id=$1",[portalBooking]);
+    pass('patient checkout shows 700 and overlapping bookings return 409 before payment, rolling back registration');
     const o=await login('operator@example.invalid');assert.equal(o.body.redirectTo,'/crm');
     assert.equal((await call('/crm',o.cookie)).status,200);
     for(const route of ['/api/internal/governance','/api/internal/audit','/api/internal/lios/health','/api/internal/export?tipo=financeiro','/api/internal/monthly-report'])assert.equal((await call(route,o.cookie)).status,403,route);
@@ -156,7 +167,7 @@ async function main() {
     assert.equal((await call('/api/internal/crm',o2.cookie)).status,401);
     pass('CRM local login, safe projections, operational mutations, backend isolation, CSRF and revocation');
     const panel=await panelCall();assert.equal(panel.status,200);assert.ok(panel.body.includes('workspace'));
-    const panelLogged=await panelCall(p.cookie);assert.equal(panelLogged.location,'/dashboard');
+    const panelLogged=await panelCall(p.cookie);assert.equal(panelLogged.location,'/crm');
     pass('panel hostname routes root login and authenticated workspace without changing public root');
     const fixtureTitle=`HTTP audit fixture ${Date.now()}`;
     await serverAction(p.cookie,'startsAt',{title:fixtureTitle,startsAt:'2030-01-01T12:00',location:'Fixture',notes:'fixture-sensitive-calendar-note'});

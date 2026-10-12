@@ -363,16 +363,16 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
             <p className="mt-3 text-sm leading-6 text-slate-600">Seus dados são enviados de forma protegida ao processador de pagamentos.</p>
           </div>
           <div className="text-right">
-            <span className="block text-sm text-slate-400 line-through">R$ 990,00</span>
             <strong className="block text-2xl text-[#14508B]">{amountLabel}</strong>
-            <span className="text-xs font-bold text-emerald-700">Cupom online aplicado</span>
+            <span className="text-xs font-bold text-slate-600">Honorários particulares</span>
           </div>
         </div>
 
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-sm font-bold text-emerald-800">Benefício exclusivo do cadastro online</p>
+          <p className="text-sm font-bold text-emerald-800">Consulta cardiológica particular</p>
           <p className="mt-1 text-sm leading-6 text-emerald-700">
-            Consulta cardiológica de 60 minutos: de R$ 990,00 por R$ 749,00. O desconto já foi aplicado.
+            Consulta com aproximadamente 1 hora: {amountLabel}. Pix, dinheiro na clínica ou cartão em 1x.
+            Os exames e demais procedimentos, quando indicados, podem ser realizados pelo seu convênio conforme cobertura e autorização da operadora.
           </p>
         </div>
 
@@ -390,7 +390,7 @@ export function PatientScheduleCheckout({ user, amountCents, occupiedSlots }: Pa
               active={paymentMethod === 'credit_card'}
               title="Cartão de crédito"
               description="Pagamento à vista"
-              badge="1x de R$ 749,00"
+              badge={`1x de ${amountLabel}`}
               showCardBrands
               onClick={() => setPaymentMethod('credit_card')}
             />

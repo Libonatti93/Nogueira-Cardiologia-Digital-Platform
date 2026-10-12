@@ -61,6 +61,10 @@ try {
   }
   run('/opt/nogueira-postgres/backup.sh', []);
   run('node', ['scripts/migrate.mjs']);
+  // Durable tasks are stored in PostgreSQL. Qualification runs every five minutes without an open browser.
+  await writeFile('/etc/cron.d/nogueira-crm-automation',
+    `*/5 * * * * root cd ${web} && /usr/bin/node scripts/crm-automation.mjs >> /var/log/nogueira-crm-automation.log 2>&1\n`, { mode: 0o644 });
+  run('node', ['scripts/crm-automation.mjs']);
   run('node', ['scripts/ensure-traefik-nogueira-route.js']);
   if (git('status', '--porcelain') || git('rev-parse', 'HEAD') !== sha) throw new Error('Source changed during build.');
   let previousImage = '';

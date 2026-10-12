@@ -40,7 +40,7 @@ export function PanelSidebar({name,roles,permissions,children}:{name:string;role
     <div className={`transition-all ${collapsed?'lg:pl-20':'lg:pl-64'}`}>
       <header className="hidden h-20 items-center justify-between border-b border-slate-200 bg-white px-8 lg:flex">
         <p className="text-sm text-slate-500">Nogueira Cardiologia <span className="mx-3 text-slate-300">/</span><span className="font-semibold text-[#103E6A]">Painel da equipe</span></p>
-        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Ambiente de produção</span>
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Equipe conectada</span>
       </header>
       <main className="mx-auto w-full max-w-[1600px] min-w-0 px-4 py-7 sm:px-6 lg:px-8">{children}</main>
     </div>

@@ -1,194 +1,89 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { patientAge } from '@/lib/crm-patient';
-import { CrmPatientForm } from './crm-patient-form';
-import { CrmKanban } from './crm-kanban';
-import { crmButton as button, crmCard as card, crmDate as date, crmField as field, crmLabels as labels, type CrmRow as Row } from './crm-types';
-import { crmPipelineStage, crmPipelineStages } from '@/lib/crm-pipeline';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { workflowStages, relationshipLabels, taskLabels, crmDate, clinicInput, clinicIso, appointmentLabels } from '@/lib/crm-workflow';
+import { box, button, field, secondary, type Workspace, type Person, type Detail, type Task, type Save } from './crm-model';
+import { Modal, ContactForm, BookingForm } from './crm-forms';
+import { PersonDetail } from './crm-person-detail';
+import { CrmPlaybook } from './crm-playbook';
 
-const tabs = [['leads','crm.leads.read'],['patients','crm.patients.read'],['appointments','crm.appointments.read'],['agenda','crm.appointments.read'],['summary','crm.access'],['history','crm.leads.read']];
-type Overview = { items?: Row[]; events?: Row[]; doctors?: Row[]; counts?: Record<string, number>; stageCounts?: Record<string, number>; total?: number };
-// datetime-local values use the clinic's timezone, independent of the operator's device timezone.
-const localDate = (value?: string) => {
-  if (!value) return '';
-  const parts = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(value));
-  return parts.replace(' ', 'T');
-};
-const clinicDate = (value: FormDataEntryValue | null) => value ? new Date(`${value}:00-03:00`).toISOString() : null;
-
-export function CrmConsole({ permissions, initialView }: { permissions: string[]; initialView: string }) {
-  const allowed = tabs.filter(([, permission]) => permissions.includes(permission));
-  const [view, setView] = useState(allowed.some(([key]) => key === initialView) ? initialView : allowed[0]?.[0] ?? 'summary');
-  const [q, setQ] = useState(''), [offset, setOffset] = useState(0);
-  const [data, setData] = useState<Overview>({});
-  const [editing, setEditing] = useState<Partial<Row> | null>(null);
-  const [patientEditor, setPatientEditor] = useState<Partial<Row> | null>(null);
-  const [sourceLead, setSourceLead] = useState<string>();
-  const [message, setMessage] = useState(''), [busy, setBusy] = useState(false), [loading, setLoading] = useState(true);
-  const [patients, setPatients] = useState<Row[]>([]), [patientSearch, setPatientSearch] = useState('');
-  const editorRef = useRef<HTMLElement>(null);
-  const requestVersion = useRef(0);
-  const canLead = permissions.includes('crm.leads.manage');
-  const canSchedule = permissions.includes('crm.appointments.manage');
-  const canRegister = permissions.includes('crm.patients.manage');
-  const items = data.items ?? [], events = data.events ?? [], doctors = data.doctors ?? [];
-  const load = useCallback(async (signal?: AbortSignal) => {
-    const response = await fetch(`/api/internal/crm?view=${view}&q=${encodeURIComponent(q)}&offset=${offset}`, { cache: 'no-store', signal });
-    const body = await response.json();
-    if (!response.ok) throw new Error(body.message);
-    return body as Overview;
-  }, [view, q, offset]);
-  useEffect(() => {
-    const controller = new AbortController();
-    const version = ++requestVersion.current;
-    load(controller.signal).then(result => { if (version === requestVersion.current) { setData(result); setLoading(false); } }).catch(error => {
-      if (!controller.signal.aborted && version === requestVersion.current) { setMessage(error.message); setLoading(false); }
-    });
-    return () => controller.abort();
-  }, [load]);
-  useEffect(() => {
-    if (view !== 'appointments' || !canSchedule) return;
-    const controller = new AbortController();
-    fetch(`/api/internal/crm?view=patients&q=${encodeURIComponent(patientSearch)}`, { signal: controller.signal }).then(async response => {
-      const body = await response.json(); if (!response.ok) throw new Error(body.message); setPatients(body.items);
-    }).catch(error => { if (!controller.signal.aborted) setMessage(error.message); });
-    return () => controller.abort();
-  }, [view, canSchedule, patientSearch]);
-  useEffect(() => { if (editing) editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [editing]);
-
-  async function save(body: Record<string, unknown>) {
-    setBusy(true); setMessage('');
-    try {
-      const response = await fetch('/api/internal/crm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message);
-      // Invalidate older reads so they cannot restore a card's previous stage after a successful write.
-      const version = ++requestVersion.current;
-      setEditing(null);
-      setMessage('Alteração salva e registrada no histórico.');
-      try { const fresh = await load(); if (version === requestVersion.current) setData(fresh); }
-      catch { setMessage('Alteração salva. Atualize a página para recarregar os registros.'); }
-      return result as { ok: boolean; id: string; leadId?: string };
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'Falha ao salvar.'); return null; }
-    finally { setBusy(false); }
-  }
-  function switchView(value: string) {
-    window.history.replaceState(null, '', value === 'leads' ? '/crm' : `/crm?view=${value}`);
-    if (value !== view || q || offset) { setLoading(true); setData({}); }
-    setView(value); setQ(''); setOffset(0); setEditing(null); setPatientEditor(null); setSourceLead(undefined); setMessage('');
-  }
-  function showKanban(name = '') { switchView('leads'); setQ(name); }
-  async function openPatient(row: Row) {
-    setBusy(true); setMessage('');
-    try {
-      const response = await fetch(`/api/internal/crm?view=patient&id=${row.id}`, { cache: 'no-store' });
-      const body = await response.json(); if (!response.ok) throw new Error(body.message);
-      setSourceLead(undefined); setPatientEditor(body.patient);
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'Não foi possível abrir o cadastro.'); }
-    finally { setBusy(false); }
-  }
-  function registerFromLead(row: Row) {
-    switchView('patients'); setSourceLead(row.id);
-    setPatientEditor({ full_name: row.full_name, email: row.email, phone_whatsapp: row.phone_whatsapp });
-  }
-  function scheduleFromLead(row: Row, status = row.appointment_status ?? 'confirmed') {
-    switchView('appointments');
-    setEditing({ id: row.appointment_id, patient_id: row.patient_id, patient_name: row.full_name,
-      lead_id: row.id, status, scheduled_for: row.scheduled_for,
-      doctor_id: row.doctor_id, modality: row.modality });
-  }
-  async function moveLead(row: Row, stage: string) {
-    if (stage === crmPipelineStage(row)) return;
-    if (stage === 'attended') {
-      if (row.appointment_id && canSchedule) scheduleFromLead(row, 'attended');
-      else setMessage('Agende a consulta antes de registrar sua realização.');
-      return;
-    }
-    const result = await save({ operation: 'lead_stage', id: row.id, stage, expectedStage: row.stage });
-    if (!result) { const fresh = await load().catch(() => null); if (fresh) setData(fresh); }
-  }
-  const patientForm = patientEditor && <CrmPatientForm key={patientEditor.id ?? sourceLead ?? 'new-patient'} patient={patientEditor} leadId={sourceLead}
-    canEdit={canRegister} canAddToCrm={canLead} busy={busy} onCancel={() => { setPatientEditor(null); setSourceLead(undefined); }}
-    onUseExisting={sourceLead ? () => { setPatientEditor(null); setQ(patientEditor.full_name ?? ''); } : undefined}
-    onSave={async body => {
-      const result = await save(body);
-      if (result) {
-        setPatientEditor(null); setSourceLead(undefined);
-        if (result.leadId) { showKanban(String(body.fullName)); setMessage('Paciente salvo e vinculado ao funil. Use Agendar consulta no cartão.'); }
-      }
-    }}/>;
-
-  return <div className="min-w-0 space-y-6" aria-busy={busy}>
-    <div className="flex flex-wrap items-end justify-between gap-4"><div>
-      <p className="text-xs font-bold uppercase tracking-[.2em] text-[#15A7DD]">Atendimento e relacionamento</p>
-      <h1 className="mt-2 text-3xl font-bold text-[#103E6A]">{view === 'patients' ? 'Pacientes' : 'CRM de consultas'}</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{view === 'patients' ? 'Cadastre o paciente e leve o atendimento para o funil comercial.' : 'Acompanhe cada contato desde a entrada até a consulta realizada na Nogueira.'}</p>
-    </div><div className="flex gap-2">
-      {view === 'patients' && canRegister && <button disabled={busy} className={button} onClick={() => { setPatientEditor({}); setSourceLead(undefined); }}>Novo paciente</button>}
-      {view === 'leads' && canLead && <button disabled={busy} className={button} onClick={() => setEditing({})}>Nova oportunidade</button>}
-    </div></div>
-    <nav aria-label="Áreas do CRM" className="flex flex-wrap gap-2">{allowed.map(([key]) => <button key={key} disabled={busy} onClick={() => switchView(key)} aria-current={view === key ? 'page' : undefined} className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${view === key ? 'bg-[#103E6A] text-white' : 'border border-slate-200 bg-white text-slate-600'}`}>{labels[key]}</button>)}</nav>
-    {message && <p role="status" className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm">{message}</p>}
-    {view === 'patients' && patientForm}
-    {view === 'patients' && sourceLead && !patientEditor && <p className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm">Localize o paciente abaixo e escolha “Vincular à oportunidade”. <button className="ml-2 underline" onClick={() => setSourceLead(undefined)}>Cancelar vínculo</button></p>}
-    {view === 'leads' && editing && canLead && <section ref={editorRef} className={`${card} scroll-mt-20`}><h2 className="mb-4 text-lg font-bold">{editing.id ? 'Editar acompanhamento' : 'Nova oportunidade'}</h2>
-      <form key={editing.id ?? 'new-lead'} className="grid gap-4 md:grid-cols-2" onSubmit={async event => {
-        event.preventDefault(); const f = new FormData(event.currentTarget);
-        const selectedStage = f.get('stage');
-        const stage = !selectedStage || selectedStage === crmPipelineStage(editing) ? editing.stage ?? 'new' : selectedStage;
-        await save({ operation: 'lead', id: editing.id, fullName: f.get('fullName'), email: f.get('email'), phone: f.get('phone'), stage, nextFollowUp: clinicDate(f.get('nextFollowUp')) });
-      }}>
-        <label>Nome<input name="fullName" className={field} required minLength={2} maxLength={160} defaultValue={editing.full_name}/></label>
-        <label>E-mail<input name="email" type="email" className={field} maxLength={254} defaultValue={editing.email}/></label>
-        <label>WhatsApp<input name="phone" type="tel" className={field} maxLength={40} defaultValue={editing.phone_whatsapp}/></label>
-        <label>Etapa<select aria-label="Etapa" name="stage" className={field} defaultValue={crmPipelineStage(editing)} disabled={crmPipelineStage(editing) === 'attended' || ['paid', 'awaiting_payment'].includes(editing.stage ?? '')}>{crmPipelineStages.map(stage => <option key={stage} value={stage} disabled={stage === 'attended'}>{labels[stage]}</option>)}</select><span className="mt-1 block text-xs text-slate-500">Para registrar a realização, edite o status da consulta.</span></label>
-        <label>Próximo contato (horário de Brasília)<input name="nextFollowUp" type="datetime-local" className={field} defaultValue={localDate(editing.next_follow_up_at)}/></label>
-        <div className="flex items-end gap-4"><button disabled={busy} className={button}>Salvar oportunidade</button><button type="button" disabled={busy} onClick={() => setEditing(null)}>Cancelar</button></div>
-      </form>
-    </section>}
-    {view === 'summary' ? <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">{Object.entries(data.counts ?? {}).map(([key, value]) => <div key={key} className={card}><p className="text-sm text-slate-500">{{ leads: 'Leads cadastrados', new_leads: 'Novos contatos', patients: 'Pacientes', today: 'Atendimentos hoje', pending: 'Solicitações pendentes' }[key]}</p><p className="mt-3 text-3xl font-bold text-[#103E6A]">{value}</p></div>)}</div>
-      <section className={card}><h2 className="font-bold text-[#103E6A]">Do contato à consulta</h2><p className="mt-2 text-sm leading-6 text-slate-500">Cadastre o paciente, acompanhe a oportunidade no Kanban e confirme o agendamento. Registre o próximo contato para dar continuidade a cada atendimento.</p>{permissions.includes('crm.leads.read') && <button onClick={() => showKanban()} className={`${button} mt-4`}>Abrir Kanban</button>}</section>
-    </> : <>
-      <div className="flex flex-wrap items-end gap-3"><label className="min-w-0 flex-1 text-sm font-semibold">Pesquisar por nome ou contato<input disabled={busy} className={field} value={q} onChange={event => { setQ(event.target.value); setOffset(0); setLoading(true); }} placeholder="Pesquisar..."/></label>{q && <button disabled={busy} className="rounded-xl border bg-white px-4 py-3 text-sm" onClick={() => { setQ(''); setOffset(0); }}>Limpar pesquisa</button>}</div>
-      {loading && <p className="text-sm text-slate-500">Carregando registros…</p>}
-      {view === 'leads' ? <>
-        <p className="text-sm text-slate-500">Arraste os cartões entre as etapas ou use “Mover para”. Em “Consulta Realizada”, confirme e salve o status da consulta.</p>
-        <CrmKanban items={items} counts={data.stageCounts ?? {}} busy={busy || loading} canManage={canLead} canRegister={canRegister && canLead} canSchedule={canSchedule} focusSingleCard={Boolean(q)}
-          onMove={moveLead} onEdit={row => setEditing(row)} onRegister={registerFromLead} onSchedule={scheduleFromLead}/>
-      </> : <section className={card}><div className="overflow-x-auto"><table className="w-full text-left text-sm">
-        <thead className="border-b text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-3 py-3">{view === 'patients' ? 'Paciente' : 'Registro'}</th><th className="px-3">{view === 'history' ? 'Alteração' : 'Contato / profissional'}</th><th className="px-3">{view === 'patients' ? 'Nascimento / idade' : 'Status / data'}</th><th className="px-3">Ações</th></tr></thead>
-        <tbody>{items.map(item => <tr key={item.id} className="border-b border-slate-100">
-          <td className="px-3 py-4 font-semibold">{item.full_name || item.patient_name}</td>
-          <td className="px-3 py-4 text-slate-500">{view === 'history' ? `${labels[item.old_stage ?? ''] || '—'} → ${labels[item.new_stage ?? ''] || '—'}` : <>{item.doctor_name || item.email || '—'}<br/>{item.phone_whatsapp}</>}</td>
-          <td className="px-3 py-4">{view === 'patients' ? item.birth_date ? <>{item.birth_date.split('-').reverse().join('/')}<p className="mt-1 text-xs text-slate-500">{patientAge(item.birth_date)} anos</p></> : 'Não informado' : <>{labels[item.stage || item.status || ''] || item.event_type || 'Cadastrado'}<p className="mt-1 text-xs text-slate-500">{date(item.scheduled_for || item.next_follow_up_at || item.created_at)}</p></>}</td>
-          <td className="px-3 py-4"><div className="flex min-w-28 flex-col items-start gap-3 font-semibold text-[#14508B]">
-            {view === 'patients' && <><button disabled={busy} onClick={() => openPatient(item)}>{canRegister ? 'Ver / editar cadastro' : 'Ver cadastro'}</button>{canLead && <button disabled={busy} onClick={async () => { if (await save({ operation: sourceLead ? 'link_patient' : 'patient_lead', id: sourceLead, patientId: item.id })) showKanban(item.full_name); }}>{sourceLead ? 'Vincular à oportunidade' : 'Abrir no CRM'}</button>}</>}
-            {view === 'appointments' && canSchedule && <button disabled={busy} onClick={() => setEditing(item)}>Editar</button>}
-          </div></td>
-        </tr>)}</tbody></table></div>{!loading && !items.length && <p className="py-10 text-center text-sm text-slate-500">Nenhum registro encontrado nesta área.</p>}</section>}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><button disabled={!offset || busy || loading} className="rounded-lg border bg-white px-3 py-2 disabled:opacity-40" onClick={() => { setOffset(Math.max(0, offset - 100)); setLoading(true); }}>← Anterior</button><span>{items.length ? `${offset + 1}–${offset + items.length}` : '0'}{data.total !== undefined ? ` de ${data.total}` : ' registros'} · até 100 por página</span><button disabled={busy || loading || (data.total !== undefined ? offset + items.length >= data.total : items.length < 100)} className="rounded-lg border bg-white px-3 py-2 disabled:opacity-40" onClick={() => { setOffset(offset + 100); setLoading(true); }}>Seguinte →</button></div>
-    </>}
-    {view === 'appointments' && canSchedule && <section ref={editorRef} className={`${card} scroll-mt-20`}><h2 className="mb-4 text-lg font-bold">{editing?.id ? 'Organizar atendimento' : 'Novo agendamento'}</h2>
-      <p className="mb-4 text-xs text-slate-500">Datas e horários de Brasília.</p>
-      {!editing?.patient_id && <label className="text-sm">Localizar paciente<input className={field} value={patientSearch} onChange={event => setPatientSearch(event.target.value)} placeholder="Nome ou contato do paciente"/></label>}
-      <form key={editing?.id ?? editing?.lead_id ?? 'new-appointment'} className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={async event => {
-        event.preventDefault(); const form = event.currentTarget; const f = new FormData(form);
-        if (await save({ operation: 'appointment', id: editing?.id, leadId: editing?.lead_id, patientId: editing?.patient_id || f.get('patientId'), doctorId: f.get('doctorId'), status: f.get('status'), scheduledFor: clinicDate(f.get('scheduledFor')), modality: f.get('modality') })) form.reset();
-      }}>
-        <label>Paciente{editing?.patient_id ? <p className="mt-3 font-semibold">{editing.patient_name}</p> : <select aria-label="Paciente" name="patientId" required className={field}><option value="">Selecione um paciente cadastrado</option>{patients.map(patient => <option key={patient.id} value={patient.id}>{patient.full_name}</option>)}</select>}</label>
-        <label>Médico<select aria-label="Médico" name="doctorId" className={field} defaultValue={editing?.doctor_id || ''}><option value="">A definir</option>{doctors.map(doctor => <option key={doctor.id} value={doctor.id}>{doctor.full_name}</option>)}</select></label>
-        <label>Data e horário<input name="scheduledFor" type="datetime-local" className={field} defaultValue={localDate(editing?.scheduled_for)}/></label>
-        <label>Status<select aria-label="Status" name="status" className={field} defaultValue={editing?.status || 'requested'}>{editing?.status && ['paid','awaiting_payment'].includes(editing.status) && <option value={editing.status}>{labels[editing.status]}</option>}{['requested','confirmed','cancelled','rescheduled','attended','no_show'].map(status => <option key={status} value={status}>{labels[status]}</option>)}</select></label>
-        <label>Modalidade<select aria-label="Modalidade" name="modality" className={field} defaultValue={editing?.modality || 'in_person'}><option value="in_person">Presencial</option><option value="telemedicine">Teleconsulta</option></select></label>
-        <div className="flex items-end gap-4"><button disabled={busy} className={button}>Salvar agendamento</button>{editing && <button type="button" disabled={busy} onClick={() => setEditing(null)}>Cancelar edição</button>}</div>
-      </form>
-    </section>}
-    {view === 'agenda' && <section className={card}><h2 className="text-lg font-bold">Compromissos da equipe</h2><div className="my-4 space-y-3">{events.map(event => <div key={event.id} className="rounded-xl border border-slate-200 p-3"><p className="font-semibold">{event.title}</p><p className="text-sm text-slate-500">{date(event.starts_at)} · {event.location || 'Local a definir'}</p></div>)}{!events.length && <p className="text-sm text-slate-500">Nenhum compromisso operacional cadastrado.</p>}</div>
-      {canSchedule && <form className="grid gap-4 md:grid-cols-3" onSubmit={async event => {
-        event.preventDefault(); const form = event.currentTarget; const f = new FormData(form);
-        if (await save({ operation: 'event', title: f.get('title'), startsAt: clinicDate(f.get('startsAt')), location: f.get('location') })) form.reset();
-      }}><label>Compromisso<input name="title" className={field} required minLength={2} maxLength={160}/></label><label>Data e horário (Brasília)<input name="startsAt" type="datetime-local" className={field} required/></label><label>Local<input name="location" className={field} maxLength={160}/></label><button className={button} disabled={busy}>Compartilhar compromisso</button></form>}
-    </section>}
-  </div>;
+const empty:Workspace={owners:[],doctors:[]};
+function localDay(date=new Date()){return new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);}
+function addDays(day:string,n:number){const d=new Date(`${day}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function shiftPeriod(day:string,mode:string,direction:number){
+ if(mode!=='month')return addDays(day,direction*(mode==='week'?7:1));
+ const date=new Date(`${day.slice(0,7)}-01T12:00:00Z`);date.setUTCMonth(date.getUTCMonth()+direction);return date.toISOString().slice(0,10);
 }
+function range(day:string,mode:string){
+ if(mode==='day')return [day,addDays(day,1)];
+ if(mode==='week'){const weekday=new Date(`${day}T12:00:00Z`).getUTCDay();const start=addDays(day,-((weekday+6)%7));return [start,addDays(start,7)];}
+ const first=day.slice(0,7)+'-01';const next=new Date(`${first}T12:00:00Z`);next.setUTCMonth(next.getUTCMonth()+1);return [first,next.toISOString().slice(0,10)];
+}
+async function read(view:string,params:Record<string,string>={},signal?:AbortSignal){const r=await fetch(`/api/internal/crm?${new URLSearchParams({view,...params})}`,{cache:'no-store',signal});const body=await r.json();if(!r.ok)throw new Error(body.message||'Falha ao carregar.');return body;}
+
+export function CrmConsole({permissions,initialView}:{permissions:string[];initialView:string}){
+ const [now,setNow]=useState(()=>Date.now());
+ const view=['agenda','appointments'].includes(initialView)?'agenda':initialView==='patients'?'people':'crm';
+ const searchParams=useSearchParams();
+ const [q,setQ]=useState(searchParams.get('q')||''),[owner,setOwner]=useState(''),[source,setSource]=useState(''),[stage,setStage]=useState(''),[status,setStatus]=useState(''),[offset,setOffset]=useState(0);
+ const [data,setData]=useState<Workspace>(empty),[tasks,setTasks]=useState<Task[]>([]),[metric,setMetric]=useState<Workspace>(empty);
+ const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0),[updated,setUpdated]=useState('');
+ const [newContact,setNewContact]=useState(false),[newBooking,setNewBooking]=useState(false),[personId,setPersonId]=useState<string|null>(null),[detail,setDetail]=useState<Detail|null>(null),[showPlaybook,setShowPlaybook]=useState(false);
+ const [mode,setMode]=useState('week'),[day,setDay]=useState(localDay()),[doctor,setDoctor]=useState(''),[periodFrom,setPeriodFrom]=useState(''),[periodTo,setPeriodTo]=useState(''),[showMetrics,setShowMetrics]=useState(false);
+ const [workTab,setWorkTab]=useState('today'),[globalHits,setGlobalHits]=useState<Person[]>([]);
+ const canCreate=permissions.includes('crm.patients.manage')&&permissions.includes('crm.leads.manage'),canMove=permissions.includes('crm.leads.manage'),canBook=permissions.includes('crm.appointments.manage');
+ const canMetrics=permissions.includes('crm.metrics.read');
+ const [start,end]=range(day,mode);
+ useEffect(()=>{const timer=setInterval(()=>{if(document.visibilityState==='visible'){setNow(Date.now());setRefresh(n=>n+1);}},10000);const focus=()=>setRefresh(n=>n+1);window.addEventListener('focus',focus);return()=>{clearInterval(timer);window.removeEventListener('focus',focus);};},[]);
+ useEffect(()=>{
+  const controller=new AbortController();
+  const params:Record<string,string>={q,owner,source,stage,status,offset:String(offset)};
+  if(view==='agenda'){params.from=clinicIso(`${start}T00:00`);params.to=clinicIso(`${end}T00:00`);params.doctor=doctor;}
+  const timer=setTimeout(()=>{read(view==='agenda'?'calendar':view==='people'?'people':'workspace',params,controller.signal).then(body=>{setData(body);setLoading(false);setUpdated(new Date().toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'}));}).catch(e=>{if(!controller.signal.aborted){setMessage(e.message);setLoading(false);}});
+   if(view==='crm')read('work',{q,owner},controller.signal).then(body=>setTasks(body.tasks||[])).catch(()=>{});
+  },180);
+  return()=>{clearTimeout(timer);controller.abort();};
+ },[view,q,owner,source,stage,status,offset,refresh,start,end,doctor]);
+ useEffect(()=>{if(!showMetrics||!canMetrics)return;const c=new AbortController();read('metrics',{q,owner,source,stage,status,from:periodFrom?clinicIso(`${periodFrom}T00:00`):'',to:periodTo?clinicIso(`${addDays(periodTo,1)}T00:00`):''},c.signal).then(setMetric).catch(e=>{if(!c.signal.aborted)setMessage(e.message);});return()=>c.abort();},[showMetrics,canMetrics,q,owner,source,stage,status,periodFrom,periodTo,refresh]);
+ useEffect(()=>{if(!personId)return;const c=new AbortController();read('person',{id:personId},c.signal).then(setDetail).catch(e=>{if(!c.signal.aborted)setMessage(e.message);});return()=>c.abort();},[personId,refresh]);
+ useEffect(()=>{if(q.length<2||view==='people')return;const c=new AbortController();const timer=setTimeout(()=>read('people',{q},c.signal).then(d=>setGlobalHits((d.items||[]).slice(0,6))).catch(()=>{}),250);return()=>{clearTimeout(timer);c.abort();};},[q,view]);
+ const closeDetail=useCallback(()=>{setPersonId(null);setDetail(null);},[]);
+ const closeContact=useCallback(()=>setNewContact(false),[]),closeBooking=useCallback(()=>setNewBooking(false),[]),closePlaybook=useCallback(()=>setShowPlaybook(false),[]);
+ const save:Save=async body=>{
+  setBusy(true);setMessage('');try{const response=await fetch('/api/internal/crm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await response.json();if(!response.ok)throw new Error(result.message);
+   setMessage('Alteração salva e registrada no histórico.');setRefresh(n=>n+1);return true;
+  }catch(e){setMessage(e instanceof Error?e.message:'Não foi possível salvar.');return false;}finally{setBusy(false);}
+ };
+ const openPerson=(id:string)=>{setDetail(null);setPersonId(id);};
+ const move=(p:Person,next:string)=>{if(next===p.pipeline_stage)return;void save({operation:'stage',personId:p.id,leadId:p.lead_id,stage:next,expectedStage:p.pipeline_stage});};
+ const filteredTasks=tasks.filter(t=>workTab==='overdue'?Date.parse(t.due_at)<now:workTab==='today'?localDay(new Date(t.due_at))===localDay():Date.parse(t.due_at)>=now&&localDay(new Date(t.due_at))!==localDay());
+ const changeFilter=(fn:(s:string)=>void,value:string)=>{fn(value);setOffset(0);};
+ return <div className="min-w-0 space-y-6">
+  <header className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Nogueira · Atendimento</p><h1 className="mt-1 text-3xl font-bold tracking-tight text-[#103E6A]">{view==='agenda'?'Agenda':view==='people'?'Contatos / Pacientes':'CRM'}</h1><p className="mt-2 text-sm text-slate-500">{view==='crm'?'Cada conversa com um próximo passo.':view==='people'?'Uma pessoa, um cadastro e todo o relacionamento.':'Consultas e compromissos da equipe. Horário de Brasília.'}</p></div><div className="flex flex-wrap gap-2">{view==='agenda'&&canBook&&<button className={secondary} onClick={()=>setNewBooking(true)}>+ Nova consulta</button>}{canCreate&&<button className={button} onClick={()=>setNewContact(true)}>+ Novo contato</button>}</div></header>
+  <div className="relative"><label className="sr-only" htmlFor="crm-global-search">Busca global</label><input id="crm-global-search" className={`${field} !mt-0 !py-3`} value={q} onChange={e=>changeFilter(setQ,e.target.value)} placeholder="Buscar por nome, telefone ou e-mail"/>{q.length>=2&&view!=='people'&&globalHits.length>0&&<details className="mt-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm"><summary className="cursor-pointer text-blue-800">Contatos encontrados na base</summary><div className="mt-2 grid gap-1">{globalHits.map(p=><button className="rounded-lg p-2 text-left hover:bg-blue-50" key={p.id} onClick={()=>openPerson(p.id)}>{p.full_name} · {p.phone_whatsapp} · {relationshipLabels[p.relationship_status]}</button>)}</div></details>}</div>
+  {message&&<p role="status" className="sticky top-3 z-[70] rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950 shadow-sm">{message}<button className="float-right ml-3" onClick={()=>setMessage('')} aria-label="Dispensar aviso">×</button></p>}
+  {view!=='agenda'&&<div className="flex flex-wrap items-end gap-3"><label className="min-w-36 text-xs text-slate-600">Responsável<select className={field} value={owner} onChange={e=>changeFilter(setOwner,e.target.value)}><option value="">Toda a equipe</option>{data.owners.map(o=><option value={o.id} key={o.id}>{o.full_name}</option>)}</select></label><label className="min-w-32 text-xs text-slate-600">Origem<input className={field} value={source} onChange={e=>changeFilter(setSource,e.target.value)} placeholder="Todas"/></label><label className="min-w-44 text-xs text-slate-600">Etapa<select className={field} value={stage} onChange={e=>changeFilter(setStage,e.target.value)}><option value="">Todas</option>{workflowStages.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label><label className="min-w-40 text-xs text-slate-600">Relacionamento<select className={field} value={status} onChange={e=>changeFilter(setStatus,e.target.value)}><option value="">{view==='crm'?'Oportunidades ativas':'Todos'}</option>{Object.entries(relationshipLabels).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label><button className={secondary} onClick={()=>{setOwner('');setSource('');setStage('');setStatus('');setQ('');setOffset(0);}}>Limpar filtros</button></div>}
+  {loading&&<p className="text-sm text-slate-500">Carregando operação…</p>}
+  {view==='crm'&&<>
+   <section className={box} aria-label="O que fazer hoje"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold text-[#103E6A]">O que fazer hoje</h2><div className="flex flex-wrap gap-2">{[['today','Hoje'],['overdue','Atrasadas'],['upcoming','Próximas']].map(([key,label])=><button key={key} onClick={()=>setWorkTab(key)} className={workTab===key?button:secondary}>{label} {key==='overdue'&&<span>({tasks.filter(t=>Date.parse(t.due_at)<now).length})</span>}</button>)}</div></div><div className="mt-4 grid gap-3 lg:grid-cols-3">{filteredTasks.slice(0,30).map(t=><button key={t.id} onClick={()=>openPerson(t.patient_id)} className={`rounded-xl border p-4 text-left ${Date.parse(t.due_at)<now?'border-red-200 bg-red-50':'border-slate-200 bg-slate-50'}`}><p className="text-xs font-semibold text-slate-500">{taskLabels[t.kind]||'Tarefa'} · {crmDate(t.due_at)}</p><p className="mt-1 font-bold">{t.full_name}</p><p className="mt-1 text-sm">{t.description}</p><p className="mt-2 text-xs text-slate-500">{t.owner_name} {Date.parse(t.due_at)<now?'· Atrasada':''}</p></button>)}{!filteredTasks.length&&<p className="py-4 text-sm text-slate-500">Nenhuma tarefa neste grupo.</p>}</div>{filteredTasks.length>30&&<p className="mt-3 text-sm">Mostrando 30 de {filteredTasks.length}. Use os filtros para localizar as demais.</p>}</section>
+   <div className="flex flex-wrap justify-between gap-3"><h2 className="text-xl font-bold text-[#103E6A]">Funil de consultas <span className="text-sm font-normal text-slate-500">{data.total||0} oportunidades</span></h2><div className="flex gap-2"><button className={secondary} onClick={()=>setShowPlaybook(true)}>Playbook de atendimento</button>{canMetrics&&<button className={secondary} onClick={()=>setShowMetrics(!showMetrics)}>{showMetrics?'Fechar indicadores':'Indicadores da operação'}</button>}</div></div>
+   {canMetrics&&showMetrics&&<section className={box} aria-label="Indicadores gerenciais"><div className="mb-4 flex flex-wrap gap-3"><label>De<input className={field} type="date" value={periodFrom} onChange={e=>setPeriodFrom(e.target.value)}/></label><label>Até<input className={field} type="date" value={periodTo} onChange={e=>setPeriodTo(e.target.value)}/></label></div><p className="mb-4 text-xs text-slate-500">Conversões por contatos criados no período; produtividade por interações realizadas no período. Os demais filtros acima também se aplicam.</p><div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">{[['leads','Leads novos'],['scheduled','Com agendamento'],['attended','Com consulta realizada'],['consultations','Consultas realizadas'],['overdue','Tarefas atrasadas'],['reactivated','Reativados'],['cold','Frios'],['in_pop','Em POP']].map(([k,v])=><div key={k} className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">{v}</p><p className="mt-1 text-2xl font-bold">{metric.summary?.[k]||0}</p></div>)}</div><div className="mt-4 flex flex-wrap gap-4 text-sm"><p>Entrada → Agendamento: <strong>{percent(metric.summary?.scheduled,metric.summary?.leads)}</strong></p><p>Agendamento → Realizada: <strong>{percent(metric.summary?.attended,metric.summary?.scheduled)}</strong></p><p>Conversão total: <strong>{percent(metric.summary?.attended,metric.summary?.leads)}</strong></p></div><div className="mt-5 grid gap-4 sm:grid-cols-2">{[['Etapas',metric.byStage],['Origens',metric.bySource],['Motivos de perda',metric.losses],['Atendimentos por atendente',metric.productivity]].map(([title,rows])=><div key={String(title)}><h3 className="font-semibold">{String(title)}</h3>{(rows as {label:string;total:number}[]|undefined)?.map(r=><p className="mt-1 flex justify-between gap-3 text-sm" key={r.label}>{workflowStages.find(([k])=>k===r.label)?.[1]||r.label}<strong>{r.total}</strong></p>)}</div>)}</div></section>}
+   <section aria-label="Kanban comercial de consultas" className="max-w-full overflow-x-auto overscroll-x-contain pb-5"><div className="flex min-w-max gap-4">{workflowStages.map(([key,label])=><section role="region" aria-label={label} key={key} className="w-[285px] shrink-0 rounded-2xl bg-slate-100 p-3" onDragOver={e=>{if(canMove&&!busy)e.preventDefault();}} onDrop={e=>{e.preventDefault();const leadId=e.dataTransfer.getData('text/plain');const p=data.items?.find(p=>p.lead_id===leadId);if(p&&canMove&&!busy)move(p,key);}}><div className="mb-3 flex items-center justify-between gap-2 px-1"><h2 className="text-sm font-bold text-[#103E6A]">{label}</h2><span className="rounded-full bg-white px-2 py-1 text-xs font-bold">{data.stageCounts?.[key]||0}</span></div><div className="space-y-3">{data.items?.filter(p=>p.pipeline_stage===key).map(p=>{
+    const overdue=!!p.next_follow_up_at&&Date.parse(p.next_follow_up_at)<now,days=p.pipeline_entered_at?Math.max(0,Math.floor((now-Date.parse(p.pipeline_entered_at))/86400000)):0;
+    return <article key={p.lead_id} aria-label={`Oportunidade de ${p.full_name}`} draggable={canMove&&!busy&&!p.communication_blocked} onDragStart={e=>e.dataTransfer.setData('text/plain',p.lead_id!)} className={`rounded-xl border bg-white p-4 shadow-sm ${overdue?'border-red-300':'border-slate-200'}`}><button className="w-full text-left" onClick={()=>openPerson(p.id)}><p className="font-bold text-slate-900">{p.full_name}</p><p className="mt-1 text-sm text-slate-500">{p.phone_whatsapp||'Telefone a completar'}</p><p className="mt-3 text-xs text-slate-500">{p.contact_source} · {p.owner_name||'A definir'}</p><p className="mt-1 text-xs text-slate-500">{days} dia(s) na etapa · Última interação: {crmDate(p.last_interaction)}</p><div className={`mt-3 rounded-lg p-3 text-sm ${overdue?'bg-red-50 text-red-900':'bg-blue-50 text-blue-950'}`}><p className="font-semibold">{p.next_action||relationshipLabels[p.relationship_status]}</p><p className="mt-1 text-xs">{crmDate(p.next_follow_up_at)} {overdue?'· ATRASADO':''}</p></div></button>{canMove&&!p.communication_blocked&&p.operational_status==='active'&&<label className="mt-3 block text-xs text-slate-500">Etapa de {p.full_name}<select className={`${field} !py-2 !text-xs`} value={p.pipeline_stage} disabled={busy} onChange={e=>move(p,e.target.value)}>{workflowStages.map(([s,l])=><option key={s} value={s}>{l}</option>)}</select></label>}</article>;
+   })}{!data.items?.some(p=>p.pipeline_stage===key)&&<p className="py-8 text-center text-xs text-slate-400">Nenhuma oportunidade nesta página</p>}</div></section>)}</div></section>
+  </>}
+  {view==='people'&&<section className={`${box} overflow-x-auto`}><table className="w-full min-w-[720px] text-left text-sm"><thead className="text-xs uppercase text-slate-500"><tr>{['Pessoa','Relacionamento','Responsável','Última / próxima consulta','Próxima ação'].map(t=><th className="pb-4 pr-4" key={t}>{t}</th>)}</tr></thead><tbody>{data.items?.map(p=><tr key={p.id} className="border-t border-slate-100"><td className="py-4 pr-4"><button className="font-bold text-blue-900 hover:underline" onClick={()=>openPerson(p.id)}>{p.full_name}</button><p className="mt-1 text-xs text-slate-500">{p.phone_whatsapp} · {p.email}</p><p className="mt-1 text-xs text-slate-500">{p.contact_source} {p.insurance&&`· ${p.insurance}`}</p></td><td className="pr-4">{relationshipLabels[p.relationship_status]}</td><td className="pr-4">{p.owner_name}</td><td className="pr-4"><p>{crmDate(p.last_appointment)}</p><p className="mt-1 text-slate-500">{crmDate(p.next_appointment)}</p></td><td><p>{p.next_action||'—'}</p><p className="text-xs text-slate-500">{crmDate(p.next_follow_up_at)}</p></td></tr>)}</tbody></table>{!data.items?.length&&<p className="py-8 text-center text-slate-500">Nenhum contato encontrado.</p>}</section>}
+  {view==='agenda'&&<>
+   <div className="flex flex-wrap items-end justify-between gap-3"><div className="flex flex-wrap items-center gap-2">{[['day','Dia'],['week','Semana'],['month','Mês']].map(([key,label])=><button key={key} className={mode===key?button:secondary} onClick={()=>setMode(key)}>{label}</button>)}<button className={secondary} aria-label="Período anterior" onClick={()=>setDay(shiftPeriod(day,mode,-1))}>←</button><input aria-label="Data da agenda" type="date" className={`${field} !mt-0 !w-auto`} value={day} onChange={e=>{if(e.target.value)setDay(e.target.value);}}/><button className={secondary} aria-label="Próximo período" onClick={()=>setDay(shiftPeriod(day,mode,1))}>→</button><button className={secondary} onClick={()=>setDay(localDay())}>Hoje</button></div><label className="text-xs">Profissional<select className={field} value={doctor} onChange={e=>setDoctor(e.target.value)}><option value="">Todos</option>{data.doctors.map(d=><option key={d.id} value={d.id}>{d.full_name}</option>)}</select></label></div>
+   <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white"><div className={mode==='day'?'p-4':'grid min-w-[850px] grid-cols-7'}>{mode==='month'&&Array.from({length:(new Date(`${start}T12:00:00Z`).getUTCDay()+6)%7},(_,i)=><div aria-hidden="true" key={`blank-${i}`} className="border-b border-r border-slate-100 bg-slate-50"/>)}{Array.from({length:Math.round((Date.parse(end)-Date.parse(start))/86400000)},(_,i)=>addDays(start,i)).map(date=><section key={date} className={`min-h-40 border-b border-r border-slate-100 p-3 ${date===localDay()?'bg-blue-50/60':''}`}><h2 className="mb-3 text-sm font-bold text-[#103E6A]">{new Date(`${date}T12:00:00Z`).toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})}</h2><div className="space-y-2">{data.appointments?.filter(a=>localDay(new Date(a.scheduled_for))===date).map(a=><button key={a.id} onClick={()=>openPerson(a.patient_id)} className={`block w-full rounded-xl border p-3 text-left text-xs ${a.care_status==='cancelled'?'border-slate-200 bg-slate-50 text-slate-400':a.care_status==='attended'?'border-emerald-200 bg-emerald-50':'border-blue-200 bg-white'}`}><p className="font-bold">{clinicInput(a.scheduled_for).slice(11)} · {a.full_name}</p><p className="mt-1">{a.modality==='telemedicine'?'Online':'Presencial'} · {appointmentLabels[a.care_status]}</p><p className="mt-1 text-slate-500">{a.doctor_name}</p><p className="mt-1">{a.phone_whatsapp}</p></button>)}{data.events?.filter(e=>localDay(new Date(e.starts_at))===date).map(e=><div key={e.id} className="rounded-xl bg-amber-50 p-3 text-xs"><p className="font-bold">{clinicInput(e.starts_at).slice(11)} · {e.title}</p><p>{e.location} {e.blocks_time?'· Horário bloqueado':''}</p></div>)}</div></section>)}</div></div>
+   {canBook&&<details className={box}><summary className="cursor-pointer font-semibold">Adicionar compromisso da equipe / bloqueio de horário</summary><form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={async e=>{e.preventDefault();const form=e.currentTarget;const f=Object.fromEntries(new FormData(form));if(await save({operation:'calendar_block',...f,startsAt:clinicIso(String(f.startsAt)),endsAt:clinicIso(String(f.endsAt)),blocksTime:f.blocksTime==='on'}))form.reset();}}><label>Título<input className={field} name="title" required/></label><label>Local<input className={field} name="location"/></label><label>Início<input className={field} type="datetime-local" name="startsAt" required/></label><label>Fim<input className={field} type="datetime-local" name="endsAt" required/></label><label>Profissional<select className={field} name="doctorId"><option value="">Equipe</option>{data.doctors.map(d=><option key={d.id} value={d.id}>{d.full_name}</option>)}</select></label><label className="flex items-center gap-2 text-sm"><input name="blocksTime" type="checkbox"/>Bloquear horários de consulta</label><button className={button} disabled={busy}>Salvar compromisso</button></form></details>}
+  </>}
+  {view!=='agenda'&&<div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500"><p>{data.total||0} registros · Atualizado às {updated||'—'}</p><div className="flex gap-2"><button className={secondary} disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-100))}>Anterior</button><span className="px-2 py-2">Página {offset/100+1}</span><button className={secondary} disabled={offset+100>=(data.total||0)} onClick={()=>setOffset(offset+100)}>Próxima</button></div></div>}
+  {newContact&&<Modal title="Novo contato" close={closeContact}><ContactForm owners={data.owners} cancel={closeContact} save={async b=>{const ok=await save(b);if(ok)setNewContact(false);return ok;}}/></Modal>}
+  {newBooking&&<Modal title="Nova consulta" close={closeBooking}><BookingForm doctors={data.doctors} save={async b=>{const ok=await save(b);if(ok)setNewBooking(false);return ok;}} cancel={closeBooking}/></Modal>}
+  {personId&&<Modal title={detail?.person.full_name||'Carregando contato'} close={closeDetail}>{detail?<PersonDetail key={personId} data={detail} save={save} permissions={permissions}/>:<p>Carregando histórico…</p>}</Modal>}
+  {showPlaybook&&<Modal title="Playbook de atendimento" close={closePlaybook}><CrmPlaybook/></Modal>}
+ </div>;
+}
+function percent(a=0,b=0){return b?`${(100*a/b).toFixed(1)}%`:'0%';}

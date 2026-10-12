@@ -183,7 +183,18 @@ export async function POST(request: Request) {
   const requestHeaders = await headers();
   const remoteIp = getClientIp(requestHeaders.get('x-forwarded-for') ?? requestHeaders.get('x-real-ip'));
 
-  const persisted = await transaction(async (client) => {
+  let persisted: { patientId: string; leadId: string; appointmentId: string; appointmentStatus: string };
+  try {
+  persisted = await transaction(async (client) => {
+    // Enrich the existing contact when the identity is unambiguous; keep its history.
+    await client.query("select pg_advisory_xact_lock(hashtextextended('crm-person-cpf:'||$1,0))", [cpf]);
+    const byCpf = await client.query('select id from patient_profiles where cpf=$1 for update', [cpf]);
+    if (!byCpf.rowCount) {
+      const candidates = await client.query(`select id from patient_profiles where cpf is null
+        and lower(full_name)=lower($1) and regexp_replace(coalesce(phone_whatsapp,''),'[^0-9]','','g')=$2
+        and (email is null or email=$3) for update`, [fullName, phoneWhatsapp.replace(/\D/g, ''), email]);
+      if (candidates.rowCount === 1) await client.query('update patient_profiles set cpf=$2 where id=$1', [candidates.rows[0].id, cpf]);
+    }
     const patientResult = await client.query<{ id: string }>(
       `
         insert into patient_profiles (
@@ -277,14 +288,14 @@ export async function POST(request: Request) {
         from appointments
         where doctor_id = $1
           and scheduled_for = $2
-          and status not in ('cancelled', 'no_show')
+          and care_status not in ('cancelled', 'no_show')
         limit 1
       `,
       [doctorId, scheduledDate],
     );
 
     if (occupied.rowCount) {
-      throw new Error('Este horário acabou de ser reservado. Volte à agenda e escolha outro horário.');
+      throw Object.assign(new Error('Este horário acabou de ser reservado. Volte à agenda e escolha outro horário.'), { code: '23P01' });
     }
 
     const appointmentResult = await client.query<{ id: string; status: string }>(
@@ -319,6 +330,12 @@ export async function POST(request: Request) {
       appointmentStatus: appointmentResult.rows[0].status,
     };
   });
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === '23P01') return NextResponse.json({ message: 'Este horário acabou de ser reservado. Escolha outro horário.' }, { status: 409 });
+    if (code === '23514') return NextResponse.json({ message: 'Este cadastro não permite agendamento. Entre em contato com a equipe.' }, { status: 400 });
+    throw error;
+  }
 
   let asaasCustomerId = '';
   let asaasPayment;

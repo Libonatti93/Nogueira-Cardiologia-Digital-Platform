@@ -140,7 +140,7 @@ export function mapAsaasPaymentStatus(status: string | undefined) {
 
 export function getAppointmentPaymentAmountCents() {
   const configured = Number(process.env.ASAAS_APPOINTMENT_AMOUNT_CENTS);
-  return Number.isFinite(configured) && configured > 0 ? Math.round(configured) : 74900;
+  return Number.isFinite(configured) && configured > 0 ? Math.round(configured) : 70000;
 }
 
 export async function createAsaasCustomer(payload: AsaasCustomerPayload) {

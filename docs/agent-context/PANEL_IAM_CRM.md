@@ -1,3 +1,5 @@
+> Modelo atual, de 12/10/2026: [CRM_OPERACIONAL.md](CRM_OPERACIONAL.md). As cinco etapas e o DNS pendente descritos abaixo registram a implantação anterior.
+
 # Painel único, IAM e CRM
 
 ## Host e experiência

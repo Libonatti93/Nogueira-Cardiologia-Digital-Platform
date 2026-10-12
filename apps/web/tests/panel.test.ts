@@ -5,7 +5,7 @@ import { createSessionToken,verifySessionToken } from '../src/lib/auth';
 import { isSameOrigin } from '../src/lib/access-policy';
 
 test('panel routing uses permissions, including multiple roles and forced password changes',()=>{
-  assert.equal(panelLanding({permissions:['panel.access','internal.access','crm.access']}),'/dashboard');
+  assert.equal(panelLanding({permissions:['panel.access','internal.access','crm.access']}),'/crm');
   assert.equal(panelLanding({permissions:['panel.access','crm.access']}),'/crm');
   assert.equal(panelLanding({permissions:['panel.access','lios.read']}),'/lios');
   assert.equal(panelLanding({permissions:['panel.access','crm.access'],mustChangePassword:true}),'/alterar-senha');

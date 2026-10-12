@@ -1,5 +1,10 @@
 # Operação e deploy
 
+CRM de 12/10/2026: [CRM_OPERACIONAL.md](CRM_OPERACIONAL.md). O deploy aplica também
+014–016, instala a qualificação de pacientes frios a cada cinco minutos e valida o
+certificado TLS já ativo do painel. MASTER passa a abrir `/crm`.
+
+
 Diretório de comandos web: `/root/Nogueira-Cardiologia-Digital-Platform/apps/web`.
 Serviço existente: `nogueira-web.service`, npm start na porta 3002. Proxy e TLS permanecem no Traefik/EasyPanel.
 

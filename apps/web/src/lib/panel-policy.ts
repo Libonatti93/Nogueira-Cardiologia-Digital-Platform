@@ -6,9 +6,9 @@ type Access = { permissions?: string[]; mustChangePassword?: boolean };
 export function panelLanding(user: Access) {
   if (!user.permissions?.includes('panel.access')) return '/acesso?denied=1';
   if (user.mustChangePassword) return '/alterar-senha';
+  if (user.permissions.includes('crm.access')) return '/crm';
   if (user.permissions.includes('internal.access')) return '/dashboard';
   if (user.permissions.includes('files.access')) return '/arquivos';
-  if (user.permissions.includes('crm.access')) return '/crm';
   if (user.permissions.includes('lios.read')) return '/lios';
   if (user.permissions.includes('governance.read')) return '/governanca';
   if (user.permissions.includes('audit.read')) return '/auditoria';
@@ -16,12 +16,11 @@ export function panelLanding(user: Access) {
 }
 
 export const panelNavigation = [
+  {label:'Agenda',href:'/crm?view=agenda',permission:'crm.appointments.read',icon:'▤'},
+  {label:'Contatos / Pacientes',href:'/crm?view=patients',permission:'crm.patients.read',icon:'♧'},
+  {label:'CRM',href:'/crm',permission:'crm.access',icon:'◫'},
   {label:'Dashboard',href:'/dashboard',permission:'internal.access',icon:'▦'},
   {label:'Arquivos',href:'/arquivos',permission:'files.access',icon:'▱'},
-  {label:'CRM',href:'/crm',permission:'crm.access',icon:'◫'},
-  {label:'Agenda',href:'/crm?view=agenda',permission:'crm.appointments.read',icon:'▤'},
-  {label:'Pacientes',href:'/crm?view=patients',permission:'crm.patients.read',icon:'♧'},
-  {label:'Consultas',href:'/crm?view=appointments',permission:'crm.appointments.read',icon:'◷'},
   {label:'Exames',href:'/dashboard#exames',permission:'exams.read',icon:'▧'},
   {label:'Financeiro',href:'/dashboard#financeiro',permission:'internal.access',icon:'◈'},
   {label:'Conteúdo',href:'/dashboard#públicar',permission:'content.manage',icon:'▱'},

@@ -18,7 +18,7 @@ export default async function PatientSchedulePage() {
       join doctors on doctors.id = appointments.doctor_id
       where appointments.scheduled_for >= now()
         and appointments.scheduled_for < now() + interval '45 days'
-        and appointments.status not in ('cancelled', 'no_show')
+        and coalesce(appointments.care_status, appointments.status::text) not in ('cancelled', 'no_show')
     `,
   );
 
