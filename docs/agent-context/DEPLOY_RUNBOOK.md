@@ -1,5 +1,8 @@
 # Operação e deploy
 
+Educativo de 13/10/2026: [EDUCATIVO_PUBLICACAO.md](EDUCATIVO_PUBLICACAO.md). O deploy
+aplica a migration 017 e executa também `smoke-educativo.mjs`, sem publicar fixtures.
+
 CRM de 12/10/2026: [CRM_OPERACIONAL.md](CRM_OPERACIONAL.md). O deploy aplica também
 014–016, instala a qualificação de pacientes frios a cada cinco minutos e valida o
 certificado TLS já ativo do painel. MASTER passa a abrir `/crm`.

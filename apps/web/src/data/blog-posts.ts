@@ -10,6 +10,8 @@ export type BlogSection = {
 };
 
 export type BlogPost = {
+  id?: string; contentHtml?: string; contentType?: 'ARTICLE' | 'CLASS' | 'EDUCATIONAL_MATERIAL'; requiresRegistration?: boolean;
+  coverAlt?: string; coverCaption?: string; authorProfileSlug?: string; materialTypes?: string[];
   slug: string;
   title: string;
   excerpt: string;

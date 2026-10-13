@@ -16,4 +16,4 @@ export function proxy(request:NextRequest) {
   response.headers.set('Cache-Control','private, no-store');
   return response;
 }
-export const config={matcher:['/','/arquivos/:path*','/acesso/:path*','/dashboard/:path*','/crm/:path*','/governanca/:path*','/auditoria/:path*','/lios/:path*','/configuracoes/:path*','/alterar-senha','/sem-acesso','/portal/:path*','/blog/:path*','/privacidade','/exames']};
+export const config={matcher:['/educativo/:path*','/','/arquivos/:path*','/acesso/:path*','/dashboard/:path*','/crm/:path*','/governanca/:path*','/auditoria/:path*','/lios/:path*','/configuracoes/:path*','/alterar-senha','/sem-acesso','/portal/:path*','/blog/:path*','/privacidade','/exames']};

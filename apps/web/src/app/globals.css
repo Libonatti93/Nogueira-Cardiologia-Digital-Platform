@@ -230,3 +230,35 @@ video {
 
 /* Internal workspaces keep the public/patient promotional UI outside the panel. */
 body:has([data-panel]) .public-chrome { display: none; }
+
+
+/* The same article typography is used by the editor, preview and public page. */
+.educativo-prose { color: #334155; line-height: 1.85; overflow-wrap: anywhere; }
+.educativo-prose p { margin: 1em 0; }
+.educativo-prose h1, .educativo-prose h2, .educativo-prose h3 { color: #103e6a; font-weight: 650; line-height: 1.3; margin: 1.4em 0 .6em; }
+.educativo-prose h1 { font-size: 1.9rem; }
+.educativo-prose h2 { font-size: 1.5rem; }
+.educativo-prose h3 { font-size: 1.2rem; }
+.educativo-prose strong { font-weight: 700; }
+.educativo-prose em { font-style: italic; }
+.educativo-prose u { text-decoration: underline; }
+.educativo-prose s { text-decoration: line-through; }
+.educativo-prose ul { list-style: disc; padding-left: 1.5rem; }
+.educativo-prose ol { list-style: decimal; padding-left: 1.5rem; }
+.educativo-prose li { margin: .35rem 0; }
+.educativo-prose a { color: #14508b; text-decoration: underline; }
+.educativo-prose blockquote { border-left: 4px solid #15a7dd; background: #f4f9ff; padding: .6rem 1.2rem; margin: 1.5rem 0; }
+.educativo-prose .educativo-callout { border-radius: .7rem; border: 1px solid #b4dbf4; background: #eaf6ff; padding: .5rem 1.2rem; margin: 1.5rem 0; }
+.educativo-prose hr { border: 0; border-top: 1px solid #cbd5e1; margin: 2rem 0; }
+.educativo-prose figure { margin: 1.5rem 0; }
+.educativo-prose img { max-width: 100%; height: auto; border-radius: .8rem; }
+.educativo-prose figcaption { font-size: .85rem; color: #64748b; margin-top: .5rem; text-align: center; }
+.educativo-prose .ProseMirror-selectednode { outline: 3px solid #15a7dd; }
+.edu-input { width: 100%; min-width: 0; border: 1px solid #cbd5e1; border-radius: .6rem; background: white; padding: .65rem .8rem; color: #0f172a; font-size: .9rem; font-weight: 400; }
+.edu-input:focus { outline: 2px solid #15a7dd; outline-offset: 1px; }
+.edu-input:disabled { background: #f1f5f9; color: #64748b; }
+.edu-primary, .edu-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; border-radius: .7rem; padding: .6rem 1rem; font-size: .85rem; font-weight: 650; cursor: pointer; }
+.edu-primary { background: #14508b; color: white; border: 1px solid #14508b; }
+.edu-primary:hover { background: #103e6a; }
+.edu-secondary { background: white; color: #14508b; border: 1px solid #b8cfe1; }
+.edu-primary:disabled, .edu-secondary:disabled { opacity: .55; cursor: wait; }

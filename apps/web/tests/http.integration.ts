@@ -174,14 +174,15 @@ async function main() {
     const event=(await query('select id from internal_calendar_events where title=$1',[fixtureTitle])).rows[0];assert.ok(event);
     const eventAudit=(await query("select after_data from audit_logs where entity_id=$1 and action='calendar.create'",[event.id])).rows;
     assert.equal(eventAudit.length,1);assert.ok(!JSON.stringify(eventAudit).includes('fixture-sensitive-calendar-note'));
-    await serverAction(p.cookie,'body',{title:fixtureTitle,excerpt:'Fixture summary',body:'Fixture article content for transactional audit.',category:'Test'});
-    const post=(await query('select id from educativo_posts where title=$1',[fixtureTitle])).rows[0];assert.ok(post);
-    await serverAction(p.cookie,'status',{id:post.id,title:fixtureTitle,excerpt:'Edited fixture',category:'Test',status:'archived'},post.id);
-    const updatedPost=(await query('select status from educativo_posts where id=$1',[post.id])).rows[0];assert.equal(updatedPost.status,'archived');
+    const createdEditorial=await call('/api/internal/educativo',p.cookie,{});assert.equal(createdEditorial.status,201);
+    const post=await createdEditorial.json();
+    const changedEditorial=await fetch(base+'/api/internal/educativo/'+post.id,{method:'PUT',headers:{cookie:p.cookie,origin,'Content-Type':'application/json'},body:JSON.stringify({...post,title:fixtureTitle,excerpt:'Edited fixture',content_html:'<p>Fixture article content for transactional audit.</p>',action:'archive'})});
+    assert.equal(changedEditorial.status,200);
+    assert.equal((await query('select status from educativo_posts where id=$1',[post.id])).rows[0].status,'archived');
     const postAudit=(await query("select action,before_data,after_data from audit_logs where entity_id=$1 and action like 'content.%' order by created_at",[post.id])).rows;
-    assert.deepEqual(postAudit.map(row=>row.action),['content.create','content.update']);
-    assert.equal(postAudit[1].before_data.status,'draft');assert.equal(postAudit[1].after_data.status,'archived');
-    pass('existing calendar and editorial server actions persist transactional audit without sensitive content');
+    assert.deepEqual(postAudit.map(row=>row.action),['content.create','content.archive']);
+    assert.ok(!JSON.stringify(postAudit).includes('Fixture article content'));
+    pass('calendar Server Action and integrated editorial API persist transactional audit without content');
     const health=await call('/api/internal/lios/health',p.cookie);assert.equal(health.status,200);assert.equal((await health.json()).ai_mode,'demo');
     const appResponse=await call('/api/internal/lios/applications',p.cookie,{name:'HTTP Integration',slug:`http-${Date.now()}`});assert.equal(appResponse.status,201);const application=await appResponse.json();
     for(const kind of ['avatar','offer','signals']){const response=await call(`/api/internal/lios/applications/${application.id}/documents`,p.cookie,{rag_type:kind,title:'Public fixture',content:'General editorial context for a synthetic test. Never patient data.',source_url:'https://example.com/source',source_name:'Fixture'});assert.equal(response.status,201);}

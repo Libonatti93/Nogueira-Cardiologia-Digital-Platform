@@ -36,6 +36,18 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: '/api/educativo/materials/:id',
+        headers: [
+          { key: 'Content-Security-Policy', value: "sandbox; default-src 'none'; frame-ancestors 'self'" },
+          { key: 'Cache-Control', value: 'private, no-store, max-age=0' },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+        ],
+      },
+      {
+        source: '/educativo/:path*',
+        headers: [{ key: 'Cache-Control', value: 'private, no-store' }, { key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
         source: '/api/internal/files/:id/content',
         headers: [
           { key: 'Content-Security-Policy', value: "sandbox; default-src 'none'; frame-ancestors 'self'" },

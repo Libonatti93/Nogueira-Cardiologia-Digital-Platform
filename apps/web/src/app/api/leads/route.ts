@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import { transaction } from '@/lib/db';
+import { createHash } from 'node:crypto';
+import { query, transaction } from '@/lib/db';
+import { getPostBySlug } from '@/data/blog-posts';
+import { getPublishedEducativoPostBySlug } from '@/lib/educativo-posts';
+import { isSameOrigin } from '@/lib/access-policy';
+import { getEducationalAccess, issueEducationalAccess, educationalCookie, educationalMaxAge } from '@/lib/educativo-access';
+import { readLimitedJson } from '@/lib/educativo-policy';
 import { verifyTurnstileToken } from '@/lib/turnstile';
 
 type LeadPayload = {
@@ -19,23 +25,33 @@ function asCleanString(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return NextResponse.json({ message: 'Origem inválida.' }, { status: 403 });
   let payload: LeadPayload;
 
   try {
-    payload = await request.json();
+    payload = await readLimitedJson(request, 8000);
   } catch {
     return NextResponse.json({ message: 'Dados inválidos.' }, { status: 400 });
   }
 
-  const fullName = asCleanString(payload.fullName);
-  const email = asCleanString(payload.email).toLowerCase();
-  const phoneWhatsapp = asCleanString(payload.phoneWhatsapp);
+  const access = await getEducationalAccess();
+  const fullName = access?.full_name || asCleanString(payload.fullName).slice(0, 180);
+  const email = access?.email || asCleanString(payload.email).toLowerCase().slice(0, 254);
+  const phoneWhatsapp = access?.phone_whatsapp || asCleanString(payload.phoneWhatsapp).slice(0, 30);
   const phoneDigits = phoneWhatsapp.replace(/\D/g, '');
   const postSlug = asCleanString(payload.postSlug);
-  const postTitle = asCleanString(payload.postTitle);
-  const accessMode = asCleanString(payload.accessMode) || 'form';
+  const post = getPostBySlug(postSlug) || (await getPublishedEducativoPostBySlug(postSlug));
+  if (!post) return NextResponse.json({ message: 'Conteúdo indisponível.' }, { status: 404 });
+  const postTitle = post.title;
+  const accessMode = access ? 'session' : 'form';
 
-  if (accessMode !== 'cached') {
+  if (!access) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() || 'unknown';
+    const key = createHash('sha256').update('educativo-ip:' + ip).digest('hex');
+    const rate = (await query<{attempts:number}>(`insert into auth_rate_limits values($1,1,now()+interval '15 minutes')
+      on conflict(key) do update set attempts=case when auth_rate_limits.expires_at<now() then 1 else auth_rate_limits.attempts+1 end,
+      expires_at=case when auth_rate_limits.expires_at<now() then now()+interval '15 minutes' else auth_rate_limits.expires_at end returning attempts`, [key])).rows[0];
+    if (rate.attempts > 40) return NextResponse.json({ message: 'Muitas tentativas. Aguarde alguns minutos.' }, { status: 429 });
     const turnstile = await verifyTurnstileToken(request, payload['cf-turnstile-response'], 'educativo-lead');
     if (!turnstile.ok) {
       return NextResponse.json({ message: turnstile.message }, { status: 403 });
@@ -50,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Informe um e-mail válido.' }, { status: 400 });
   }
 
-  if (phoneDigits.length < 10) {
+  if (phoneDigits.length < 10 || phoneDigits.length > 15) {
     return NextResponse.json({ message: 'Informe um WhatsApp válido com DDD.' }, { status: 400 });
   }
 
@@ -58,9 +74,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Conteúdo educativo inválido.' }, { status: 400 });
   }
 
+  let token: string | undefined;
   try {
-    await transaction(async (client) => {
-      await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [`educativo:${email}:${phoneDigits}`]);
+    token = await transaction(async (client) => {
+      await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [`educativo:${email}`]);
 
       const existingLead = await client.query<{ id: string }>(
         `
@@ -181,11 +198,15 @@ export async function POST(request: Request) {
           [leadId, JSON.stringify({ postSlug, postTitle, accessMode })],
         );
       }
+      const registration = (await client.query('select id from educativo_leads where lower(email::text)=lower($1) and post_slug=$2 limit 1', [email, postSlug])).rows[0];
+      return access ? undefined : issueEducationalAccess(client, registration.id);
     });
-  } catch (error) {
-    console.error('Failed to save educational lead', error);
+  } catch {
+    console.error('educativo_registration_failed');
     return NextResponse.json({ message: 'Não foi possível salvar seu acesso agora.' }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'private, no-store' } });
+  if (token) response.cookies.set(educationalCookie, token, { httpOnly: true, secure: new URL(request.headers.get('origin') || request.url).protocol === 'https:', sameSite: 'lax', path: '/', maxAge: educationalMaxAge });
+  return response;
 }

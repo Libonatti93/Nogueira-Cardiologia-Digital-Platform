@@ -23,7 +23,7 @@ export const panelNavigation = [
   {label:'Arquivos',href:'/arquivos',permission:'files.access',icon:'▱'},
   {label:'Exames',href:'/dashboard#exames',permission:'exams.read',icon:'▧'},
   {label:'Financeiro',href:'/dashboard#financeiro',permission:'internal.access',icon:'◈'},
-  {label:'Conteúdo',href:'/dashboard#públicar',permission:'content.manage',icon:'▱'},
+  {label:'Educativo / Blog',href:'/educativo',permission:'content.manage',icon:'▱'},
   {label:'LIOS',href:'/lios',permission:'lios.read',icon:'✧'},
   {label:'Governança & IAM',href:'/governanca',permission:'governance.read',icon:'◎'},
   {label:'Auditoria',href:'/auditoria',permission:'audit.read',icon:'≡'},

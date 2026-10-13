@@ -1,227 +1,40 @@
 'use client';
-
 import { useEffect, useState, type FormEvent } from 'react';
-import type { BlogSection } from '@/data/blog-posts';
+import { useRouter } from 'next/navigation';
 import { resetTurnstile, TurnstileWidget } from '@/components/security/turnstile-widget';
 
-type LeadGateProps = {
-  postSlug: string;
-  postTitle: string;
-  sections: BlogSection[];
-};
-
-type Status = 'idle' | 'submitting' | 'success' | 'error';
-
-type EducationalAccess = {
-  fullName: string;
-  email: string;
-  phoneWhatsapp: string;
-  expiresAt: number;
-  recordedPosts?: string[];
-};
-
-const educationalAccessKey = 'nogueira_educativo_access';
-const educationalAccessDurationMs = 1000 * 60 * 60 * 24 * 30;
-
-function readEducationalAccess(): EducationalAccess | null {
-  try {
-    if (typeof window === 'undefined') return null;
-    const stored = window.localStorage.getItem(educationalAccessKey);
-    if (!stored) return null;
-
-    const parsed = JSON.parse(stored) as Partial<EducationalAccess>;
-    if (!parsed.fullName || !parsed.email || !parsed.phoneWhatsapp || !parsed.expiresAt || parsed.expiresAt < Date.now()) {
-      window.localStorage.removeItem(educationalAccessKey);
-      return null;
-    }
-
-    return {
-      fullName: parsed.fullName,
-      email: parsed.email,
-      phoneWhatsapp: parsed.phoneWhatsapp,
-      expiresAt: parsed.expiresAt,
-      recordedPosts: Array.isArray(parsed.recordedPosts) ? parsed.recordedPosts : [],
-    };
-  } catch {
-    return null;
-  }
-}
-
-function writeEducationalAccess(access: EducationalAccess) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(educationalAccessKey, JSON.stringify(access));
-}
-
-export function LeadGate({ postSlug, postTitle, sections }: LeadGateProps) {
-  const [unlocked, setUnlocked] = useState(() => Boolean(readEducationalAccess()));
-  const [status, setStatus] = useState<Status>('idle');
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const access = readEducationalAccess();
-    if (!access) return;
-
-    if (access.recordedPosts?.includes(postSlug)) return;
-
-    const payload = {
-      fullName: access.fullName,
-      email: access.email,
-      phoneWhatsapp: access.phoneWhatsapp,
-      postSlug,
-      postTitle,
-      accessMode: 'cached',
-    };
-
-    fetch('/api/leads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (!response.ok) return;
-        writeEducationalAccess({
-          ...access,
-          recordedPosts: [...new Set([...(access.recordedPosts ?? []), postSlug])],
-        });
-      })
-      .catch(() => undefined);
-  }, [postSlug, postTitle]);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setStatus('submitting');
-    setError('');
-
-    const formData = new FormData(event.currentTarget);
-    const payload = {
-      fullName: String(formData.get('fullName') ?? '').trim(),
-      email: String(formData.get('email') ?? '').trim(),
-      phoneWhatsapp: String(formData.get('phoneWhatsapp') ?? '').trim(),
-      postSlug,
-      postTitle,
-    };
-
+export function LeadGate({ postSlug, unlocked, protectedContent=false }: { postSlug:string; unlocked:boolean; protectedContent?:boolean }) {
+  const router=useRouter();
+  const [busy,setBusy]=useState(false), [error,setError]=useState('');
+  useEffect(()=>{
+    // Only an HttpOnly server session can authorize access. Old localStorage is never trusted.
+    try{localStorage.removeItem('nogueira_educativo_access');}catch{}
+    if(unlocked)void fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postSlug})}).catch(()=>{});
+  },[unlocked,postSlug]);
+  async function submit(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault();setBusy(true);setError('');
+    const form=new FormData(event.currentTarget);
     try {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        throw new Error(body?.message ?? 'Não foi possível liberar o conteúdo agora.');
-      }
-
-      writeEducationalAccess({
-        fullName: payload.fullName,
-        email: payload.email,
-        phoneWhatsapp: payload.phoneWhatsapp,
-        expiresAt: Date.now() + educationalAccessDurationMs,
-        recordedPosts: [postSlug],
-      });
-      setUnlocked(true);
-      setStatus('success');
-    } catch (submissionError) {
-      resetTurnstile();
-      setStatus('error');
-      setError(submissionError instanceof Error ? submissionError.message : 'Não foi possível liberar o conteúdo agora.');
-    }
+      const response=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...Object.fromEntries(form),postSlug})});
+      const result=await response.json();if(!response.ok)throw new Error(result.message);
+      router.refresh();
+    }catch(e){resetTurnstile();setError(e instanceof Error?e.message:'Não foi possível liberar o acesso.');}finally{setBusy(false);}
   }
-
-  return (
-    <>
-      <div className="prose prose-slate mt-8 max-w-none">
-        {sections.map((section) => (
-          <section key={section.heading} className="mt-8 first:mt-0">
-            <h2 className="text-2xl font-semibold text-[#103E6A]">{section.heading}</h2>
-            {section.paragraphs.map((paragraph) => (
-              <p key={paragraph} className="mt-3 text-base leading-relaxed text-slate-700">
-                {paragraph}
-              </p>
-            ))}
-            {section.bullets ? (
-              <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700">
-                {section.bullets.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
-        ))}
+  if(unlocked)return <p className="mt-8 rounded-2xl bg-blue-50 p-4 text-sm text-[#103E6A]">Seu acesso à área educativa está liberado neste navegador.</p>;
+  return <section className="mt-8 rounded-3xl border border-blue-100 bg-[#F4F9FF] p-5 sm:p-8" aria-label="Inscrição na área educativa">
+    <p className="text-xs font-bold uppercase tracking-widest text-[#14508B]">Área educativa Nogueira Cardiologia</p>
+    <h2 className="mt-3 text-2xl font-semibold text-[#103E6A]">{protectedContent?'Continue lendo / Acesse a aula do Prof. Dr. Paulo':'Receba nossos conteúdos educativos'}</h2>
+    <p className="mt-3 text-sm leading-6 text-slate-600">{protectedContent?'Inscreva-se uma vez para acessar o conteúdo completo e os materiais do professor.':'Este artigo é aberto. Inscreva-se para acompanhar as orientações e acessar também as aulas e materiais.'}</p>
+    <form onSubmit={submit} className="mt-5 grid gap-4">
+      <label className="grid gap-1 text-sm font-semibold">Nome completo<input name="fullName" autoComplete="name" minLength={3} maxLength={180} required className="edu-input"/></label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm font-semibold">E-mail<input name="email" type="email" autoComplete="email" maxLength={254} required className="edu-input"/></label>
+        <label className="grid gap-1 text-sm font-semibold">WhatsApp<input name="phoneWhatsapp" type="tel" autoComplete="tel" minLength={10} maxLength={30} required className="edu-input" placeholder="(17) 99999-9999"/></label>
       </div>
-
-      <section className="mt-10 rounded-3xl border border-[#14508B]/14 bg-[#F4F9FF] p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#15A7DD]">
-          Informação para cuidar melhor de você
-        </p>
-        <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#103E6A] sm:text-3xl">
-          {unlocked ? 'Tudo certo — pode seguir tranquilo 💙' : 'Vamos cuidar do seu coração juntos?'}
-        </h2>
-        <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">
-          {unlocked
-            ? 'Quando quiser entender melhor a saúde do seu coração, é só voltar. Seus próximos conteúdos já estarão disponíveis, sem precisar preencher tudo outra vez.'
-            : 'Este artigo é aberto para você. Se quiser, deixe seu contato uma única vez e acompanhe nossas próximas orientações de um jeito simples e sem complicação.'}
-        </p>
-
-        {!unlocked ? (
-          <form onSubmit={handleSubmit} className="mt-6 grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-              Nome completo
-              <input
-                name="fullName"
-                type="text"
-                autoComplete="name"
-                minLength={3}
-                required
-                className="rounded-2xl border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-                placeholder="Digite seu nome"
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-              E-mail
-              <input
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="rounded-2xl border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-                placeholder="seuemail@exemplo.com"
-              />
-            </label>
-          </div>
-          <label className="grid gap-2 text-sm font-semibold text-[#103E6A]">
-            Telefone / WhatsApp
-            <input
-              name="phoneWhatsapp"
-              type="tel"
-              autoComplete="tel"
-              minLength={10}
-              required
-              className="rounded-2xl border border-[#14508B]/20 bg-white px-4 py-3 text-sm font-normal text-slate-900 outline-none ring-[#15A7DD] focus:ring-2"
-              placeholder="(17) 99999-9999"
-            />
-          </label>
-
-          <p className="text-xs leading-5 text-slate-500">
-            Ao se cadastrar, você autoriza o contato da Nogueira Cardiologia por e-mail ou WhatsApp com conteúdos educativos e informações relacionadas à clínica.
-          </p>
-
-          <TurnstileWidget action="educativo-lead" />
-
-          {error ? <p className="text-sm font-semibold text-red-700">{error}</p> : null}
-
-          <button
-            type="submit"
-            disabled={status === 'submitting'}
-            className="inline-flex w-fit rounded-full bg-[#14508B] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0F3760] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {status === 'submitting' ? 'Enviando cadastro...' : 'Quero receber conteúdos educativos'}
-          </button>
-          </form>
-        ) : null}
-      </section>
-    </>
-  );
+      <p className="text-xs leading-5 text-slate-500">Ao se inscrever, você autoriza o contato da Nogueira Cardiologia por e-mail ou WhatsApp com conteúdos educativos e informações da clínica. <a className="underline" href="/privacidade">Política de privacidade</a>.</p>
+      <TurnstileWidget action="educativo-lead"/>
+      {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
+      <button disabled={busy} className="edu-primary w-fit">{busy?'Liberando acesso…':protectedContent?'Quero acessar o conteúdo':'Quero receber conteúdos educativos'}</button>
+    </form>
+  </section>;
 }

@@ -36,9 +36,11 @@ try{
     for(const entry of completedSets.slice(0,-2)){
       if(Date.parse(entry.name.slice(0,10))<Date.now()-15*86400000)await rm(path.join(destination,entry.name),{recursive:true});
     }
+    const hasEditorial=Boolean((await db.query("select to_regclass('educativo_post_attachments') present")).rows[0].present);
+    const editorialBytes=hasEditorial?Number((await db.query('select coalesce(sum(size),0) bytes from educativo_post_attachments')).rows[0].bytes):0;
     const estimate=(await db.query('select coalesce(sum(size),0)::float8 bytes,pg_database_size(current_database())::float8 database_bytes from drive_files')).rows[0];
     const disk=await statfs(destination);
-    if(disk.bavail*disk.bsize<estimate.bytes+estimate.database_bytes+1024**3)throw new Error('Insufficient free space for a complete Drive backup while retaining 1 GB reserve. Existing backups preserved.');
+    if(disk.bavail*disk.bsize<estimate.bytes+editorialBytes+estimate.database_bytes+1024**3)throw new Error('Insufficient free space for a complete Drive backup while retaining 1 GB reserve. Existing backups preserved.');
     await mkdir(temporary,{recursive:true,mode:0o700});
     const pending=(await db.query('select stored_name from drive_file_cleanup')).rows;
     for(const row of pending){
@@ -49,6 +51,7 @@ try{
     await archive('docker',['exec','nogueira-postgres','pg_dump','-U','nogueira_app_user','-d',database],path.join(temporary,'database.sql.gz'),true);
     await archive('tar',['-czf','-','-C',root,'objects'],path.join(temporary,'objects.tar.gz'));
     const files=(await db.query('select stored_name,size,checksum from drive_files order by stored_name')).rows;
+    if(hasEditorial)files.push(...(await db.query('select stored_name,size,checksum from educativo_post_attachments order by stored_name')).rows);
     await writeFile(path.join(temporary,'manifest.json'),JSON.stringify({createdAt:timestamp,database,storageRoot:root,files},null,2)+'\n',{mode:0o600});
     await rename(temporary,path.join(destination,timestamp));
     await db.query("select pg_advisory_unlock(hashtextextended('nogueira-drive-backup',0))");

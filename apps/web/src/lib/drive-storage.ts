@@ -41,9 +41,9 @@ export async function commitDriveObject(key:string) {
   await rename(path.join(driveRoot,'incoming',key),target);
 }
 let uploads = 0;
-export async function receiveDriveFile(request: Request, name: string) {
+export async function receiveDriveFile(request: Request, name: string, limit = maxDriveFileBytes) {
   const declared = request.headers.get('content-length');
-  if (declared && (!/^\d+$/.test(declared) || Number(declared)>maxDriveFileBytes)) throw new DriveError('O limite é 250 MB por arquivo.',413);
+  if (declared && (!/^\d+$/.test(declared) || Number(declared)>limit)) throw new DriveError(`O limite é ${limit / 1024 / 1024} MB por arquivo.`,413);
   if (!request.body) throw new DriveError('Selecione um arquivo.');
   if (uploads>=3) throw new DriveError('Há outros envios em andamento. Tente novamente em instantes.',429);
   uploads++;
@@ -65,7 +65,7 @@ export async function receiveDriveFile(request: Request, name: string) {
         if (done) break;
         if (request.signal.aborted) throw new DriveError('Envio cancelado.');
         size+=value.byteLength;
-        if (size>maxDriveFileBytes) throw new DriveError('O limite é 250 MB por arquivo.',413);
+        if (size>limit) throw new DriveError(`O limite é ${limit / 1024 / 1024} MB por arquivo.`,413);
         if(head.length<4096) head=Buffer.concat([head,Buffer.from(value.subarray(0,4096-head.length))]);
         hash.update(value);
         // FileHandle.write may be partial; writeFile writes the complete chunk.

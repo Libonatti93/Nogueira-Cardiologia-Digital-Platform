@@ -29,6 +29,8 @@ try{
   await Promise.all([pipeline(createReadStream(path.join(backup,'database.sql.gz')),createGunzip(),child.stdin),completed]);
   const url=new URL(process.env.DATABASE_URL);url.pathname='/'+name;client=new pg.Client({connectionString:url.toString()});await client.connect();
   const rows=(await client.query('select stored_name,size,checksum from drive_files order by stored_name')).rows;
+  const hasEditorial=Boolean((await client.query("select to_regclass('educativo_post_attachments') present")).rows[0].present);
+  if(hasEditorial)rows.push(...(await client.query('select stored_name,size,checksum from educativo_post_attachments order by stored_name')).rows);
   assert.deepEqual(rows,manifest.files);assert.ok((await client.query("select 1 from schema_migrations where name='010_private_files.sql'")).rowCount);
   console.log(`PASS: full PostgreSQL restore in disposable database and ${rows.length} restored objects match SHA-256 and size`);
 }finally{

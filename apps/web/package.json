@@ -14,10 +14,19 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
-    "next": "^16.3.5",
+    "@tiptap/extension-image": "^3.31.4",
+    "@tiptap/extension-text-align": "^3.31.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/react": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
+    "cfb": "^1.2.2",
+    "next": "^16.4.0",
     "pg": "^8.22.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "sanitize-html": "^2.18.0",
+    "sharp": "^0.35.5",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -25,8 +34,10 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.2",
+    "@types/yauzl": "^3.4.0",
     "eslint": "^9",
-    "eslint-config-next": "^16.3.5",
+    "eslint-config-next": "^16.4.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5"

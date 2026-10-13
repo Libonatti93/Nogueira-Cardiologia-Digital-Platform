@@ -1,5 +1,9 @@
 # Leia primeiro
 
+**Atualização de 13/10/2026:** a central editorial está em `/educativo` no painel.
+Leia [EDUCATIVO_PUBLICACAO.md](EDUCATIVO_PUBLICACAO.md) para o editor visual, arquivos
+protegidos, inscrições, migration 017, backup e testes. Next: 16.4.0.
+
 **Atualização de 12/10/2026:** leia [CRM_OPERACIONAL.md](CRM_OPERACIONAL.md) para o CRM
 de nove etapas, Agenda/Contatos, POP, acesso da equipe, migrations 014–016, testes e
 cron. MASTER agora abre `/crm`; mantém o dashboard completo em `/dashboard`. O painel

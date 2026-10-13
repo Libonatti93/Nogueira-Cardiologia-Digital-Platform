@@ -1,3 +1,4 @@
+import { contentLabels } from '@/lib/educativo-types';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -201,7 +202,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/9] overflow-hidden bg-[#0F3760]">
                   <Image
                     src={post.coverImage}
-                    alt={`Imagem oficial para ${post.title}`}
+                    unoptimized={post.coverImage.startsWith('/api/')}
+                    alt={post.coverAlt || `Imagem oficial para ${post.title}`}
                     fill
                     sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
                     className="object-cover object-[50%_20%] transition-transform duration-500 group-hover:scale-[1.04]"
@@ -211,7 +213,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                   </span>
                 </Link>
                 <div className="flex flex-1 flex-col p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#15A7DD]">{post.category}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#15A7DD]">{post.contentType && post.contentType !== 'ARTICLE' ? contentLabels[post.contentType] : post.category}</p>
+                  {post.materialTypes?.length ? <p className="mt-2 text-xs font-semibold text-slate-500">Material: {post.materialTypes.map(t=>t==='POWERPOINT'?'PowerPoint':t==='IMAGE'?'Imagem':t).join(' + ')}</p> : null}
                   <h3 className="mt-2 text-xl font-semibold leading-snug text-[#103E6A]">
                     <Link href={`/blog/${post.slug}`} className="hover:text-[#14508B]">
                       {post.title}
@@ -231,7 +234,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     <span>{post.publishedAt}</span>
                   </div>
                   <Link href={`/blog/${post.slug}`} className="mt-5 inline-flex min-h-11 items-center justify-between rounded-full bg-[#F4F8FD] px-4 text-sm font-bold text-[#14508B] transition-colors group-hover:bg-[#14508B] group-hover:text-white">
-                    Ler artigo
+                    {post.contentType && post.contentType !== 'ARTICLE' ? 'Acessar conteúdo' : 'Ler artigo'}
                     <span aria-hidden="true">→</span>
                   </Link>
                 </div>

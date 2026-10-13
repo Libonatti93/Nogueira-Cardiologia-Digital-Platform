@@ -1,8 +1,10 @@
 import type { MetadataRoute } from 'next';
+import { getPublishedEducativoPosts } from '@/lib/educativo-posts';
 import { blogPosts } from '@/data/blog-posts';
 import { absoluteUrl } from '@/lib/seo';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = 'force-dynamic';
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: absoluteUrl('/'), lastModified: '2026-07-24', changeFrequency: 'weekly', priority: 1 },
     { url: absoluteUrl('/blog'), lastModified: '2026-07-24', changeFrequency: 'weekly', priority: 0.9 },
@@ -13,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl('/medicos/dra-cristiani-nogueira'), lastModified: '2026-07-24', changeFrequency: 'monthly', priority: 0.9 },
   ];
 
-  const articles: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+  const articles: MetadataRoute.Sitemap = [...blogPosts, ...await getPublishedEducativoPosts()].map((post) => ({
     url: absoluteUrl(`/blog/${post.slug}`),
     lastModified: post.updatedAt,
     changeFrequency: 'monthly',

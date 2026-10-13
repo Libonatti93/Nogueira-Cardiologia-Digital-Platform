@@ -1,3 +1,9 @@
+import { getEducationalAccess } from '@/lib/educativo-access';
+import { contentTeaser, sectionsToHtml } from '@/lib/educativo-html';
+import { ArticleBody } from '@/components/educativo/article-body';
+import { Materials } from '@/components/educativo/materials';
+import { Professor } from '@/components/educativo/professor';
+import { contentLabels } from '@/lib/educativo-types';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -6,19 +12,15 @@ import { AuthorityBlock } from '@/components/blog/authority-block';
 import { LeadGate } from '@/components/educativo/lead-gate';
 import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
-import { blogPosts, getBlogPostHashtags, getCanonicalBlogCategory, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
-import { getPublishedEducativoPostBySlug, getPublishedEducativoPosts } from '@/lib/educativo-posts';
+import { getBlogPostHashtags, getCanonicalBlogCategory, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
+import { getPublishedEducativoPostBySlug, getPublishedEducativoPosts, getPublishedMaterials } from '@/lib/educativo-posts';
 import { absoluteUrl, siteUrl } from '@/lib/seo';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -51,6 +53,9 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   if (!post) notFound();
 
+  const access = await getEducationalAccess();
+  const unlocked = !post.requiresRegistration || Boolean(access);
+  const materials = post.id && unlocked ? await getPublishedMaterials(post.id) : [];
   const databasePosts = await getPublishedEducativoPosts();
   const relatedPosts = [
     ...databasePosts.filter(
@@ -74,7 +79,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     image: absoluteUrl(post.coverImage),
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
-    author: { '@type': 'Organization', name: post.author.name, url: siteUrl },
+    author: { '@type': post.authorProfileSlug ? 'Person' : 'Organization', name: post.author.name, url: post.authorProfileSlug ? absoluteUrl(`/medicos/${post.authorProfileSlug}`) : siteUrl },
     reviewedBy: [
       { '@type': 'Physician', name: 'Dr. Paulo Roberto Nogueira', url: absoluteUrl('/medicos/dr-paulo-roberto-nogueira') },
       { '@type': 'Physician', name: 'Dra. Cristiani Monteiro de Oliveira Nogueira', url: absoluteUrl('/medicos/dra-cristiani-nogueira') },
@@ -86,6 +91,8 @@ export default async function BlogPostPage({ params }: PageProps) {
       logo: { '@type': 'ImageObject', url: absoluteUrl('/brand/nogueira-cardiologia-logo.svg') },
     },
     keywords: hashtags.join(', '),
+    isAccessibleForFree: !post.requiresRegistration,
+    ...(post.requiresRegistration ? { hasPart: { '@type': 'WebPageElement', isAccessibleForFree: false, cssSelector: '.educativo-protected' } } : {}),
     inLanguage: 'pt-BR',
     about: post.tags,
   };
@@ -103,8 +110,8 @@ export default async function BlogPostPage({ params }: PageProps) {
     <div className="min-h-screen bg-[#F8F8F9] text-slate-900">
       <PublicHeader />
       <main className="py-10 sm:py-14">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }} />
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex flex-wrap items-center gap-2">
@@ -145,7 +152,8 @@ export default async function BlogPostPage({ params }: PageProps) {
           <div className="relative mt-7 h-[360px] overflow-hidden rounded-2xl bg-[#0F3760]">
             <Image
               src={post.coverImage}
-              alt={`Imagem oficial para ${post.title}`}
+              alt={post.coverAlt || `Imagem oficial para ${post.title}`}
+              unoptimized={post.coverImage.startsWith('/api/')}
               fill
               sizes="(max-width: 896px) 100vw, 896px"
               className="object-cover object-[50%_20%]"
@@ -161,7 +169,14 @@ export default async function BlogPostPage({ params }: PageProps) {
             ))}
           </div>
 
-          <LeadGate postSlug={post.slug} postTitle={post.title} sections={post.sections} />
+          {post.coverCaption && <p className="mt-2 text-sm text-slate-500">{post.coverCaption}</p>}
+          {post.contentType && <p className="mt-5 text-sm font-bold text-[#14508B]">{contentLabels[post.contentType]}</p>}
+          <div className="educativo-protected">
+            {unlocked ? <><ArticleBody html={post.contentHtml} sections={post.sections}/><Materials materials={materials}/></> : <p className="mt-8 leading-8 text-slate-700">{contentTeaser(post.contentHtml ?? sectionsToHtml(post.sections))}…</p>}
+          </div>
+          <LeadGate postSlug={post.slug} unlocked={Boolean(access)} protectedContent={post.requiresRegistration}/>
+          <Professor slug={post.authorProfileSlug}/>
+
 
           <aside className="mt-10 overflow-hidden rounded-3xl border border-[#14508B]/12 bg-gradient-to-br from-[#F4F9FF] to-white p-5 text-sm text-slate-600 sm:p-7">
             <div className="max-w-2xl">
@@ -246,6 +261,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <Link href={`/blog/${related.slug}`} className="relative block aspect-[16/10] overflow-hidden bg-[#0F3760]">
                   <Image
                     src={related.coverImage}
+                    unoptimized={related.coverImage.startsWith('/api/')}
                     alt={`Imagem do artigo ${related.title}`}
                     fill
                     sizes="(max-width: 767px) 100vw, 33vw"

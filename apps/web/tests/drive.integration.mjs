@@ -25,11 +25,11 @@ const password='private-drive-fixture-only';
 const checks=[];const pass=name=>{checks.push(name);console.log(`PASS: ${name}`);};
 let app,log='',browser;
 async function start(){
-  app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p','3004'],{env:{...process.env,NEXT_DIST_DIR:'.next-verification',AUTH_ALLOWED_ORIGINS:base+','+browserBase,DRIVE_STORAGE_ROOT:storage},stdio:['ignore','pipe','pipe']});
+  app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p','3004'],{env:{...process.env,NEXT_DIST_DIR:process.env.NEXT_DIST_DIR||'.next-verification',AUTH_ALLOWED_ORIGINS:base+','+browserBase,DRIVE_STORAGE_ROOT:storage},stdio:['ignore','pipe','pipe']});
   app.stdout.on('data',v=>log+=v);app.stderr.on('data',v=>log+=v);
   for(let i=0;i<60;i++){try{if((await fetch(base+'/api/health')).ok)return;}catch{}await delay(250);}throw new Error('Test app not ready');
 }
-async function stop(){if(app){const ended=new Promise(r=>app.once('exit',r));app.kill('SIGTERM');await ended;app=null;}}
+async function stop(){if(app?.exitCode!==null){app=null;return;}if(app){const ended=new Promise(r=>app.once('exit',r));app.kill('SIGTERM');await ended;app=null;}}
 async function call(route,cookie='',body,origin=base){return fetch(base+route,{method:body===undefined?'GET':'POST',redirect:'manual',headers:{...(cookie?{cookie}:{}),...(body===undefined?{}:{origin,'content-type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)});}
 async function checked(response,status=200){assert.equal(response.status,status,await response.clone().text());return response.json();}
 async function login(index){const response=await call('/api/auth/login','',{email:`drive-${index}@example.invalid`,password,portal:'admin'});await checked(response);return response.headers.get('set-cookie').split(';')[0];}

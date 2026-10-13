@@ -89,6 +89,7 @@ try {
     await waitHealth('https://www.nogueiracardiologia.com.br/api/health', sha);
     run('node', ['scripts/smoke-production.mjs']);
     run('node', ['scripts/smoke-drive.mjs']);
+    run('node', ['scripts/smoke-educativo.mjs']);
   } catch (error) {
     if (webChanged) {
       await writeFile(runtime, previous, { mode: 0o600 });

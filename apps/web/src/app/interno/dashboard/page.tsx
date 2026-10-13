@@ -1,19 +1,11 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
-import { mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { InternalShell } from '@/components/internal/internal-shell';
 import { requireInternalUser } from '@/lib/auth';
 import { audit } from '@/lib/audit';
-import { getBlogCategories } from '@/data/blog-posts';
 import { query, transaction } from '@/lib/db';
 import { MasterStatus } from '@/components/internal/master-status';
-import {
-  buildSectionsFromBody,
-  createPostSlug,
-  estimateReadingTime,
-  getDashboardEducativoPosts,
-} from '@/lib/educativo-posts';
 import { noIndexRobots } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -163,7 +155,6 @@ type WeatherForecastDay = {
 };
 
 const monthlyRevenueGoalCents = Number(process.env.DASHBOARD_MONTHLY_REVENUE_GOAL_CENTS ?? 3000000);
-const educativoCategoryOptions = getBlogCategories();
 
 const roleLabel: Record<string, string> = {
   patient: 'Paciente',
@@ -481,137 +472,6 @@ async function getExternalSignals(): Promise<ExternalSignals> {
   return { weather: weather.filter((item): item is WeatherSummary => Boolean(item)), news };
 }
 
-async function createEducativoPostAction(formData: FormData) {
-  'use server';
-
-  const user = await requireInternalUser('content.manage');
-  const title = cleanFormValue(formData.get('title'));
-  const category = cleanFormValue(formData.get('category')) || 'Cardiologia educativa';
-  const excerpt = cleanFormValue(formData.get('excerpt'));
-  const tags = cleanFormValue(formData.get('tags'))
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-  const body = cleanFormValue(formData.get('body'));
-  const publishNow = formData.get('publishNow') === 'on';
-
-  if (!title || !excerpt || !body) {
-    throw new Error('Preencha título, resumo e conteúdo antes de públicar.');
-  }
-
-  const baseSlug = createPostSlug(title) || `conteudo-${Date.now()}`;
-  const slug = await reserveEducativoSlug(baseSlug);
-  const coverImageFile = formData.get('coverImageFile');
-  const coverImageUrl =
-    coverImageFile instanceof File && coverImageFile.size > 0
-      ? await saveEducativoCoverImage(coverImageFile, slug)
-      : '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png';
-  const sections = buildSectionsFromBody(body);
-  const readingTime = estimateReadingTime(body);
-
-  await transaction(async client => {
-    const created = await client.query<{id:string}>(
-      `
-        insert into educativo_posts (
-          author_id,
-          title,
-          slug,
-          excerpt,
-          category,
-          tags,
-          cover_image_url,
-          seo_title,
-          seo_description,
-          reading_time,
-          status,
-          published_at,
-          sections
-        )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $4, $9, $10::post_status, case when $10 = 'published' then now() else null end, $11::jsonb) returning id
-      `,
-      [
-        user.id,
-        title,
-        slug,
-        excerpt,
-        category,
-        tags,
-        coverImageUrl,
-        `${title} | Nogueira Cardiologia`,
-        readingTime,
-        publishNow ? 'published' : 'draft',
-        JSON.stringify(sections),
-      ],
-    );
-
-    await audit({ actor: user.id, action: 'content.create', entity: 'educativo_posts', id: created.rows[0].id, after: { status: publishNow ? 'published' : 'draft' } }, undefined, client);
-  });
-  revalidatePath('/blog');
-  revalidatePath(`/blog/${slug}`);
-  revalidatePath('/acesso/dashboard');
-}
-
-async function updateEducativoPostAction(formData: FormData) {
-  'use server';
-
-  const user = await requireInternalUser('content.manage');
-  const id = cleanFormValue(formData.get('id'));
-  const title = cleanFormValue(formData.get('title'));
-  const category = cleanFormValue(formData.get('category')) || 'Cardiologia educativa';
-  const excerpt = cleanFormValue(formData.get('excerpt'));
-  const status = cleanFormValue(formData.get('status'));
-
-  if (!id || !title || !excerpt || !['draft', 'published', 'archived'].includes(status)) {
-    throw new Error('Dados inválidos para atualizar o post.');
-  }
-
-  await transaction(async client => {
-    const before = await client.query('select id,status from educativo_posts where id=$1 for update',[id]);
-    if (!before.rowCount) throw new Error('Post não encontrado.');
-    await client.query(
-      `
-        update educativo_posts
-        set title = $2,
-            category = $3,
-            excerpt = $4,
-            seo_title = $5,
-            seo_description = $4,
-            status = $6::post_status,
-            published_at = case
-              when $6 = 'published' and published_at is null then now()
-              when $6 <> 'published' then null
-              else published_at
-            end,
-            updated_at = now()
-        where id = $1
-      `,
-      [id, title, category, excerpt, `${title} | Nogueira Cardiologia`, status],
-    );
-
-    await audit({ actor: user.id, action: 'content.update', entity: 'educativo_posts', id, before: before.rows[0], after: { status } }, undefined, client);
-  });
-  revalidatePath('/blog');
-  revalidatePath('/acesso/dashboard');
-}
-
-async function deleteEducativoPostAction(formData: FormData) {
-  'use server';
-
-  const user = await requireInternalUser('content.manage');
-  const id = cleanFormValue(formData.get('id'));
-
-  if (!id) throw new Error('Post inválido.');
-
-  await transaction(async client => {
-    const before = await client.query('select id,status from educativo_posts where id=$1 for update',[id]);
-    if (!before.rowCount) throw new Error('Post não encontrado.');
-    await client.query('delete from educativo_posts where id = $1', [id]);
-    await audit({ actor: user.id, action: 'content.delete', entity: 'educativo_posts', id, before: before.rows[0] }, undefined, client);
-  });
-  revalidatePath('/blog');
-  revalidatePath('/acesso/dashboard');
-}
-
 async function createManualEventAction(formData: FormData) {
   'use server';
 
@@ -640,61 +500,8 @@ async function createManualEventAction(formData: FormData) {
   revalidatePath('/acesso/dashboard');
 }
 
-async function reserveEducativoSlug(baseSlug: string) {
-  const result = await query<{ slug: string }>(
-    `
-      select slug
-      from educativo_posts
-      where slug = $1
-         or slug like $2
-    `,
-    [baseSlug, `${baseSlug}-%`],
-  );
-  const usedSlugs = new Set(result.rows.map((row) => row.slug));
-
-  if (!usedSlugs.has(baseSlug)) return baseSlug;
-
-  let suffix = 2;
-  while (usedSlugs.has(`${baseSlug}-${suffix}`)) {
-    suffix += 1;
-  }
-
-  return `${baseSlug}-${suffix}`;
-}
-
 function cleanFormValue(value: FormDataEntryValue | null) {
   return typeof value === 'string' ? value.trim() : '';
-}
-
-async function saveEducativoCoverImage(file: File, slug: string) {
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Anexe apenas imagem no post educativo.');
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    throw new Error('A imagem precisa ter até 5 MB.');
-  }
-
-  const extension = getImageExtension(file);
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads-imagens-nogueira', 'educativo-editorial');
-  const fileName = `${slug}-${Date.now()}.${extension}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, fileName), buffer);
-
-  return `/uploads-imagens-nogueira/educativo-editorial/${fileName}`;
-}
-
-function getImageExtension(file: File) {
-  const extensionFromName = file.name.split('.').pop()?.toLowerCase();
-  const allowedExtensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
-
-  if (extensionFromName && allowedExtensions.has(extensionFromName)) return extensionFromName;
-  if (file.type === 'image/png') return 'png';
-  if (file.type === 'image/webp') return 'webp';
-  if (file.type === 'image/gif') return 'gif';
-  return 'jpg';
 }
 
 async function getWeatherSummary(location: WeatherLocation): Promise<WeatherSummary | null> {
@@ -845,10 +652,9 @@ const fallbackNews: NewsItem[] = [
 
 export default async function InternalDashboardPage() {
   const user = await requireInternalUser();
-  const [data, externalSignals, educativoPosts] = await Promise.all([
+  const [data, externalSignals] = await Promise.all([
     getDashboardData(),
     getExternalSignals(),
-    getDashboardEducativoPosts(),
   ]);
   const workQueueTotal = data.stages
     .filter((stage) => workQueueStages.includes(stage.stage as (typeof workQueueStages)[number]))
@@ -994,102 +800,9 @@ export default async function InternalDashboardPage() {
       </section>
 
       <section className="mt-6" id="públicar">
-        <Panel title="Publicar no Educativo" subtitle="Área editorial simples para criar conteúdo no estilo WordPress, salvar rascunho ou públicar direto no blog.">
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <form action={createEducativoPostAction} className="grid gap-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="grid gap-2 text-sm font-semibold text-[#0F3760]">
-                  Título
-                  <input name="title" required className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-normal text-slate-700 outline-none focus:border-[#14508B]" placeholder="Ex.: Como controlar a pressão em casa" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold text-[#0F3760]">
-                  Categoria
-                  <select name="category" defaultValue={educativoCategoryOptions[0] ?? 'Cardiologia educativa'} className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-700 outline-none focus:border-[#14508B]">
-                    {educativoCategoryOptions.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <label className="grid gap-2 text-sm font-semibold text-[#0F3760]">
-                Resumo para o card e SEO
-                <textarea name="excerpt" required rows={3} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal leading-6 text-slate-700 outline-none focus:border-[#14508B]" placeholder="Escreva uma chamada curta, clara e educativa." />
-              </label>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="grid gap-2 text-sm font-semibold text-[#0F3760]">
-                  Tags
-                  <input name="tags" className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-normal text-slate-700 outline-none focus:border-[#14508B]" placeholder="pressão alta, cardiologia, prevencao" />
-                </label>
-                <div className="grid gap-2 text-sm font-semibold text-[#0F3760]">
-                  Imagem
-                  <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#14508B]/35 bg-[#F8FBFF] px-3 text-sm font-bold text-[#14508B] hover:border-[#14508B] hover:bg-[#EAF6FF]">
-                    <PaperclipIcon />
-                    Anexar imagem
-                    <input name="coverImageFile" type="file" accept="image/*" className="sr-only" />
-                  </label>
-                </div>
-              </div>
-              <label className="grid gap-2 text-sm font-semibold text-[#0F3760]">
-                Conteúdo
-                <textarea name="body" required rows={9} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal leading-6 text-slate-700 outline-none focus:border-[#14508B]" placeholder="Digite o texto educativo. Separe blocos com uma linha em branco." />
-              </label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <input type="checkbox" name="publishNow" className="h-4 w-4 accent-[#14508B]" />
-                  Publicar agora no Educativo
-                </label>
-                <button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#14508B] px-5 text-sm font-bold text-white hover:bg-[#0F3760]">
-                  Salvar post
-                </button>
-              </div>
-            </form>
-
-            <div className="rounded-lg border border-[#14508B]/12 bg-[#F8FBFF] p-4">
-              <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-[#15A7DD]">Últimos posts editoriais</h3>
-              <div className="mt-4 grid gap-3">
-                {educativoPosts.length ? (
-                  educativoPosts.map((post) => (
-                    <article key={post.id} className="rounded-lg bg-white p-3">
-                      <form action={updateEducativoPostAction} className="grid gap-2">
-                        <input type="hidden" name="id" value={post.id} />
-                        <input name="title" defaultValue={post.title} className="min-h-10 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-[#0F3760] outline-none focus:border-[#14508B]" />
-                        <textarea name="excerpt" defaultValue={post.excerpt} rows={2} className="rounded-lg border border-slate-200 px-3 py-2 text-xs leading-5 text-slate-600 outline-none focus:border-[#14508B]" />
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          <select name="category" defaultValue={post.category} className="min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-[#14508B]">
-                            {educativoCategoryOptions.map((category) => (
-                              <option key={category} value={category}>{category}</option>
-                            ))}
-                          </select>
-                          <select name="status" defaultValue={post.status} className="min-h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-[#14508B]">
-                            <option value="draft">Rascunho</option>
-                            <option value="published">Publicado</option>
-                            <option value="archived">Arquivado</option>
-                          </select>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="text-xs text-slate-500">{formatDate(post.updated_at)}</span>
-                          <div className="flex gap-2">
-                            {post.status === 'published' ? (
-                              <a href={`/blog/${post.slug}`} target="_blank" rel="noreferrer" className="rounded-lg bg-[#EAF6FF] px-3 py-2 text-xs font-bold text-[#14508B]">Ver</a>
-                            ) : null}
-                            <button type="submit" className="rounded-lg bg-[#14508B] px-3 py-2 text-xs font-bold text-white">Salvar</button>
-                          </div>
-                        </div>
-                      </form>
-                      <form action={deleteEducativoPostAction} className="mt-2">
-                        <input type="hidden" name="id" value={post.id} />
-                        <button type="submit" className="text-xs font-bold text-red-600">Excluir post</button>
-                      </form>
-                    </article>
-                  ))
-                ) : (
-                  <p className="rounded-lg bg-white px-3 py-4 text-sm leading-6 text-slate-600">Nenhum post editorial criado ainda.</p>
-                )}
-              </div>
-            </div>
-          </div>
+        <Panel title="Educativo / Blog" subtitle="Central de publicação de artigos, aulas e materiais do professor.">
+          <p className="text-sm leading-6 text-slate-600">Escreva e formate o conteúdo, envie imagens e materiais, revise o SEO e visualize antes de publicar.</p>
+          <Link href="/educativo" className="edu-primary mt-4">Abrir central de publicação</Link>
         </Panel>
       </section>
 
@@ -1696,19 +1409,6 @@ function NewsThumbnail({ item, size }: { item: NewsItem; size: 'small' | 'large'
   );
 }
 
-function PaperclipIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
-      <path
-        d="M8 12.5 13.7 6.8a3.2 3.2 0 0 1 4.5 4.5l-7.1 7.1a5 5 0 0 1-7.1-7.1l7.6-7.6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function WeatherIcon({ code, className }: { code: number | null; className: string }) {
   if (code !== null && [61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
