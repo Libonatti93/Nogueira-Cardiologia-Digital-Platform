@@ -10,7 +10,7 @@ import type { BlogSection } from '@/data/blog-posts';
 import type { EditorialContent, EditorialPost, Material } from './educativo-types';
 import { uuidPattern } from './educativo-types';
 
-export const materialProjection = 'id,post_id,type,original_filename,mime_type,size::float8,title,description,alt,caption,purpose,display_order,slide_count,preview_kind';
+export const materialProjection = 'id,post_id,type,original_filename,mime_type,size::float8,title,description,alt,caption,purpose,display_order,slide_count,page_count,preview_kind';
 type Db = { query: typeof query };
 const fields = ['title','slug','excerpt','category','tags','content_html','content_type','requires_registration','cover_image_url','cover_alt','cover_caption','primary_keyword','secondary_keywords','seo_title','seo_description','author_profile_slug','attachment_ids','material_details'] as const;
 export async function editorialTransaction<T>(user: SessionUser, work: (client: PoolClient) => Promise<T>) {
@@ -77,7 +77,7 @@ export function validateEditorialContent(body: Record<string, unknown>): Editori
     tags:strings(body.tags), content_html:sanitizeContent(string(body.content_html,450_000)), content_type:body.content_type as EditorialContent['content_type'],
     requires_registration:body.requires_registration === true || body.content_type !== 'ARTICLE', cover_image_url:cover || defaultCover,
     cover_alt:string(body.cover_alt,300), cover_caption:string(body.cover_caption,500), primary_keyword:string(body.primary_keyword,100), secondary_keywords:strings(body.secondary_keywords),
-    seo_title:string(body.seo_title,180), seo_description:string(body.seo_description,500), author_profile_slug:body.author_profile_slug as string | null, attachment_ids, material_details };
+    seo_title:string(body.seo_title,180), seo_description:string(body.seo_description,500), author_profile_slug:body.content_type !== 'ARTICLE' ? professorSlug : body.author_profile_slug as string | null, attachment_ids, material_details };
 }
 export async function saveEditorialPost(user: SessionUser, id: string, body: Record<string, unknown>, request?: Request) {
   if (!['save','publish','archive'].includes(String(body.action))) throw new EditorialError('Ação inválida.');
@@ -89,7 +89,8 @@ export async function saveEditorialPost(user: SessionUser, id: string, body: Rec
     if (before.published_at && content.slug !== before.slug) throw new EditorialError('A URL de um conteúdo já publicado deve ser preservada.');
     const materials = (await client.query<Material>(`select ${materialProjection} from educativo_post_attachments where post_id=$1 and id=any($2::uuid[])`,[id,content.attachment_ids])).rows;
     if (materials.length !== content.attachment_ids.length) throw new EditorialError('Um material não pertence a este conteúdo.');
-    if (materials.some(m => m.type !== 'IMAGE')) content.requires_registration = true;
+    if (materials.some(m => m.type !== 'IMAGE' || m.purpose === 'MATERIAL')) content.requires_registration = true;
+    if (body.action === 'publish' && materials.some(m => m.type !== 'IMAGE' && !m.page_count)) throw new EditorialError('Reenvie os documentos antigos para preparar a visualização protegida antes de publicar.');
     const imageIds = [...content.content_html.matchAll(/src="\/api\/educativo\/materials\/([a-f0-9-]+)"/g)].map(m => m[1]);
     if (content.cover_image_url.startsWith('/api/educativo/materials/')) imageIds.push(content.cover_image_url.split('/').at(-1)!);
     if (imageIds.some(imageId => !materials.some(m => m.id === imageId && m.type === 'IMAGE'))) throw new EditorialError('Use somente imagens anexadas a este conteúdo.');

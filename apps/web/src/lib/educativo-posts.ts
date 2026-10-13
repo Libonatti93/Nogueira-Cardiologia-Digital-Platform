@@ -3,6 +3,7 @@ import { materialProjection } from './educativo-editorial';
 import { sanitizeContent } from './educativo-html';
 import type { Material } from './educativo-types';
 import { query } from '@/lib/db';
+import { professorSlug } from './educativo-policy';
 import type { BlogPost, BlogSection } from '@/data/blog-posts';
 
 type EducativoPostRow = {
@@ -105,7 +106,8 @@ export async function getDashboardEducativoPosts() {
 
 function mapEducativoPost(row: EducativoPostRow): BlogPost {
   const publishedAt = row.published_at ?? row.updated_at;
-  const author = row.author_profile_slug ? getDoctorBySlug(row.author_profile_slug) : undefined;
+  const authorSlug = row.content_type !== 'ARTICLE' ? professorSlug : row.author_profile_slug;
+  const author = authorSlug ? getDoctorBySlug(authorSlug) : undefined;
 
   return {
     slug: row.slug,
@@ -125,8 +127,8 @@ function mapEducativoPost(row: EducativoPostRow): BlogPost {
     coverImage: row.cover_image_url ?? '/uploads-imagens-nogueira/nogueira-cardiologia-pauloecris2.png',
     featured: false,
     sections: parseSections(row.sections),
-    id: row.id, contentHtml: row.content_html === null ? undefined : sanitizeContent(row.content_html), contentType: row.content_type, requiresRegistration: row.requires_registration,
-    coverAlt: row.cover_alt, coverCaption: row.cover_caption, authorProfileSlug: row.author_profile_slug || undefined, materialTypes: row.material_types,
+    id: row.id, contentHtml: row.content_html === null ? undefined : sanitizeContent(row.content_html), contentType: row.content_type, requiresRegistration: row.requires_registration || row.content_type !== 'ARTICLE',
+    coverAlt: row.cover_alt, coverCaption: row.cover_caption, authorProfileSlug: authorSlug || undefined, materialTypes: row.material_types,
   };
 }
 

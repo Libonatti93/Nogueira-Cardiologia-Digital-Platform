@@ -6,6 +6,7 @@ import { analyzeSeo } from '../src/lib/educativo-seo';
 import type { EditorialContent } from '../src/lib/educativo-types';
 import sharp from 'sharp';
 import * as CFB from 'cfb';
+import { watermarkEducationalImage } from '../src/lib/educativo-render';
 
 test('rich HTML keeps semantic formatting while stripping active content and unsafe URLs',()=>{
   const safe=sanitizeContent('<h2>Título 💙</h2><p><b>forte</b><i>ênfase</i><u>sublinhado</u><strike>antigo</strike></p><script>alert(1)</script><iframe src="https://evil.test">hidden</iframe><a href="javascript:alert(1)" onclick="bad()">link</a><img src="https://evil.test/track" onerror="bad()"><div class="educativo-callout" style="text-align:center; background:url(javascript:bad)">nota</div>');
@@ -28,6 +29,15 @@ test('educational upload rejects executables, path traversal, forged MIME and br
   for(const format of ['jpeg','png','webp'] as const){const bytes=await sharp({create:{width:40,height:30,channels:3,background:'#14508b'}}).toFormat(format).toBuffer();const result=await validateEducationalFile(bytes,`fixture.${format}`,`image/${format}`);assert.equal(result.type,'IMAGE');assert.equal((await sharp(result.preview).metadata()).format,'png');}
   const compound=CFB.utils.cfb_new();CFB.utils.cfb_add(compound,'Workbook',Buffer.from('wrong application'));
   await assert.rejects(validateEducationalFile(CFB.write(compound,{type:'buffer'}),'wrong.ppt',''));
+});
+test('watermarks are rasterized and differ by subscriber, including escaped names',async()=>{
+  const original=await sharp({create:{width:1200,height:800,channels:3,background:'white'}}).jpeg().toBuffer();
+  const first=await watermarkEducationalImage(original,'Aluno A · 123456789abc');
+  const second=await watermarkEducationalImage(original,'Aluno B <script> · abcdef123456');
+  assert.ok(!first.equals(original));assert.ok(!first.equals(second));
+  const {data,info}=await sharp(first).raw().toBuffer({resolveWithObject:true});
+  assert.equal(info.width,1200);assert.equal(info.height,800);
+  assert.ok(data.some(byte=>byte<220),'watermark must change the actual pixels, not only metadata');
 });
 test('SEO checks missing ALT, keyword stuffing, hierarchy and long paragraphs without ranking promises',()=>{
   const post:EditorialContent={title:'Insuficiência cardíaca: cuidados e prevenção',slug:'insuficiencia-cardiaca',excerpt:'Resumo',category:'Cardiologia',tags:[],content_html:'<h2>Insuficiência cardíaca</h2><p>Insuficiência cardíaca e cuidados.</p>',content_type:'ARTICLE',requires_registration:true,cover_image_url:'/brand/image.png',cover_alt:'',cover_caption:'',primary_keyword:'insuficiência cardíaca',secondary_keywords:[],seo_title:'Insuficiência cardíaca: cuidados e prevenção',seo_description:'',author_profile_slug:null,attachment_ids:[],material_details:{}};

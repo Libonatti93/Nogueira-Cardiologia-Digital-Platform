@@ -1,8 +1,35 @@
-# Central de publicação — 13/10/2026
+# Central de publicação e proteção das aulas — 13/10/2026
 
 Área integrada: **MASTER → Educativo / Blog**, `/educativo` no painel existente.
 O bloco antigo do dashboard passa a abrir a central; as mesmas tabelas, sessões,
 permissão `content.manage`, auditoria e artigos públicos são preservados.
+
+## Proteção das aulas — atualização após solicitação do proprietário
+
+Aulas e materiais têm autoria obrigatória do Prof. Dr. Paulo Roberto Nogueira e
+cadastro obrigatório com nome, e-mail e telefone, conferidos no servidor. A API ignora
+uma tentativa de tornar aula aberta ou retirar a autoria. Os perfis administrativos
+históricos continuam gerindo conteúdo; exclusividade aqui identifica a autoria, não
+remove os poderes MASTER. O professor permanece com sua identidade existente.
+
+Alunos **não recebem os arquivos PDF/PPT/PPTX originais**, mesmo após cadastro.
+GET, HEAD, Range e parâmetros de download são recusados no backend. O leitor envia
+somente uma página de cada vez como imagem, com marca d’água rasterizada no servidor
+(nome e identificador de acesso, sem telefone/e-mail expostos). Miniaturas e imagens
+internas protegidas também recebem identificação. Cada chamada revalida publicação,
+vínculo do anexo, sessão válida e cadastro completo. Limite de 90 requisições de
+material por minuto por inscrição. Capas e resumo continuam públicos.
+
+Não existe garantia de impedir cópia de conteúdo já exibido: imagens podem ser
+salvas, capturadas, fotografadas ou reconstruídas; texto autorizado também pode ser
+copiado. Marca d’água e restrição aos originais reduzem redistribuição, não são DRM
+invulnerável. Cadastro exige os três dados, mas não comprova titularidade por código
+SMS/e-mail. Turnstile permanece opcional conforme configuração; não havia chave
+configurada em produção nesta revisão. Não prometer resistência completa a robôs.
+
+Aulas/materiais usam noindex e saem do sitemap. O corpo protegido usa data-nosnippet;
+esta sinalização a buscadores complementa o bloqueio real no servidor, não o substitui.
+Artigos históricos e seu SEO permanecem preservados.
 
 ## Auditoria e compatibilidade
 
@@ -40,7 +67,7 @@ Os artigos já existentes no código continuam públicos e com seus endereços o
 SEO local, sem API paga: 20 indicadores, score 0–100, termos extraídos do texto,
 preview de busca, tamanho de título/descrição, tema no título/URL/descrição/início/H2,
 estrutura, links, imagens/ALT, extensão e legibilidade simples. O painel orienta uso
-natural dos termos e não promete ranking. Publicações entram no sitemap dinâmico.
+natural dos termos e não promete ranking. Artigos entram no sitemap dinâmico; aulas e materiais exclusivos ficam fora dele.
 O perfil do professor reaproveita dados institucionais reais e aponta ao currículo.
 
 ## Inscrição e proteção
@@ -70,7 +97,7 @@ na tabela própria de anexos. Capas são públicas somente quando estão vincula
 versão publicada; texto/imagens internas seguem a proteção do artigo. PDF/PPT/PPTX
 sempre exigem liberação válida. Arquivados e anexos removidos não são públicos.
 Cada resposta de arquivo/thumbnail verifica autorização; não basta conhecer o UUID.
-Respostas usam no-store, nosniff, CSP sandbox, same-origin e Range autorizado.
+Respostas usam no-store, nosniff, CSP sandbox e same-origin. Range de originais é exclusivo de editores internos autorizados.
 
 Limites: imagens JPG/JPEG/PNG/WEBP até 8 MB e 24 milhões de pixels; PDF/PPT/PPTX até
 40 MB. Até 60 anexos na versão atual e limite acumulado de 2 GB/300 objetos por post.
@@ -79,12 +106,27 @@ regravadas, removendo conteúdo extra. PPTX é inspecionado com limites de entra
 expansão; macros/objetos incorporados/ActiveX são recusados. PPT precisa ter estrutura
 CFB de PowerPoint sem macros; PDFs precisam de cabeçalho e final válidos.
 
-PDF: capa de identificação gerada e visualização do arquivo sob demanda no leitor
-PDF do navegador, com opção de nova aba/download. PowerPoint: miniatura incorporada
-quando disponível (regravada como PNG), contagem de slides em PPTX, ou capa gerada;
-PPT/PPTX são baixados para abrir em um leitor compatível. Não há conversão de todos
-os slides nem reprodução completa da apresentação no navegador. Nenhum arquivo é
-enviado a um visualizador externo.
+PDF/PPT/PPTX: o upload converte documentos em páginas JPEG de até 1600 pixels, sem
+fornecer o documento original a inscritos. O leitor tem navegação por página e não
+oferece download, impressão ou iframe PDF. São até 100 páginas, 32 MB de imagens por
+documento e 128 MB acumulados por post. Animações, vídeos e áudio de slides não são
+reproduzidos; fontes e layout podem variar. O autor deve conferir a prévia. O leitor
+rasterizado não fornece a camada de texto acessível/pesquisável do PDF original.
+
+Conversão: Docker descartável com LibreOffice/Poppler, usuário 65534, sem rede,
+sem mounts de host, filesystem somente leitura, sem capabilities, no-new-privileges,
+768 MB RAM, 1 CPU, 128 processos e tmpfs 512 MB. Documento entra por stdin; somente
+imagens saem por stdout, validadas/regravadas com Sharp. Tempo máximo 120 segundos;
+conversões simultâneas limitadas a uma por processo web. Conteúdo inválido, protegido
+por senha, com macros ou que exceda limites é recusado. Nada é enviado a terceiros.
+
+Migration `018_educativo_view_only.sql`: páginas em `educativo_material_pages`
+(bytea com FK/cascade), contagem no anexo e autoria/cadastro obrigatórios para aulas
+anteriores. As páginas são incluídas no dump PostgreSQL do backup consistente.
+Originais continuam no storage privado para a administração autorizada. Na revisão,
+produção tinha zero posts/anexos editoriais; artigos históricos permanecem no código.
+Documentos anteriores sem páginas ficam indisponíveis ao aluno até serem reenviados;
+nunca há fallback que entregue o original ao inscrito.
 
 Substituir/remover desvincula o objeto da versão publicada quando ela for confirmada;
 objetos anteriores são conservados no armazenamento e no backup para integridade,
@@ -97,27 +139,32 @@ A pendência anterior de cópia externa à VPS permanece descrita em PRIVATE_FIL
 
 ## Validação
 
-- Build otimizado, TypeScript, lint e 17 testes unitários: aprovados.
+- Build otimizado, TypeScript, lint e 18 testes unitários: aprovados.
 - `tests/educativo.integration.mjs`: Chromium 1440px/768px/390px, edição/formatos,
-  imagem/ALT/legenda, JPEG/PNG/PDF/PPTX, PPT estrutural, draft/autosave/reabertura,
+  imagem/ALT/legenda, JPEG/PNG/PDF/PPTX, recusa de PPT sem conteúdo renderizável, draft/autosave/reabertura,
   previews, publicação, SEO/metadata, listagem/sitemap, inscrição e acesso posterior.
+- Proteção reforçada: cadastro sem cada campo recusado, autoria fixa, originais
+  recusados a inscritos por GET/HEAD/Range/query, páginas autenticadas com marca
+  d’água rasterizada, paginação móvel, noindex/sitemap, limite de acesso e sessão
+  com cadastro incompleto revogada.
 - Negativas: anônimo/operador/CSRF, vazamento em HTML/RSC, PDF/PPTX/thumbnail/HEAD
   sem sessão, Range inválido, expiração, tentativa de usar arquivo de outro post,
   extensão/MIME/assinatura/tamanho, conflito de revisão e mudança de slug publicado.
 - Publicação separada de rascunhos, substituição/remoção, arquivamento e datas
   preservadas; auditoria de criação/edição/publicação/upload/remoção.
-- Backup/restore completo com metadados, tamanho e checksum; sem dados reais nos
+- Backup/restore completo com metadados, tamanho e checksum; incluindo imagens renderizadas; sem dados reais nos
   testes. Evidência visual: `/tmp/nogueira-educativo-evidence`.
 - Regressão HTTP: 16 grupos aprovados (auth, IAM, CRM, agenda, LIOS, auditoria).
 - Regressão do Drive: 13 grupos aprovados, incluindo limites, permissões, Range,
   revogação durante upload, persistência após reinício e ausência de resíduos.
-- Next atualizado para 16.4.0; `npm audit --omit=dev` sem vulnerabilidades reportadas.
+- Next 16.4.0; `npm audit --omit=dev` sem vulnerabilidades reportadas.
   O audit completo mantém avisos transitivos de ferramentas de lint (`braces`);
   não foi aplicada a sugestão de downgrade incompatível do ESLint/Next.
 
 Comandos a partir de `apps/web`:
 
 ```sh
+docker build -t nogueira-educativo-renderer:verification deploy/educativo-renderer
 node --env-file=.env.test scripts/migrate.mjs
 npm run typecheck
 npm run lint
@@ -135,9 +182,9 @@ Não executar o teste HTTP contra produção.
 ## Deploy
 
 Segue `node scripts/deploy.mjs`, com árvore limpa, commit enviado, backup antes da
-migration, build por SHA, smoke e rollback de código existente. Foi acrescentado
+migration, build web e imagem do conversor por SHA, smoke e rollback de código existente. Foi acrescentado
 `scripts/smoke-educativo.mjs`: verifica painel/TLS, permissão, draft privado, upload,
-sanitização, preview e bloqueio anônimo; remove somente seu rascunho técnico nunca
+sanitização, preview, conversão PDF isolada, visualizador e bloqueio anônimo; remove somente seu rascunho técnico nunca
 publicado. Não altera senhas e não inscreve contatos fictícios em produção.
 Evidência sanitizada: `/var/log/nogueira-educativo-<SHA>.json`.
 Conferir HEAD, upstream, BUILD_ID, health local/público/painel e imagem LIOS iguais.

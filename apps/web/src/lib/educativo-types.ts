@@ -4,7 +4,7 @@ export type Material = {
   id: string; post_id: string; type: 'IMAGE' | 'PDF' | 'POWERPOINT';
   original_filename: string; mime_type: string; size: number; title: string;
   description: string; alt: string; caption: string; purpose: 'COVER' | 'INLINE' | 'MATERIAL';
-  display_order: number; slide_count: number | null; preview_kind: 'cover' | 'embedded';
+  display_order: number; slide_count: number | null; page_count: number; preview_kind: 'cover' | 'embedded';
 };
 export type EditorialContent = {
   title: string; slug: string; excerpt: string; category: string; tags: string[];

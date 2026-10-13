@@ -29,9 +29,10 @@ export function LeadGate({ postSlug, unlocked, protectedContent=false }: { postS
       <label className="grid gap-1 text-sm font-semibold">Nome completo<input name="fullName" autoComplete="name" minLength={3} maxLength={180} required className="edu-input"/></label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1 text-sm font-semibold">E-mail<input name="email" type="email" autoComplete="email" maxLength={254} required className="edu-input"/></label>
-        <label className="grid gap-1 text-sm font-semibold">WhatsApp<input name="phoneWhatsapp" type="tel" autoComplete="tel" minLength={10} maxLength={30} required className="edu-input" placeholder="(17) 99999-9999"/></label>
+        <label className="grid gap-1 text-sm font-semibold">Telefone / WhatsApp<input name="phoneWhatsapp" type="tel" autoComplete="tel" minLength={10} maxLength={30} required className="edu-input" placeholder="(17) 99999-9999"/></label>
       </div>
       <p className="text-xs leading-5 text-slate-500">Ao se inscrever, você autoriza o contato da Nogueira Cardiologia por e-mail ou WhatsApp com conteúdos educativos e informações da clínica. <a className="underline" href="/privacidade">Política de privacidade</a>.</p>
+      {protectedContent&&<p className="text-xs leading-5 text-slate-500">As aulas são exclusivas do Prof. Dr. Paulo Roberto Nogueira. O acesso é pessoal, para visualização neste site; as páginas exibem uma identificação do seu acesso. Não compartilhe nem redistribua os materiais.</p>}
       <TurnstileWidget action="educativo-lead"/>
       {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
       <button disabled={busy} className="edu-primary w-fit">{busy?'Liberando acesso…':protectedContent?'Quero acessar o conteúdo':'Quero receber conteúdos educativos'}</button>

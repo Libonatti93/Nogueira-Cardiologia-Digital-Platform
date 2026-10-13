@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl('/medicos/dra-cristiani-nogueira'), lastModified: '2026-07-24', changeFrequency: 'monthly', priority: 0.9 },
   ];
 
-  const articles: MetadataRoute.Sitemap = [...blogPosts, ...await getPublishedEducativoPosts()].map((post) => ({
+  const articles: MetadataRoute.Sitemap = [...blogPosts, ...(await getPublishedEducativoPosts()).filter(post=>post.contentType==='ARTICLE')].map((post) => ({
     url: absoluteUrl(`/blog/${post.slug}`),
     lastModified: post.updatedAt,
     changeFrequency: 'monthly',

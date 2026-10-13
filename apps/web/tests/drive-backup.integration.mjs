@@ -32,6 +32,14 @@ try{
   const hasEditorial=Boolean((await client.query("select to_regclass('educativo_post_attachments') present")).rows[0].present);
   if(hasEditorial)rows.push(...(await client.query('select stored_name,size,checksum from educativo_post_attachments order by stored_name')).rows);
   assert.deepEqual(rows,manifest.files);assert.ok((await client.query("select 1 from schema_migrations where name='010_private_files.sql'")).rowCount);
+  if(Boolean((await client.query("select to_regclass('educativo_material_pages') present")).rows[0].present)) {
+    const source=new pg.Client({connectionString:process.env.DATABASE_URL});await source.connect();
+    try {
+      const sql="select attachment_id,page_number,encode(digest(image_bytes,'sha256'),'hex') checksum from educativo_material_pages order by attachment_id,page_number";
+      const pages=(await client.query(sql)).rows;assert.deepEqual(pages,(await source.query(sql)).rows);
+      console.log(`PASS: ${pages.length} private rendered pages restored with matching SHA-256`);
+    } finally {await source.end();}
+  }
   console.log(`PASS: full PostgreSQL restore in disposable database and ${rows.length} restored objects match SHA-256 and size`);
 }finally{
   await client?.end();

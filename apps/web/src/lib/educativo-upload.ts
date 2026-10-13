@@ -13,6 +13,7 @@ import { query } from './db';
 import { audit } from './audit';
 import type { SessionUser } from './auth';
 import type { Material } from './educativo-types';
+import { renderEducationalDocument } from './educativo-render';
 
 const mimes: Record<string,string> = { jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation' };
 export function validateUploadName(name: string, claimed: string) {
@@ -95,14 +96,18 @@ export async function uploadEducationalFile(user:SessionUser,id:string,request:R
     const incoming=path.join(driveRoot,'incoming',upload.key);
     const checked=await validateEducationalFile(await readFile(incoming),name,request.headers.get('content-type')||'');
     if(purpose!=='MATERIAL'&&checked.type!=='IMAGE')throw new EditorialError('Selecione uma imagem para a capa ou o texto.');
+    const pages=checked.type==='IMAGE'?[]:await renderEducationalDocument(checked.bytes,driveExtension(name));
     await writeFile(incoming,checked.bytes,{mode:0o600});
     return await editorialTransaction(user,async client=>{
       await client.query('select id from educativo_posts where id=$1 for update',[id]);
       const usage=(await client.query('select count(*)::int n,coalesce(sum(size),0)::float8 bytes from educativo_post_attachments where post_id=$1',[id])).rows[0];
       if(usage.n>=300||usage.bytes+checked.bytes.length>2*1024**3) throw new EditorialError('O limite de materiais deste conteúdo foi atingido.',413);
-      const row=(await client.query<Material>(`insert into educativo_post_attachments(post_id,type,original_filename,stored_name,mime_type,size,checksum,preview_bytes,preview_kind,slide_count,title,purpose,created_by_id)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$3,$11,$12) returning ${materialProjection}`,
-      [id,checked.type,name,upload.key,checked.mime,checked.bytes.length,createHash('sha256').update(checked.bytes).digest('hex'),checked.preview,checked.previewKind,checked.slideCount,purpose,user.id])).rows[0];
+      const rendered=(await client.query('select coalesce(sum(octet_length(image_bytes)),0)::float8 bytes from educativo_material_pages p join educativo_post_attachments a on a.id=p.attachment_id where a.post_id=$1',[id])).rows[0];
+      if(rendered.bytes+pages.reduce((n,p)=>n+p.length,0)>128*1024**2)throw new EditorialError('O limite de páginas deste conteúdo foi atingido. Divida a aula em outro conteúdo.',413);
+      const row=(await client.query<Material>(`insert into educativo_post_attachments(post_id,type,original_filename,stored_name,mime_type,size,checksum,preview_bytes,preview_kind,slide_count,title,purpose,created_by_id,page_count)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$3,$11,$12,$13) returning ${materialProjection}`,
+      [id,checked.type,name,upload.key,checked.mime,checked.bytes.length,createHash('sha256').update(checked.bytes).digest('hex'),checked.preview,checked.previewKind,checked.slideCount,purpose,user.id,pages.length])).rows[0];
+      for(let i=0;i<pages.length;i++)await client.query('insert into educativo_material_pages(attachment_id,page_number,image_bytes) values($1,$2,$3)',[row.id,i+1,pages[i]]);
       await audit({actor:user.id,action:'content.attachment.upload',entity:'educativo_posts',id,metadata:{kind:row.id}},request,client);
       await commitDriveObject(upload.key);
       return row;

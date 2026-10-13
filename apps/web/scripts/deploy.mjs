@@ -41,6 +41,8 @@ try {
     finally { await writeFile('tsconfig.json', tsconfig); }
   }
   if ((await readFile(path.join(dist, 'BUILD_ID'), 'utf8')).trim() !== sha) throw new Error('Build SHA mismatch.');
+  const rendererImage = `nogueira-educativo-renderer:${sha}`;
+  run('docker', ['build', '--label', `org.opencontainers.image.revision=${sha}`, '-t', rendererImage, 'deploy/educativo-renderer']);
   const lios = path.resolve(web, '../../services/lios');
   const image = `nogueira-lios:${sha}`;
   let imageExists = false;
@@ -75,10 +77,11 @@ try {
     run('docker', ['compose', 'up', '-d', '--no-build'], { cwd: lios, env });
     await waitHealth('http://127.0.0.1:8081/healthz', sha);
     // A repeated deployment must retain the actual rollback target.
-    if (previous !== `NEXT_DIST_DIR=${dist}\nRELEASE_SHA=${sha}\n`) {
+    const releaseEnvironment = `NEXT_DIST_DIR=${dist}\nRELEASE_SHA=${sha}\nEDUCATIVO_RENDERER_IMAGE=${rendererImage}\n`;
+    if (previous !== releaseEnvironment) {
       await writeFile(`${runtime}.previous`, previous, { mode: 0o600 });
     }
-    await writeFile(runtime, `NEXT_DIST_DIR=${dist}\nRELEASE_SHA=${sha}\n`, { mode: 0o600 });
+    await writeFile(runtime, releaseEnvironment, { mode: 0o600 });
     webChanged = true;
     const dropin = '/etc/systemd/system/nogueira-web.service.d';
     await mkdir(dropin, { recursive: true });

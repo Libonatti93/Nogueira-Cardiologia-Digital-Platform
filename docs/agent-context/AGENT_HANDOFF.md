@@ -2,7 +2,10 @@
 
 **Atualização de 13/10/2026:** a central editorial está em `/educativo` no painel.
 Leia [EDUCATIVO_PUBLICACAO.md](EDUCATIVO_PUBLICACAO.md) para o editor visual, arquivos
-protegidos, inscrições, migration 017, backup e testes. Next: 16.4.0.
+protegidos, inscrições, migrations 017–018, backup e testes. Next: 16.4.0.
+Aulas: autoria fixa do Dr. Paulo, leitor de páginas com marca d’água e cadastro
+obrigatório; originais PDF/PowerPoint não são entregues aos alunos. O deploy também
+prepara a imagem Docker isolada do conversor e define EDUCATIVO_RENDERER_IMAGE.
 
 **Atualização de 12/10/2026:** leia [CRM_OPERACIONAL.md](CRM_OPERACIONAL.md) para o CRM
 de nove etapas, Agenda/Contatos, POP, acesso da equipe, migrations 014–016, testes e

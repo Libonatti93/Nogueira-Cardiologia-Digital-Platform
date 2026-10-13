@@ -1,4 +1,4 @@
-import { getEducationalAccess } from '@/lib/educativo-access';
+import { getEducationalAccess, educationalAccessLabel } from '@/lib/educativo-access';
 import { contentTeaser, sectionsToHtml } from '@/lib/educativo-html';
 import { ArticleBody } from '@/components/educativo/article-body';
 import { Materials } from '@/components/educativo/materials';
@@ -14,7 +14,7 @@ import { PublicFooter } from '@/components/site/public-footer';
 import { PublicHeader } from '@/components/site/public-header';
 import { getBlogPostHashtags, getCanonicalBlogCategory, getPostBySlug, getRelatedPosts } from '@/data/blog-posts';
 import { getPublishedEducativoPostBySlug, getPublishedEducativoPosts, getPublishedMaterials } from '@/lib/educativo-posts';
-import { absoluteUrl, siteUrl } from '@/lib/seo';
+import { absoluteUrl, siteUrl, noIndexRobots } from '@/lib/seo';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: post.seoTitle,
+    ...(post.contentType && post.contentType !== 'ARTICLE' ? {robots: noIndexRobots} : {}),
     description: post.seoDescription,
     keywords: [...post.tags, ...getBlogPostHashtags(post)],
     alternates: { canonical: `/blog/${post.slug}` },
@@ -82,7 +83,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     author: { '@type': post.authorProfileSlug ? 'Person' : 'Organization', name: post.author.name, url: post.authorProfileSlug ? absoluteUrl(`/medicos/${post.authorProfileSlug}`) : siteUrl },
     reviewedBy: [
       { '@type': 'Physician', name: 'Dr. Paulo Roberto Nogueira', url: absoluteUrl('/medicos/dr-paulo-roberto-nogueira') },
-      { '@type': 'Physician', name: 'Dra. Cristiani Monteiro de Oliveira Nogueira', url: absoluteUrl('/medicos/dra-cristiani-nogueira') },
+      ...(!post.contentType || post.contentType === 'ARTICLE' ? [{ '@type': 'Physician', name: 'Dra. Cristiani Monteiro de Oliveira Nogueira', url: absoluteUrl('/medicos/dra-cristiani-nogueira') }] : []),
     ],
     publisher: {
       '@type': 'MedicalClinic',
@@ -141,11 +142,10 @@ export default async function BlogPostPage({ params }: PageProps) {
             Revisão editorial médica:{' '}
             <Link href="/medicos/dr-paulo-roberto-nogueira" className="font-semibold text-[#14508B]">
               Dr. Paulo Roberto Nogueira, CRM 53.790/SP
-            </Link>{' '}
-            e{' '}
+            </Link>{(!post.contentType || post.contentType === 'ARTICLE')&&<> e{' '}
             <Link href="/medicos/dra-cristiani-nogueira" className="font-semibold text-[#14508B]">
               Dra. Cristiani Nogueira, CRM 77.127/SP
-            </Link>
+            </Link></>}
             .
           </p>
 
@@ -171,7 +171,8 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {post.coverCaption && <p className="mt-2 text-sm text-slate-500">{post.coverCaption}</p>}
           {post.contentType && <p className="mt-5 text-sm font-bold text-[#14508B]">{contentLabels[post.contentType]}</p>}
-          <div className="educativo-protected">
+          <div className="educativo-protected" data-nosnippet={post.requiresRegistration?true:undefined}>
+            {post.requiresRegistration&&access&&<p className="mt-7 rounded-xl bg-blue-50 p-3 text-xs text-[#103E6A]">Prof. Dr. Paulo Roberto Nogueira · Uso pessoal · {educationalAccessLabel(access)}</p>}
             {unlocked ? <><ArticleBody html={post.contentHtml} sections={post.sections}/><Materials materials={materials}/></> : <p className="mt-8 leading-8 text-slate-700">{contentTeaser(post.contentHtml ?? sectionsToHtml(post.sections))}…</p>}
           </div>
           <LeadGate postSlug={post.slug} unlocked={Boolean(access)} protectedContent={post.requiresRegistration}/>
