@@ -57,6 +57,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const access = await getEducationalAccess();
   const unlocked = !post.requiresRegistration || Boolean(access);
   const materials = post.id && unlocked ? await getPublishedMaterials(post.id) : [];
+  const hasClassroom = materials.length > 0;
   const databasePosts = await getPublishedEducativoPosts();
   const relatedPosts = [
     ...databasePosts.filter(
@@ -113,7 +114,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       <main className="py-10 sm:py-14">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, '\\u003c') }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }} />
-      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div className={`mx-auto w-full px-4 sm:px-6 lg:px-8 ${hasClassroom ? 'max-w-6xl' : 'max-w-4xl'}`}>
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex flex-wrap items-center gap-2">
             <li><Link href="/" className="hover:text-[#14508B]">Início</Link></li>
@@ -124,7 +125,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           </ol>
         </nav>
 
-        <article className="mt-6 rounded-3xl border border-[#14508B]/12 bg-white p-6 sm:p-8">
+        <article className={`mt-6 rounded-3xl border border-[#14508B]/12 bg-white sm:p-8 ${hasClassroom ? 'p-4' : 'p-6'}`}>
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#15A7DD]">{post.category}</p>
           <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#103E6A] sm:text-4xl">{post.title}</h1>
           <p className="mt-4 text-base leading-relaxed text-slate-600">{post.excerpt}</p>
@@ -149,7 +150,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             .
           </p>
 
-          <div className="relative mt-7 h-[360px] overflow-hidden rounded-2xl bg-[#0F3760]">
+          {!hasClassroom && <div className="relative mt-7 h-[360px] overflow-hidden rounded-2xl bg-[#0F3760]">
             <Image
               src={post.coverImage}
               alt={post.coverAlt || `Imagem oficial para ${post.title}`}
@@ -159,7 +160,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               className="object-cover object-[50%_20%]"
               priority
             />
-          </div>
+          </div>}
 
           <div className="mt-6 flex flex-wrap gap-2" aria-label="Hashtags do conteúdo educativo">
             {hashtags.map((hashtag) => (
@@ -169,11 +170,11 @@ export default async function BlogPostPage({ params }: PageProps) {
             ))}
           </div>
 
-          {post.coverCaption && <p className="mt-2 text-sm text-slate-500">{post.coverCaption}</p>}
+          {!hasClassroom && post.coverCaption && <p className="mt-2 text-sm text-slate-500">{post.coverCaption}</p>}
           {post.contentType && <p className="mt-5 text-sm font-bold text-[#14508B]">{contentLabels[post.contentType]}</p>}
           <div className="educativo-protected" data-nosnippet={post.requiresRegistration?true:undefined}>
             {post.requiresRegistration&&access&&<p className="mt-7 rounded-xl bg-blue-50 p-3 text-xs text-[#103E6A]">Prof. Dr. Paulo Roberto Nogueira · Uso pessoal · {educationalAccessLabel(access)}</p>}
-            {unlocked ? <><ArticleBody html={post.contentHtml} sections={post.sections}/><Materials materials={materials}/></> : <p className="mt-8 leading-8 text-slate-700">{contentTeaser(post.contentHtml ?? sectionsToHtml(post.sections))}…</p>}
+            {unlocked ? <><Materials materials={materials}/><ArticleBody html={post.contentHtml} sections={post.sections}/></> : <p className="mt-8 leading-8 text-slate-700">{contentTeaser(post.contentHtml ?? sectionsToHtml(post.sections))}…</p>}
           </div>
           <LeadGate postSlug={post.slug} unlocked={Boolean(access)} protectedContent={post.requiresRegistration}/>
           <Professor slug={post.authorProfileSlug}/>

@@ -37,17 +37,22 @@ objects[3]=objects[3].replace(b'\\n',b'\n');data=b'%PDF-1.4\n';offsets=[]
 for i,obj in enumerate(objects):offsets.append(len(data));data+=str(i+1).encode()+b' 0 obj\n'+obj+b'\nendobj\n'
 xref=len(data);data+=b'xref\n0 7\n0000000000 65535 f \n'+b''.join(f'{n:010d} 00000 n \n'.encode() for n in offsets)+b'trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n'+str(xref).encode()+b'\n%%EOF\n';(root/'aula.pdf').write_bytes(data)
 with zipfile.ZipFile(root/'aula.pptx','w',zipfile.ZIP_DEFLATED) as z:
- z.writestr('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/><Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/></Types>')
+ slides=[('Conhecimento para cuidar','Aula de demonstração · Nogueira Cardiologia'),('Acompanhe no seu ritmo','Avance pelos slides e revise cada conceito.'),('Continue aprendendo','Retome esta aula sempre que precisar.')]
+ types=''.join(f'<Override PartName="/ppt/slides/slide{i}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>' for i in range(1,4))
+ z.writestr('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>'+types+'</Types>')
  z.writestr('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>')
- z.writestr('ppt/presentation.xml','<?xml version="1.0"?><p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst><p:sldSz cx="9144000" cy="6858000"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>')
- z.writestr('ppt/_rels/presentation.xml.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/></Relationships>')
- z.writestr('ppt/slides/slide1.xml','<?xml version="1.0"?><p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/></p:spTree></p:cSld></p:sld>')
+ ids=''.join(f'<p:sldId id="{255+i}" r:id="rId{i}"/>' for i in range(1,4))
+ z.writestr('ppt/presentation.xml','<?xml version="1.0"?><p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:sldIdLst>'+ids+'</p:sldIdLst><p:sldSz cx="12192000" cy="6858000"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>')
+ rels=''.join(f'<Relationship Id="rId{i}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide{i}.xml"/>' for i in range(1,4))
+ z.writestr('ppt/_rels/presentation.xml.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>')
+ for i,(title,subtitle) in enumerate(slides,1):
+  z.writestr(f'ppt/slides/slide{i}.xml',f'''<?xml version="1.0"?><p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="103E6A"/></a:solidFill><a:effectLst/></p:bgPr></p:bg><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/><p:sp><p:nvSpPr><p:cNvPr id="2" name="Aula"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="900000" y="2100000"/><a:ext cx="10400000" cy="3500000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="pt-BR" sz="3600" b="1"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></a:rPr><a:t>{title}</a:t></a:r></a:p><a:p><a:r><a:rPr lang="pt-BR" sz="1800"><a:solidFill><a:srgbClr val="81C9E7"/></a:solidFill></a:rPr><a:t>{subtitle}</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>''')
  z.writestr('docProps/thumbnail.jpeg',(root/'imagem.jpg').read_bytes())
 `,directory]);
-  app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p','3005'],{env:{...process.env,NEXT_DIST_DIR:'.next-educativo',EDUCATIVO_RENDERER_IMAGE:'nogueira-educativo-renderer:verification',AUTH_ALLOWED_ORIGINS:base,DRIVE_STORAGE_ROOT:storage,TURNSTILE_SECRET_KEY:''},stdio:['ignore','pipe','pipe']});
+  app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p','3005'],{env:{...process.env,NEXT_DIST_DIR:process.env.NEXT_DIST_DIR||'.next-educativo',EDUCATIVO_RENDERER_IMAGE:'nogueira-educativo-renderer:verification',AUTH_ALLOWED_ORIGINS:base,DRIVE_STORAGE_ROOT:storage,TURNSTILE_SECRET_KEY:''},stdio:['ignore','pipe','pipe']});
   app.stdout.on('data',c=>log+=c);app.stderr.on('data',c=>log+=c);
   await waitFor(async()=>{try{return(await fetch(base+'/api/health')).ok;}catch{return false;}});
-  browser=await chromium.launch({headless:true});
+  browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||undefined});
   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/acesso');await page.getByLabel('E-mail de acesso').fill(`${marker}-Master@example.invalid`);await page.getByLabel('Senha',{exact:true}).fill(password);await page.getByRole('button',{name:'Entrar no painel',exact:true}).click();await page.waitForURL('**/crm');
   masterCookie=(await context.cookies()).map(c=>`${c.name}=${c.value}`).join('; ');
@@ -77,13 +82,13 @@ with zipfile.ZipFile(root/'aula.pptx','w',zipfile.ZIP_DEFLATED) as z:
   let post=await json('/api/internal/educativo/'+postId,{cookie:masterCookie});
   assert.equal(post.status,'draft');assert.match(post.content_html,/<strong>CONTEUDO_RESTRITO_FIXTURE<\/strong>/);assert.match(post.content_html,/<em>explicação em destaque<\/em>/);assert.match(post.content_html,/💙/);assert.match(post.content_html,/<h2[^>]*>Insuficiência cardíaca/);assert.match(post.content_html,/href="\/blog"/);assert.match(post.content_html,/alt="Imagem de apoio à aula"/);assert.match(post.content_html,/<figcaption>Legenda dentro do texto/);
   pdfId=post.materials.find(m=>m.type==='PDF').id;pptxId=post.materials.find(m=>m.type==='POWERPOINT').id;coverId=post.materials.find(m=>m.purpose==='COVER').id;
-  assert.equal(post.materials.find(m=>m.id===pptxId).slide_count,1);
+  assert.equal(post.materials.find(m=>m.id===pptxId).slide_count,3);
   assert.equal((await request('/blog/'+marker)).status,404);
   for(const id of [pdfId,pptxId,coverId])assert.equal((await request('/api/educativo/materials/'+id)).status,404);
   await page.screenshot({path:directory+'/editor-desktop.png',fullPage:true});
   const [preview]=await Promise.all([page.waitForEvent('popup'),page.getByRole('button',{name:'Pré-visualizar',exact:true}).click()]);await preview.waitForURL('**/preview');await preview.getByRole('heading',{name:`Aula de insuficiência cardíaca ${marker}`}).waitFor();assert.ok((await preview.content()).includes('CONTEUDO_RESTRITO_FIXTURE'));
-  await preview.getByRole('button',{name:'Visualizar aula',exact:true}).first().click();await preview.getByRole('img',{name:'aula.pdf, página 1',exact:true}).waitFor();assert.equal(await preview.getByRole('img',{name:'aula.pdf, página 1',exact:true}).getAttribute('src'),'/api/educativo/materials/'+pdfId+'?page=1');
-  assert.match(await preview.locator('img').last().getAttribute('src'),/thumbnail=1/);
+  await preview.getByRole('img',{name:'aula.pdf, página 1',exact:true}).waitFor();assert.equal(await preview.getByRole('img',{name:'aula.pdf, página 1',exact:true}).getAttribute('src'),'/api/educativo/materials/'+pdfId+'?page=1');
+  await preview.getByRole('heading',{name:'Sua sala de aula',exact:true}).waitFor();
   await preview.screenshot({path:directory+'/preview-desktop.png',fullPage:true});await preview.close();
   assert.match(await page.getByLabel('Assistente de SEO').innerText(),/SEO: \d+\/100/);
   await page.reload();await editor.waitFor();assert.match(await editor.innerHTML(),/CONTEUDO_RESTRITO_FIXTURE/);assert.equal((await editor.innerHTML()).match(/Legenda dentro do texto/g)?.length,1);
@@ -103,6 +108,7 @@ with zipfile.ZipFile(root/'aula.pptx','w',zipfile.ZIP_DEFLATED) as z:
   const enforced=await save({...post,author_profile_slug:null,requires_registration:false});assert.equal(enforced.author_profile_slug,'dr-paulo-roberto-nogueira');assert.equal(enforced.requires_registration,true);post=enforced;
   const publicContext=await browser.newContext({viewport:{width:390,height:844}}),visitor=await publicContext.newPage();visitor.on('pageerror',e=>errors.push(e.message));
   await visitor.goto(base+'/blog?busca='+marker);await visitor.getByRole('link',{name:'Acessar conteúdo',exact:true}).click();await visitor.getByRole('button',{name:'Quero acessar o conteúdo',exact:true}).waitFor();
+  await visitor.getByRole('button',{name:'Somente necessários',exact:true}).click();
   await visitor.screenshot({path:directory+'/gate-mobile.png',fullPage:true});
   assert.ok(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await visitor.getByLabel('Nome completo',{exact:true}).fill('Aluno de teste');await visitor.getByLabel('E-mail',{exact:true}).fill(`${marker}-aluno@example.invalid`);await visitor.getByLabel('Telefone / WhatsApp',{exact:true}).fill('11987654321');await visitor.getByRole('button',{name:'Quero acessar o conteúdo',exact:true}).click();
@@ -126,12 +132,69 @@ with zipfile.ZipFile(root/'aula.pptx','w',zipfile.ZIP_DEFLATED) as z:
     assert.equal((await request('/api/educativo/materials/'+id+'?page=1',{cookie:accessCookie,headers:{'sec-fetch-site':'cross-site'}})).status,403);
   }
   assert.equal(await visitor.getByRole('link',{name:/Baixar/}).count(),0);
-  await visitor.getByRole('button',{name:'Visualizar aula',exact:true}).first().click();await visitor.getByRole('img',{name:'aula.pdf, página 1',exact:true}).waitFor();
+  await visitor.getByRole('img',{name:'aula.pdf, página 1',exact:true}).waitFor();
   await waitFor(()=>visitor.getByRole('img',{name:'aula.pdf, página 1',exact:true}).evaluate(img=>img.complete&&img.naturalWidth>0));
   await visitor.getByRole('button',{name:'Próxima página',exact:true}).click();await visitor.getByRole('img',{name:'aula.pdf, página 2',exact:true}).waitFor();await waitFor(()=>visitor.getByRole('img',{name:'aula.pdf, página 2',exact:true}).evaluate(img=>img.complete&&img.naturalWidth>0));await visitor.getByLabel('Visualização de aula.pdf',{exact:true}).screenshot({path:directory+'/reader-mobile.png'});
   await visitor.screenshot({path:directory+'/article-mobile.png',fullPage:true});
   assert.ok(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await visitor.setViewportSize({width:768,height:1024});await visitor.screenshot({path:directory+'/article-tablet.png',fullPage:true});assert.ok(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await visitor.reload();
+  await visitor.getByRole('img',{name:'aula.pdf, página 2',exact:true}).waitFor();
+  const playlist=visitor.getByRole('complementary',{name:'Conteúdo desta aula'});
+  await playlist.getByRole('button',{name:/aula.pptx/}).click();
+  const slide=number=>visitor.getByRole('img',{name:`aula.pptx, slide ${number}`,exact:true});
+  const loaded=async number=>{await slide(number).waitFor();await waitFor(()=>slide(number).evaluate(img=>img.complete&&img.naturalWidth>0));};
+  await loaded(1);
+  assert.equal(await visitor.getByRole('button',{name:'Slide anterior',exact:true}).isDisabled(),true);
+  await visitor.getByRole('button',{name:'Próximo slide',exact:true}).click();await loaded(2);
+  await visitor.getByLabel('Visualização de aula.pptx',{exact:true}).press('ArrowRight');await loaded(3);
+  assert.equal(await visitor.getByRole('button',{name:'Próximo slide',exact:true}).isDisabled(),true);
+  await visitor.getByRole('button',{name:'Ver slides',exact:true}).click();
+  await visitor.getByRole('navigation',{name:'Índice de slides'}).getByRole('button',{name:'Slide 2',exact:true}).click();await loaded(2);
+  await visitor.reload();await loaded(2);
+  assert.equal(await visitor.getByRole('progressbar',{name:'Posição na aula'}).getAttribute('aria-valuenow'),'2');
+  await visitor.getByRole('button',{name:'Ampliar slide',exact:true}).click();
+  assert.equal(await visitor.getByRole('button',{name:'Ajustar à tela',exact:true}).getAttribute('aria-pressed'),'true');
+  await visitor.getByRole('button',{name:'Ajustar à tela',exact:true}).click();
+  await visitor.setViewportSize({width:1440,height:1200});
+  await visitor.getByRole('region',{name:'Materiais da aula'}).evaluate(element=>window.scrollTo(0,element.getBoundingClientRect().top+window.scrollY-150));
+  await visitor.getByRole('region',{name:'Materiais da aula'}).screenshot({path:directory+'/classroom-desktop.png'});
+  await visitor.getByRole('button',{name:'Tela cheia',exact:true}).click();
+  await visitor.getByRole('dialog',{name:'Aula em tela cheia: aula.pptx'}).waitFor();await loaded(2);
+  await waitFor(()=>visitor.evaluate(()=>Boolean(document.fullscreenElement)));
+  await visitor.screenshot({path:directory+'/classroom-fullscreen.png'});
+  await visitor.getByRole('button',{name:'Sair da tela cheia',exact:true}).click();
+  await waitFor(()=>visitor.evaluate(()=>!document.fullscreenElement&&!document.querySelector('dialog[open]')));
+  await visitor.evaluate(()=>Object.defineProperty(document,'fullscreenEnabled',{configurable:true,get:()=>false}));
+  await visitor.getByRole('button',{name:'Tela cheia',exact:true}).click();
+  await visitor.getByRole('dialog',{name:'Aula em tela cheia: aula.pptx'}).waitFor();
+  await visitor.keyboard.press('Escape');await waitFor(()=>visitor.evaluate(()=>!document.querySelector('dialog[open]')));
+  await visitor.setViewportSize({width:390,height:844});
+  const stage=slide(2).locator('..');
+  await stage.evaluate(element=>{
+    element.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[new Touch({identifier:1,target:element,clientX:260,clientY:120})]}));
+    element.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[new Touch({identifier:1,target:element,clientX:80,clientY:125})]}));
+  });await loaded(3);
+  await visitor.getByRole('region',{name:'Materiais da aula'}).screenshot({path:directory+'/classroom-mobile.png'});
+  assert.ok(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await visitor.getByRole('button',{name:'Voltar ao início',exact:true}).click();await loaded(1);
+  // A failed page must offer retry and must not overwrite the last successfully viewed page.
+  await visitor.route(`**/api/educativo/materials/${pptxId}?page=2`,route=>route.abort());
+  await visitor.getByRole('button',{name:'Próximo slide',exact:true}).click();
+  await visitor.getByRole('button',{name:'Tentar novamente',exact:true}).waitFor();
+  assert.equal(await visitor.evaluate(key=>localStorage.getItem(key),`nogueira-aula:${postId}:${pptxId}:pagina`),'1');
+  await visitor.unroute(`**/api/educativo/materials/${pptxId}?page=2`);
+  await visitor.getByRole('button',{name:'Tentar novamente',exact:true}).click();await loaded(2);
+  await visitor.emulateMedia({media:'print'});
+  assert.equal(await visitor.getByRole('region',{name:'Materiais da aula'}).isVisible(),false);
+  await visitor.emulateMedia({media:'screen'});
+  // Malformed or obsolete bookmarks cannot request an invalid page.
+  await visitor.evaluate(key=>localStorage.setItem(key,'999999'),`nogueira-aula:${postId}:${pptxId}:pagina`);
+  await visitor.reload();await loaded(1);
+  await visitor.evaluate(()=>{Storage.prototype.getItem=()=>{throw Error('Storage unavailable');};Storage.prototype.setItem=()=>{throw Error('Storage unavailable');};});
+  await visitor.getByRole('button',{name:'Próximo slide',exact:true}).click();await loaded(2);
+  await visitor.reload();
+  pass('classroom: PDF/PPTX, material/page resume, arrows, index, zoom, fullscreen and fallback/Escape, swipe, retry, print hiding and unavailable storage');
   assert.equal((await db.query('select count(*)::int n from educativo_leads where email=$1 and post_slug=$2',[`${marker}-aluno@example.invalid`,marker])).rows[0].n,1);
   pass('publish, /blog lesson cards, anonymous HTML/RSC protection, backend PDF/PPTX/thumbnail/HEAD denial, registration, durable HttpOnly access, student original/download/HEAD/Range denial, authenticated watermarked page viewing and responsive mobile/tablet');
 
@@ -172,7 +235,7 @@ with zipfile.ZipFile(root/'aula.pptx','w',zipfile.ZIP_DEFLATED) as z:
   execFileSync(process.execPath,['scripts/backup-drive.mjs'],{env:{...process.env,DRIVE_STORAGE_ROOT:storage,DRIVE_BACKUP_DIR:'/tmp/nogueira-drive-backups'},stdio:'inherit'});
   execFileSync(process.execPath,['tests/drive-backup.integration.mjs'],{env:process.env,stdio:'inherit'});
   pass('backup and restore include educational object bytes, metadata, sizes and checksums');
-  await writeFile(directory+'/results.json',JSON.stringify({passed:results,screenshots:['editor-desktop.png','preview-desktop.png','gate-mobile.png','article-mobile.png','article-tablet.png','editor-mobile.png']},null,2));
+  await writeFile(directory+'/results.json',JSON.stringify({passed:results,screenshots:['editor-desktop.png','preview-desktop.png','gate-mobile.png','article-mobile.png','article-tablet.png','editor-mobile.png','classroom-desktop.png','classroom-mobile.png','classroom-fullscreen.png']},null,2));
 } catch(error){await writeFile(directory+'/server.log',log);for(const c of browser?.contexts()||[])for(const p of c.pages())await p.screenshot({path:directory+'/failure-'+Date.now()+'.png',fullPage:true}).catch(()=>{});throw error;}
 finally {
   await browser?.close();app?.kill('SIGTERM');

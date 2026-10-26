@@ -4,6 +4,55 @@
 O bloco antigo do dashboard passa a abrir a central; as mesmas tabelas, sessões,
 permissão `content.manage`, auditoria e artigos públicos são preservados.
 
+## Sala de aula — 26/10/2026
+
+O conteúdo liberado com anexos abre diretamente em **Sua sala de aula**, antes do
+texto de apoio. A área é mais larga e substitui a capa grande pelo visualizador;
+visitantes sem inscrição continuam vendo a capa, o resumo e o cadastro. O preview
+do editor usa o mesmo componente e a mesma disposição.
+
+PowerPoint, PDF e imagens usam um palco com fundo escuro, controles anterior/próximo,
+posição na apresentação, índice numerado, ampliação e tela cheia. Teclado: setas,
+Home e End quando o foco está no visualizador. No celular, deslizar horizontalmente
+muda o slide; ao ampliar, o gesto permite explorar a imagem. Tela cheia usa a API
+nativa quando disponível e um diálogo que ocupa a janela como alternativa, com
+Escape, botão de saída e isolamento de foco. Materiais adicionais ficam na lista
+ao lado no desktop e abaixo em telas menores. A ordem editorial é preservada.
+
+Somente o identificador do último material e o número da última página carregada
+com sucesso são guardados em localStorage, por post/anexo. Não há arquivo, imagem,
+nome, credencial ou autorização nesse armazenamento. Posições inválidas voltam ao
+início; navegadores sem armazenamento continuam funcionando. Cada imagem mantém
+validação de sessão e marca d'água no servidor. Falhas oferecem nova tentativa sem
+alterar o marcador salvo. O índice não busca todas as páginas antecipadamente.
+
+Não há controles de download/impressão, e o visualizador é ocultado na impressão
+da página. Isso não impede capturas de tela ou cópia de pixels já recebidos. Os
+slides continuam estáticos: animações, áudio e vídeos incorporados ao PowerPoint
+não são reproduzidos. A indicação de posição não é certificação de conclusão.
+
+`tests/educativo.integration.mjs` inclui um PPTX de três slides e verifica navegação,
+retomada de material/página, índice, ampliação, tela cheia nativa e alternativa,
+Escape, gesto móvel, falha/retry, impressão e indisponibilidade de localStorage,
+além das negativas de acesso aos originais existentes. Aceita `NEXT_DIST_DIR` para
+selecionar o build isolado e `PLAYWRIGHT_CHROMIUM_EXECUTABLE` para usar um Chromium
+já instalado. Screenshots: `classroom-desktop.png`, `classroom-mobile.png` e
+`classroom-fullscreen.png` em `/tmp/nogueira-educativo-evidence`.
+
+Validação desta mudança: lint e TypeScript sem erros; 18 testes unitários; build
+otimizado; suíte editorial completa em Chromium (390/768/1440px), inclusive a
+restauração de 12 objetos e sete páginas renderizadas com hashes correspondentes.
+As sete fixtures antigas do Drive, cujos arquivos em `/tmp` haviam desaparecido,
+foram recompostas a partir dos bytes do teste versionado, conferindo tamanho e
+SHA-256 antes da escrita e sem modificar seus registros no banco isolado.
+
+Auditoria de dependências em 26/10: o Next 16.4.0 instalado sinalizou alertas
+críticos; `npm audit` também identificou alertas em sanitize-html e zod, com
+correções disponíveis. São pendências das dependências existentes, não corrigidas
+pela mudança de visualizador. O aviso interrompeu a primeira compilação; a
+reexecução permitida pelo próprio CLI concluiu. Planejar atualização de segurança
+e regressão completa dos módulos compartilhados.
+
 ## Proteção das aulas — atualização após solicitação do proprietário
 
 Aulas e materiais têm autoria obrigatória do Prof. Dr. Paulo Roberto Nogueira e
